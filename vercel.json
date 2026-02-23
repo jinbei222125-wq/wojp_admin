@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm run build && cp -r dist/public public",
-  "installCommand": "pnpm install"
+  "installCommand": "pnpm install",
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api?x-path=:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
