@@ -533,8 +533,8 @@ function getQueryParam(req, key) {
   const value = req.query[key];
   return typeof value === "string" ? value : void 0;
 }
-function registerOAuthRoutes(app) {
-  app.get("/api/oauth/callback", async (req, res) => {
+function registerOAuthRoutes(app2) {
+  app2.get("/api/oauth/callback", async (req, res) => {
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
     if (!code || !state) {
@@ -793,15 +793,15 @@ var vite_config_default = defineConfig({
 });
 
 // server/_core/vite.ts
-function serveStatic(app) {
+function serveStatic(app2) {
   const distPath = process.env.NODE_ENV === "development" ? path2.resolve(import.meta.dirname, "../..", "dist", "public") : path2.resolve(import.meta.dirname, "public");
   if (!fs.existsSync(distPath)) {
     console.error(
       `Could not find the build directory: ${distPath}, make sure to build the client first`
     );
   }
-  app.use(express.static(distPath));
-  app.use("*", (_req, res) => {
+  app2.use(express.static(distPath));
+  app2.use("*", (_req, res) => {
     res.sendFile(path2.resolve(distPath, "index.html"));
   });
 }
@@ -1339,29 +1339,18 @@ var adminAppRouter = t5.router({
 
 // server/_core/app.ts
 function createApp() {
-  const app = express2();
-  app.use(express2.json({ limit: "50mb" }));
-  app.use(express2.urlencoded({ limit: "50mb", extended: true }));
-  if (process.env.VERCEL) {
-    app.use((req, _res, next) => {
-      const pathPart = req.query["x-path"];
-      if (typeof pathPart === "string" && pathPart) {
-        const u = new URL(req.url || "/api", "http://_");
-        u.searchParams.delete("x-path");
-        req.url = "/api/" + pathPart + (u.search ? u.search : "");
-      }
-      next();
-    });
-  }
-  registerOAuthRoutes(app);
-  app.use(
+  const app2 = express2();
+  app2.use(express2.json({ limit: "50mb" }));
+  app2.use(express2.urlencoded({ limit: "50mb", extended: true }));
+  registerOAuthRoutes(app2);
+  app2.use(
     "/api/admin",
     createExpressMiddleware({
       router: adminAppRouter,
       createContext: ({ req, res }) => createAdminContext(req, res)
     })
   );
-  app.use(
+  app2.use(
     "/api/trpc",
     createExpressMiddleware({
       router: appRouter,
@@ -1369,17 +1358,32 @@ function createApp() {
     })
   );
   if (!process.env.VERCEL) {
-    serveStatic(app);
+    serveStatic(app2);
   } else {
-    app.use((_req, res) => {
+    app2.use((_req, res) => {
       res.sendFile(path3.join(process.cwd(), "public", "index.html"));
     });
   }
-  return app;
+  return app2;
 }
 
-// src/api/index.ts
-var index_default = createApp();
+// src/api-entry/server.ts
+var app = createApp();
+function handler(req, res) {
+  const pathSegments = req.query?.path;
+  const pathStr = Array.isArray(pathSegments) ? pathSegments.join("/") : typeof pathSegments === "string" ? pathSegments : "";
+  const rawUrl = req.url ?? "";
+  const qIdx = rawUrl.indexOf("?");
+  if (qIdx !== -1) {
+    const params = new URLSearchParams(rawUrl.slice(qIdx + 1));
+    params.delete("path");
+    const remaining = params.toString();
+    req.url = `/api/${pathStr}${remaining ? "?" + remaining : ""}`;
+  } else {
+    req.url = `/api/${pathStr}`;
+  }
+  app(req, res);
+}
 export {
-  index_default as default
+  handler as default
 };

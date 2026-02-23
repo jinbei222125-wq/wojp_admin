@@ -6,7 +6,7 @@
 dist/
 build/
 *.dist
-api/server.js
+# api/server.js and api/index.js are committed intentionally (Vercel serverless function)
 
 # Environment variables
 .env
