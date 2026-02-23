@@ -14,6 +14,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { adminAppRouter } from "../adminAppRouter";
 import { createAdminContext } from "../adminContext";
+import { getDb } from "../lib/db";
 
 export function createApp() {
   const app = express();
@@ -38,6 +39,34 @@ export function createApp() {
       createContext,
     })
   );
+
+  // 一時デバッグ用: DB接続先とアカウント確認
+  app.get("/api/debug/db", async (_req, res) => {
+    const url = process.env.DATABASE_URL ?? "(not set)";
+    const token = process.env.DATABASE_AUTH_TOKEN ?? "(not set)";
+    const maskedToken =
+      token.length > 20 ? token.slice(0, 10) + "..." + token.slice(-10) : token;
+    try {
+      const db = await getDb();
+      if (!db) {
+        return res.json({ status: "DB null - getDb() returned null", url, token: maskedToken });
+      }
+      // 直接 libsql で admins を取得
+      const { createClient } = await import("@libsql/client");
+      const client = createClient({ url, authToken: token });
+      const result = await client.execute(
+        "SELECT id, email, name, isActive FROM admins;"
+      );
+      return res.json({
+        status: "connected",
+        url,
+        token: maskedToken,
+        admins: result.rows,
+      });
+    } catch (e: any) {
+      return res.json({ status: "error", error: e.message, url, token: maskedToken });
+    }
+  });
 
   // On Vercel, static assets are served by CDN from public/.
   // Any non-API request that reaches this function returns a minimal 404

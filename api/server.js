@@ -1359,6 +1359,30 @@ function createApp() {
       createContext
     })
   );
+  app2.get("/api/debug/db", async (_req, res) => {
+    const url = process.env.DATABASE_URL ?? "(not set)";
+    const token = process.env.DATABASE_AUTH_TOKEN ?? "(not set)";
+    const maskedToken = token.length > 20 ? token.slice(0, 10) + "..." + token.slice(-10) : token;
+    try {
+      const db = await getDb();
+      if (!db) {
+        return res.json({ status: "DB null - getDb() returned null", url, token: maskedToken });
+      }
+      const { createClient: createClient2 } = await import("@libsql/client");
+      const client = createClient2({ url, authToken: token });
+      const result = await client.execute(
+        "SELECT id, email, name, isActive FROM admins;"
+      );
+      return res.json({
+        status: "connected",
+        url,
+        token: maskedToken,
+        admins: result.rows
+      });
+    } catch (e) {
+      return res.json({ status: "error", error: e.message, url, token: maskedToken });
+    }
+  });
   app2.use((_req, res) => {
     res.status(404).json({ error: "Not found" });
   });
