@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs (Vercel builds these)
+dist
+
+# Env and local
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.idea
+.vscode
+*.log
+.DS_Store
+
+# Test / dev
+coverage
+*.test.ts
+*.test.tsx
