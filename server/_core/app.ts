@@ -20,19 +20,6 @@ export function createApp() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // Vercel rewrite: /api/* -> /api?x-path=* (preserves path for routing)
-  if (process.env.VERCEL) {
-    app.use((req, _res, next) => {
-      const pathPart = req.query["x-path"];
-      if (typeof pathPart === "string" && pathPart) {
-        const u = new URL(req.url || "/api", "http://_");
-        u.searchParams.delete("x-path");
-        req.url = "/api/" + pathPart + (u.search ? u.search : "");
-      }
-      next();
-    });
-  }
-
   registerOAuthRoutes(app);
 
   app.use(
