@@ -2,11 +2,14 @@
  * Vercel serverless entry: all /api/* requests are routed here via rewrites.
  * Built to api/server.js by build:api so api/ contains only build output (no .ts).
  *
+ * Uses app.vercel.ts (NOT app.ts) to avoid bundling vite and its plugins
+ * into the serverless function.
+ *
  * vercel.json rewrites /api/:path* → /api/server?path=:path*
  * Vercel injects the matched path as req.query.path (string | string[]).
  * We reconstruct req.url so Express can route to /api/admin/*, /api/trpc/*, etc.
  */
-import { createApp } from "../../server/_core/app";
+import { createApp } from "../../server/_core/app.vercel";
 import type { IncomingMessage, ServerResponse } from "http";
 
 const app = createApp();

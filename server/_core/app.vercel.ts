@@ -1,18 +1,20 @@
+/**
+ * Vercel-specific Express app factory.
+ * This file intentionally does NOT import ./vite to prevent vite and its plugins
+ * from being bundled into the serverless function (api/server.js).
+ *
+ * Used only by src/api-entry/server.ts → built to api/server.js.
+ * The local dev server (server/_core/index.ts) uses app.ts which imports vite.
+ */
 import "dotenv/config";
 import express from "express";
-import path from "path";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
-import { serveStatic } from "./vite";
 import { adminAppRouter } from "../adminAppRouter";
 import { createAdminContext } from "../adminContext";
-/**
- * Create and return the Express application.
- * Used by the local dev server (server/_core/index.ts).
- * For Vercel, use app.vercel.ts instead (does not import vite).
- */
+
 export function createApp() {
   const app = express();
 
@@ -37,15 +39,12 @@ export function createApp() {
     })
   );
 
-  // Static files: only when not on Vercel (Vercel serves public/ via CDN)
-  if (!process.env.VERCEL) {
-    serveStatic(app);
-  } else {
-    // SPA fallback: non-API routes that reach the function return index.html
-    app.use((_req, res) => {
-      res.sendFile(path.join(process.cwd(), "public", "index.html"));
-    });
-  }
+  // On Vercel, static assets are served by CDN from public/.
+  // Any non-API request that reaches this function returns a minimal 404
+  // (the SPA is served by Vercel CDN, not this function).
+  app.use((_req, res) => {
+    res.status(404).json({ error: "Not found" });
+  });
 
   return app;
 }
