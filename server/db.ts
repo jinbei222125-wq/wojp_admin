@@ -39,6 +39,18 @@ export async function updateAdminLastSignedIn(id: number) {
   await db.update(admins).set({ lastSignedIn: new Date() }).where(eq(admins.id, id));
 }
 
+export async function updateAdminEmail(id: number, email: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(admins).set({ email, updatedAt: new Date() }).where(eq(admins.id, id));
+}
+
+export async function updateAdminPassword(id: number, passwordHash: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(admins).set({ passwordHash, updatedAt: new Date() }).where(eq(admins.id, id));
+}
+
 // ============================================
 // NEWS記事関連
 // ============================================

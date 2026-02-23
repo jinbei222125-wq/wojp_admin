@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import NewsManagement from "./pages/NewsManagement";
 import JobsManagement from "./pages/JobsManagement";
 import AuditLogs from "./pages/AuditLogs";
+import Settings from "./pages/Settings";
 import AdminDashboardLayout from "./components/AdminDashboardLayout";
 
 function Router() {
@@ -33,6 +34,11 @@ function Router() {
       <Route path="/audit">
         <AdminDashboardLayout>
           <AuditLogs />
+        </AdminDashboardLayout>
+      </Route>
+      <Route path="/settings">
+        <AdminDashboardLayout>
+          <Settings />
         </AdminDashboardLayout>
       </Route>
       <Route path="/404" component={NotFound} />

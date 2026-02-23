@@ -137,6 +137,16 @@ async function updateAdminLastSignedIn(id) {
   if (!db) return;
   await db.update(admins).set({ lastSignedIn: /* @__PURE__ */ new Date() }).where(eq(admins.id, id));
 }
+async function updateAdminEmail(id, email) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(admins).set({ email, updatedAt: /* @__PURE__ */ new Date() }).where(eq(admins.id, id));
+}
+async function updateAdminPassword(id, passwordHash) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(admins).set({ passwordHash, updatedAt: /* @__PURE__ */ new Date() }).where(eq(admins.id, id));
+}
 async function getAllNews() {
   const db = await getDb();
   if (!db) return [];
@@ -912,6 +922,61 @@ var adminAuthRouter = t2.router({
       name: ctx.admin.name,
       role: ctx.admin.role
     };
+  }),
+  /**
+   * メールアドレス変更
+   */
+  updateEmail: protectedProcedure2.input(
+    z2.object({
+      newEmail: z2.string().email("\u6709\u52B9\u306A\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
+      currentPassword: z2.string().min(1, "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044")
+    })
+  ).mutation(async ({ input, ctx }) => {
+    const admin = ctx.admin;
+    const isValid = await verifyPassword(input.currentPassword, admin.passwordHash);
+    if (!isValid) {
+      throw new TRPCError3({
+        code: "UNAUTHORIZED",
+        message: "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093"
+      });
+    }
+    const existing = await getAdminByEmail(input.newEmail);
+    if (existing && existing.id !== admin.id) {
+      throw new TRPCError3({
+        code: "BAD_REQUEST",
+        message: "\u305D\u306E\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u306F\u65E2\u306B\u4F7F\u7528\u3055\u308C\u3066\u3044\u307E\u3059"
+      });
+    }
+    await updateAdminEmail(admin.id, input.newEmail);
+    return { success: true };
+  }),
+  /**
+   * パスワード変更
+   */
+  updatePassword: protectedProcedure2.input(
+    z2.object({
+      currentPassword: z2.string().min(1, "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
+      newPassword: z2.string().min(8, "\u65B0\u3057\u3044\u30D1\u30B9\u30EF\u30FC\u30C9\u306F8\u6587\u5B57\u4EE5\u4E0A\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
+      confirmPassword: z2.string().min(1)
+    })
+  ).mutation(async ({ input, ctx }) => {
+    if (input.newPassword !== input.confirmPassword) {
+      throw new TRPCError3({
+        code: "BAD_REQUEST",
+        message: "\u65B0\u3057\u3044\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u4E00\u81F4\u3057\u307E\u305B\u3093"
+      });
+    }
+    const admin = ctx.admin;
+    const isValid = await verifyPassword(input.currentPassword, admin.passwordHash);
+    if (!isValid) {
+      throw new TRPCError3({
+        code: "UNAUTHORIZED",
+        message: "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093"
+      });
+    }
+    const newHash = await hashPassword(input.newPassword);
+    await updateAdminPassword(admin.id, newHash);
+    return { success: true };
   }),
   /**
    * 管理者を作成（開発用）

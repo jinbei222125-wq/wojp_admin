@@ -3,7 +3,7 @@ import { z } from "zod";
 import superjson from "superjson";
 import { AdminContext } from "./adminContext";
 import { verifyPassword, generateAdminToken, hashPassword } from "./auth";
-import { getAdminByEmail, updateAdminLastSignedIn, createAdmin } from "./db";
+import { getAdminByEmail, updateAdminLastSignedIn, createAdmin, updateAdminEmail, updateAdminPassword } from "./db";
 import { ADMIN_COOKIE_NAME } from "./adminContext";
 import * as cookie from "cookie";
 import { ENV } from "./_core/env";
@@ -149,6 +149,67 @@ export const adminAuthRouter = t.router({
   }),
 
   /**
+   * メールアドレス変更
+   */
+  updateEmail: protectedProcedure
+    .input(
+      z.object({
+        newEmail: z.string().email("有効なメールアドレスを入力してください"),
+        currentPassword: z.string().min(1, "現在のパスワードを入力してください"),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const admin = ctx.admin!;
+      const isValid = await verifyPassword(input.currentPassword, admin.passwordHash);
+      if (!isValid) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "現在のパスワードが正しくありません",
+        });
+      }
+      const existing = await getAdminByEmail(input.newEmail);
+      if (existing && existing.id !== admin.id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "そのメールアドレスは既に使用されています",
+        });
+      }
+      await updateAdminEmail(admin.id, input.newEmail);
+      return { success: true };
+    }),
+
+  /**
+   * パスワード変更
+   */
+  updatePassword: protectedProcedure
+    .input(
+      z.object({
+        currentPassword: z.string().min(1, "現在のパスワードを入力してください"),
+        newPassword: z.string().min(8, "新しいパスワードは8文字以上で入力してください"),
+        confirmPassword: z.string().min(1),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (input.newPassword !== input.confirmPassword) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "新しいパスワードが一致しません",
+        });
+      }
+      const admin = ctx.admin!;
+      const isValid = await verifyPassword(input.currentPassword, admin.passwordHash);
+      if (!isValid) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "現在のパスワードが正しくありません",
+        });
+      }
+      const newHash = await hashPassword(input.newPassword);
+      await updateAdminPassword(admin.id, newHash);
+      return { success: true };
+    }),
+
+  /**
    * 管理者を作成（開発用）
    * 本番環境では別の方法で管理者を作成することを推奨
    */
@@ -185,3 +246,4 @@ export const adminAuthRouter = t.router({
 });
 
 export type AdminAuthRouter = typeof adminAuthRouter;
+
