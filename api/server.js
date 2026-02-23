@@ -823,7 +823,7 @@ var adminAuthRouter = t2.router({
   login: publicProcedure2.input(
     z2.object({
       email: z2.string().email(),
-      password: z2.string().min(6)
+      password: z2.string().min(1, "\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044")
     })
   ).mutation(async ({ input, ctx }) => {
     let admin;
@@ -863,15 +863,15 @@ var adminAuthRouter = t2.router({
     }
     await updateAdminLastSignedIn(admin.id);
     const token = await generateAdminToken(admin.id, admin.email);
-    const cookieOptions = {
-      httpOnly: true,
-      secure: !ENV.isProduction ? false : true,
-      sameSite: !ENV.isProduction ? "lax" : "none",
-      maxAge: 7 * 24 * 60 * 60,
-      // 7日
-      path: "/"
-    };
-    const cookieString = `${ADMIN_COOKIE_NAME}=${token}; HttpOnly; ${cookieOptions.secure ? "Secure;" : ""} SameSite=${cookieOptions.sameSite}; Max-Age=${cookieOptions.maxAge}; Path=${cookieOptions.path}`;
+    const isSecure = ENV.isProduction;
+    const cookieString = [
+      `${ADMIN_COOKIE_NAME}=${token}`,
+      "HttpOnly",
+      isSecure ? "Secure" : "",
+      "SameSite=Lax",
+      `Max-Age=${7 * 24 * 60 * 60}`,
+      "Path=/"
+    ].filter(Boolean).join("; ");
     ctx.res.setHeader("Set-Cookie", cookieString);
     return {
       success: true,
@@ -887,14 +887,15 @@ var adminAuthRouter = t2.router({
    * ログアウト
    */
   logout: publicProcedure2.mutation(({ ctx }) => {
-    const cookieOptions = {
-      httpOnly: true,
-      secure: !ENV.isProduction ? false : true,
-      sameSite: !ENV.isProduction ? "lax" : "none",
-      maxAge: -1,
-      path: "/"
-    };
-    const cookieString = `${ADMIN_COOKIE_NAME}=; HttpOnly; ${cookieOptions.secure ? "Secure;" : ""} SameSite=${cookieOptions.sameSite}; Max-Age=${cookieOptions.maxAge}; Path=${cookieOptions.path}`;
+    const isSecure = ENV.isProduction;
+    const cookieString = [
+      `${ADMIN_COOKIE_NAME}=`,
+      "HttpOnly",
+      isSecure ? "Secure" : "",
+      "SameSite=Lax",
+      "Max-Age=-1",
+      "Path=/"
+    ].filter(Boolean).join("; ");
     ctx.res.setHeader("Set-Cookie", cookieString);
     return { success: true };
   }),
@@ -919,7 +920,7 @@ var adminAuthRouter = t2.router({
   createAdmin: publicProcedure2.input(
     z2.object({
       email: z2.string().email(),
-      password: z2.string().min(6),
+      password: z2.string().min(1, "\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
       name: z2.string().min(1),
       role: z2.enum(["admin", "super_admin"]).default("admin")
     })

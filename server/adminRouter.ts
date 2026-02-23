@@ -43,7 +43,7 @@ export const adminAuthRouter = t.router({
     .input(
       z.object({
         email: z.string().email(),
-        password: z.string().min(6),
+        password: z.string().min(1, "パスワードを入力してください"),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -90,15 +90,17 @@ export const adminAuthRouter = t.router({
 
       const token = await generateAdminToken(admin.id, admin.email);
 
-      const cookieOptions = {
-        httpOnly: true,
-        secure: !ENV.isProduction ? false : true,
-        sameSite: !ENV.isProduction ? ("lax" as const) : ("none" as const),
-        maxAge: 7 * 24 * 60 * 60, // 7日
-        path: "/",
-      };
-
-      const cookieString = `${ADMIN_COOKIE_NAME}=${token}; HttpOnly; ${cookieOptions.secure ? 'Secure;' : ''} SameSite=${cookieOptions.sameSite}; Max-Age=${cookieOptions.maxAge}; Path=${cookieOptions.path}`;
+      // SameSite=Lax + Secure はフロントとAPIが同一ドメイン(Vercel)の場合に最適
+      // SameSite=None は異なるドメイン間でのみ必要
+      const isSecure = ENV.isProduction;
+      const cookieString = [
+        `${ADMIN_COOKIE_NAME}=${token}`,
+        "HttpOnly",
+        isSecure ? "Secure" : "",
+        "SameSite=Lax",
+        `Max-Age=${7 * 24 * 60 * 60}`,
+        "Path=/",
+      ].filter(Boolean).join("; ");
       ctx.res.setHeader("Set-Cookie", cookieString);
 
       return {
@@ -116,15 +118,15 @@ export const adminAuthRouter = t.router({
    * ログアウト
    */
   logout: publicProcedure.mutation(({ ctx }) => {
-    const cookieOptions = {
-      httpOnly: true,
-      secure: !ENV.isProduction ? false : true,
-      sameSite: !ENV.isProduction ? ("lax" as const) : ("none" as const),
-      maxAge: -1,
-      path: "/",
-    };
-
-    const cookieString = `${ADMIN_COOKIE_NAME}=; HttpOnly; ${cookieOptions.secure ? 'Secure;' : ''} SameSite=${cookieOptions.sameSite}; Max-Age=${cookieOptions.maxAge}; Path=${cookieOptions.path}`;
+    const isSecure = ENV.isProduction;
+    const cookieString = [
+      `${ADMIN_COOKIE_NAME}=`,
+      "HttpOnly",
+      isSecure ? "Secure" : "",
+      "SameSite=Lax",
+      "Max-Age=-1",
+      "Path=/",
+    ].filter(Boolean).join("; ");
     ctx.res.setHeader("Set-Cookie", cookieString);
 
     return { success: true };
@@ -154,7 +156,7 @@ export const adminAuthRouter = t.router({
     .input(
       z.object({
         email: z.string().email(),
-        password: z.string().min(6),
+        password: z.string().min(1, "パスワードを入力してください"),
         name: z.string().min(1),
         role: z.enum(["admin", "super_admin"]).default("admin"),
       })
