@@ -70,6 +70,17 @@ export async function getNewsById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getNewsBySlug(slug: string, excludeId?: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select({ id: news.id }).from(news).where(eq(news.slug, slug)).limit(1);
+  if (result.length === 0) return undefined;
+  // 編集時は自分自身のIDを除外
+  if (excludeId !== undefined && result[0].id === excludeId) return undefined;
+  return result[0];
+}
+
 export async function createNews(data: InsertNews) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -109,6 +120,17 @@ export async function getJobById(id: number) {
   
   const result = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getJobBySlug(slug: string, excludeId?: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.slug, slug)).limit(1);
+  if (result.length === 0) return undefined;
+  // 編集時は自分自身のIDを除外
+  if (excludeId !== undefined && result[0].id === excludeId) return undefined;
+  return result[0];
 }
 
 export async function createJob(data: InsertJob) {
@@ -216,7 +238,9 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    // SQLite does not support onDuplicateKeyUpdate; use insert or replace via conflict handling
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet,
     });
   } catch (error) {

@@ -17,7 +17,7 @@ import { eq, desc } from "drizzle-orm";
 import { integer, text, sqliteTable } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 var admins = sqliteTable("admins", {
-  id: integer("id").generatedAlwaysAs(sql`rowid`),
+  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
   email: text("email").notNull().unique(),
   passwordHash: text("passwordHash").notNull(),
   name: text("name").notNull(),
@@ -28,7 +28,7 @@ var admins = sqliteTable("admins", {
   lastSignedIn: integer("lastSignedIn", { mode: "timestamp" })
 });
 var news = sqliteTable("news", {
-  id: integer("id").generatedAlwaysAs(sql`rowid`),
+  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   content: text("content").notNull(),
@@ -41,7 +41,7 @@ var news = sqliteTable("news", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
 });
 var jobs = sqliteTable("jobs", {
-  id: integer("id").generatedAlwaysAs(sql`rowid`),
+  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description").notNull(),
@@ -57,7 +57,7 @@ var jobs = sqliteTable("jobs", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
 });
 var auditLogs = sqliteTable("audit_logs", {
-  id: integer("id").generatedAlwaysAs(sql`rowid`),
+  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
   adminId: integer("adminId").notNull(),
   adminEmail: text("adminEmail").notNull(),
   action: text("action").notNull(),
@@ -72,7 +72,7 @@ var auditLogs = sqliteTable("audit_logs", {
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
 });
 var users = sqliteTable("users", {
-  id: integer("id").generatedAlwaysAs(sql`rowid`),
+  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
   openId: text("openId").notNull().unique(),
   name: text("name"),
   email: text("email"),
@@ -159,6 +159,14 @@ async function getNewsById(id) {
   const result = await db.select().from(news).where(eq(news.id, id)).limit(1);
   return result.length > 0 ? result[0] : void 0;
 }
+async function getNewsBySlug(slug, excludeId) {
+  const db = await getDb();
+  if (!db) return void 0;
+  const result = await db.select({ id: news.id }).from(news).where(eq(news.slug, slug)).limit(1);
+  if (result.length === 0) return void 0;
+  if (excludeId !== void 0 && result[0].id === excludeId) return void 0;
+  return result[0];
+}
 async function createNews(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -185,6 +193,14 @@ async function getJobById(id) {
   if (!db) return void 0;
   const result = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
   return result.length > 0 ? result[0] : void 0;
+}
+async function getJobBySlug(slug, excludeId) {
+  const db = await getDb();
+  if (!db) return void 0;
+  const result = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.slug, slug)).limit(1);
+  if (result.length === 0) return void 0;
+  if (excludeId !== void 0 && result[0].id === excludeId) return void 0;
+  return result[0];
 }
 async function createJob(data) {
   const db = await getDb();
@@ -261,7 +277,8 @@ async function upsertUser(user) {
     if (Object.keys(updateSet).length === 0) {
       updateSet.lastSignedIn = /* @__PURE__ */ new Date();
     }
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet
     });
   } catch (error) {
@@ -1138,6 +1155,21 @@ var newsRouter = t3.router({
     return { success: true };
   }),
   /**
+   * NEWS記事のslug重複チェック
+   */
+  checkSlug: protectedProcedure3.input(
+    z3.object({
+      slug: z3.string(),
+      excludeId: z3.number().optional()
+    })
+  ).query(async ({ input }) => {
+    if (!input.slug || !/^[a-z0-9-]+$/.test(input.slug)) {
+      return { available: false, reason: "invalid" };
+    }
+    const existing = await getNewsBySlug(input.slug, input.excludeId);
+    return { available: !existing, reason: existing ? "duplicate" : null };
+  }),
+  /**
    * NEWS記事の公開/非公開を切り替え
    */
   togglePublish: protectedProcedure3.input(z3.number()).mutation(async ({ input, ctx }) => {
@@ -1261,6 +1293,21 @@ var jobsRouter = t3.router({
       JSON.stringify({ title: existing.title })
     );
     return { success: true };
+  }),
+  /**
+   * 求人情報のslug重複チェック
+   */
+  checkSlug: protectedProcedure3.input(
+    z3.object({
+      slug: z3.string(),
+      excludeId: z3.number().optional()
+    })
+  ).query(async ({ input }) => {
+    if (!input.slug || !/^[a-z0-9-]+$/.test(input.slug)) {
+      return { available: false, reason: "invalid" };
+    }
+    const existing = await getJobBySlug(input.slug, input.excludeId);
+    return { available: !existing, reason: existing ? "duplicate" : null };
   }),
   /**
    * 求人情報の公開/非公開を切り替え

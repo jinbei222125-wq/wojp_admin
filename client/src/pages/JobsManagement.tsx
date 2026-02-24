@@ -32,10 +32,113 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus, Eye, EyeOff, Search, MapPin, Briefcase, Loader2, Filter, Calendar, Banknote } from "lucide-react";
+import { Pencil, Trash2, Plus, Eye, EyeOff, Search, MapPin, Briefcase, Loader2, Filter, Calendar, Banknote, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+/** slug入力欄のリアルタイム重複チェックコンポーネント */
+function SlugInput({
+  id,
+  name,
+  defaultValue,
+  excludeId,
+}: {
+  id: string;
+  name: string;
+  defaultValue?: string;
+  excludeId?: number;
+}) {
+  const [slug, setSlug] = useState(defaultValue ?? "");
+  const [debouncedSlug, setDebouncedSlug] = useState(defaultValue ?? "");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSlug(slug);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [slug]);
+
+  const isValidFormat = /^[a-z0-9-]+$/.test(debouncedSlug) && debouncedSlug.length > 0;
+
+  const checkQuery = adminTrpc.jobs.checkSlug.useQuery(
+    { slug: debouncedSlug, excludeId },
+    { enabled: isValidFormat, retry: false }
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    setSlug(val);
+  };
+
+  const showStatus = debouncedSlug.length > 0;
+  const isChecking = checkQuery.isFetching;
+  const isAvailable = checkQuery.data?.available;
+  const isDuplicate = checkQuery.data?.reason === "duplicate";
+  const isInvalidFormat = debouncedSlug.length > 0 && !isValidFormat;
+
+  return (
+    <div className="space-y-1.5">
+      <div className="relative">
+        <Input
+          id={id}
+          name={name}
+          value={slug}
+          onChange={handleChange}
+          placeholder="例: backend-engineer-2025"
+          required
+          className={cn(
+            "h-10 pr-10",
+            showStatus && isDuplicate && "border-destructive focus-visible:ring-destructive/50",
+            showStatus && isAvailable && "border-emerald-500 focus-visible:ring-emerald-500/50"
+          )}
+        />
+        {showStatus && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {isChecking ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : isInvalidFormat ? (
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+            ) : isDuplicate ? (
+              <XCircle className="h-4 w-4 text-destructive" />
+            ) : isAvailable ? (
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            ) : null}
+          </div>
+        )}
+      </div>
+      {showStatus && (
+        <p
+          className={cn(
+            "text-xs",
+            isInvalidFormat
+              ? "text-amber-600"
+              : isDuplicate
+              ? "text-destructive"
+              : isAvailable
+              ? "text-emerald-600"
+              : "text-muted-foreground"
+          )}
+        >
+          {isChecking
+            ? "確認中..."
+            : isInvalidFormat
+            ? "英小文字・数字・ハイフン（-）のみ使用できます"
+            : isDuplicate
+            ? "このURL識別子はすでに使用されています。別の値を入力してください。"
+            : isAvailable
+            ? "このURL識別子は使用できます"
+            : "求人ページのURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。"}
+        </p>
+      )}
+      {!showStatus && (
+        <p className="text-xs text-muted-foreground">
+          求人ページのURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。
+        </p>
+      )}
+    </div>
+  );
+}
 
 const employmentTypeLabels: Record<string, string> = {
   full_time: "正社員",
@@ -185,8 +288,7 @@ export default function JobsManagement() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="create-slug">URL識別子（英数字・ハイフンのみ） <span className="text-destructive">*</span></Label>
-                <Input id="create-slug" name="slug" placeholder="例: backend-engineer-2025" required className="h-10" />
-                <p className="text-xs text-muted-foreground">求人ページのURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。</p>
+                <SlugInput id="create-slug" name="slug" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="create-description">仕事内容・求人説明 <span className="text-destructive">*</span></Label>
@@ -413,8 +515,7 @@ export default function JobsManagement() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-slug">URL識別子（英数字・ハイフンのみ） <span className="text-destructive">*</span></Label>
-                <Input id="edit-slug" name="slug" defaultValue={editingJobData.slug} required className="h-10" />
-                <p className="text-xs text-muted-foreground">求人ページのURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。</p>
+                <SlugInput id="edit-slug" name="slug" defaultValue={editingJobData.slug} excludeId={editingJobData.id} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-description">仕事内容・求人説明 <span className="text-destructive">*</span></Label>
