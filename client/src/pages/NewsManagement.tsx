@@ -24,9 +24,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus, Eye, EyeOff, Search, Calendar, Loader2, Newspaper, Filter } from "lucide-react";
+import { Pencil, Trash2, Plus, Eye, EyeOff, Search, Calendar, Loader2, Newspaper, Filter, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Select,
@@ -36,6 +36,121 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import TiptapEditor from "@/components/TiptapEditor";
+
+/** slug入力欄のリアルタイム重複チェックコンポーネント */
+function SlugInput({
+  id,
+  name,
+  defaultValue,
+  excludeId,
+  checkEndpoint,
+  onChange,
+}: {
+  id: string;
+  name: string;
+  defaultValue?: string;
+  excludeId?: number;
+  checkEndpoint: "news" | "jobs";
+  onChange?: (value: string) => void;
+}) {
+  const [slug, setSlug] = useState(defaultValue ?? "");
+  const [debouncedSlug, setDebouncedSlug] = useState(defaultValue ?? "");
+
+  // 500ms デバウンス
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSlug(slug);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [slug]);
+
+  const isValidFormat = /^[a-z0-9-]+$/.test(debouncedSlug) && debouncedSlug.length > 0;
+
+  const checkQuery =
+    checkEndpoint === "news"
+      ? adminTrpc.news.checkSlug.useQuery(
+          { slug: debouncedSlug, excludeId },
+          { enabled: isValidFormat, retry: false }
+        )
+      : adminTrpc.jobs.checkSlug.useQuery(
+          { slug: debouncedSlug, excludeId },
+          { enabled: isValidFormat, retry: false }
+        );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    setSlug(val);
+    onChange?.(val);
+  };
+
+  const showStatus = debouncedSlug.length > 0;
+  const isChecking = checkQuery.isFetching;
+  const isAvailable = checkQuery.data?.available;
+  const isDuplicate = checkQuery.data?.reason === "duplicate";
+  const isInvalidFormat = debouncedSlug.length > 0 && !isValidFormat;
+
+  return (
+    <div className="space-y-1.5">
+      <div className="relative">
+        <Input
+          id={id}
+          name={name}
+          value={slug}
+          onChange={handleChange}
+          placeholder="例: 2025-recruitment-notice"
+          required
+          className={cn(
+            "h-10 pr-10",
+            showStatus && isDuplicate && "border-destructive focus-visible:ring-destructive/50",
+            showStatus && isAvailable && "border-emerald-500 focus-visible:ring-emerald-500/50"
+          )}
+        />
+        {showStatus && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {isChecking ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : isInvalidFormat ? (
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+            ) : isDuplicate ? (
+              <XCircle className="h-4 w-4 text-destructive" />
+            ) : isAvailable ? (
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            ) : null}
+          </div>
+        )}
+      </div>
+      {showStatus && (
+        <p
+          className={cn(
+            "text-xs",
+            isInvalidFormat
+              ? "text-amber-600"
+              : isDuplicate
+              ? "text-destructive"
+              : isAvailable
+              ? "text-emerald-600"
+              : "text-muted-foreground"
+          )}
+        >
+          {isChecking
+            ? "確認中..."
+            : isInvalidFormat
+            ? "英小文字・数字・ハイフン（-）のみ使用できます"
+            : isDuplicate
+            ? "このURL識別子はすでに使用されています。別の値を入力してください。"
+            : isAvailable
+            ? "このURL識別子は使用できます"
+            : "記事のURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。"}
+        </p>
+      )}
+      {!showStatus && (
+        <p className="text-xs text-muted-foreground">
+          記事のURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。
+        </p>
+      )}
+    </div>
+  );
+}
 
 export default function NewsManagement() {
   const utils = adminTrpc.useUtils();
@@ -208,15 +323,11 @@ export default function NewsManagement() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="create-slug">URL識別子（英数字・ハイフンのみ） <span className="text-destructive">*</span></Label>
-                <Input
+                <SlugInput
                   id="create-slug"
-                  value={createSlug}
-                  onChange={(e) => setCreateSlug(e.target.value)}
-                  placeholder="例: 2025-recruitment-notice"
-                  required
-                  className="h-10"
+                  name="slug"
+                  checkEndpoint="news"
                 />
-                <p className="text-xs text-muted-foreground">記事のURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="create-excerpt">一言説明（記事の概要）</Label>
@@ -436,14 +547,13 @@ export default function NewsManagement() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-slug">URL識別子（英数字・ハイフンのみ） <span className="text-destructive">*</span></Label>
-                <Input
+                <SlugInput
                   id="edit-slug"
-                  value={editSlug}
-                  onChange={(e) => setEditSlug(e.target.value)}
-                  required
-                  className="h-10"
+                  name="slug"
+                  defaultValue={editingNewsData.slug}
+                  excludeId={editingNewsData.id}
+                  checkEndpoint="news"
                 />
-                <p className="text-xs text-muted-foreground">記事のURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-excerpt">一言説明（記事の概要）</Label>
@@ -519,11 +629,7 @@ export default function NewsManagement() {
               onClick={() => deleteConfirm && deleteMutation.mutate(deleteConfirm.id)}
               className="bg-destructive hover:bg-destructive/90"
             >
-              {deleteMutation.isPending ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 削除中...</>
-              ) : (
-                "削除"
-              )}
+              削除
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

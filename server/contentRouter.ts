@@ -5,11 +5,13 @@ import { AdminContext } from "./adminContext";
 import {
   getAllNews,
   getNewsById,
+  getNewsBySlug,
   createNews,
   updateNews,
   deleteNews,
   getAllJobs,
   getJobById,
+  getJobBySlug,
   createJob,
   updateJob,
   deleteJob,
@@ -183,6 +185,24 @@ export const newsRouter = t.router({
     }),
 
   /**
+   * NEWS記事のslug重複チェック
+   */
+  checkSlug: protectedProcedure
+    .input(
+      z.object({
+        slug: z.string(),
+        excludeId: z.number().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      if (!input.slug || !/^[a-z0-9-]+$/.test(input.slug)) {
+        return { available: false, reason: "invalid" };
+      }
+      const existing = await getNewsBySlug(input.slug, input.excludeId);
+      return { available: !existing, reason: existing ? "duplicate" : null };
+    }),
+
+  /**
    * NEWS記事の公開/非公開を切り替え
    */
   togglePublish: protectedProcedure
@@ -338,6 +358,24 @@ export const jobsRouter = t.router({
       );
 
       return { success: true };
+    }),
+
+  /**
+   * 求人情報のslug重複チェック
+   */
+  checkSlug: protectedProcedure
+    .input(
+      z.object({
+        slug: z.string(),
+        excludeId: z.number().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      if (!input.slug || !/^[a-z0-9-]+$/.test(input.slug)) {
+        return { available: false, reason: "invalid" };
+      }
+      const existing = await getJobBySlug(input.slug, input.excludeId);
+      return { available: !existing, reason: existing ? "duplicate" : null };
     }),
 
   /**
