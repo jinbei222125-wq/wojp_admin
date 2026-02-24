@@ -176,7 +176,7 @@ export default function JobsManagement() {
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>求人情報を作成</DialogTitle>
-              <DialogDescription>新しい求人情報を作成します</DialogDescription>
+
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-5">
               <div className="space-y-2">
@@ -403,7 +403,7 @@ export default function JobsManagement() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>求人情報を編集</DialogTitle>
-            <DialogDescription>求人情報の内容を編集します</DialogDescription>
+
           </DialogHeader>
           {editingJobData && (
             <form onSubmit={handleUpdate} className="space-y-5">

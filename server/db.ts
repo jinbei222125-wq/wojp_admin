@@ -74,7 +74,9 @@ export async function createNews(data: InsertNews) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const result = await db.insert(news).values(data).returning({ id: news.id });
+  // id を明示的に除外して INSERT（Drizzle が null を渡す問題を回避）
+  const { id: _id, ...insertData } = data as any;
+  const result = await db.insert(news).values(insertData).returning({ id: news.id });
   return result;
 }
 
@@ -115,7 +117,9 @@ export async function createJob(data: InsertJob) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const result = await db.insert(jobs).values(data).returning({ id: jobs.id });
+  // id を明示的に除外して INSERT（Drizzle が null を渡す問題を回避）
+  const { id: _id, ...insertData } = data as any;
+  const result = await db.insert(jobs).values(insertData).returning({ id: jobs.id });
   return result;
 }
 

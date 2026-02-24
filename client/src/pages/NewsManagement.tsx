@@ -151,7 +151,7 @@ export default function NewsManagement() {
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>NEWS記事を作成</DialogTitle>
-              <DialogDescription>新しいNEWS記事を作成します</DialogDescription>
+
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-5">
               <div className="space-y-2">
@@ -340,7 +340,7 @@ export default function NewsManagement() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>NEWS記事を編集</DialogTitle>
-            <DialogDescription>記事の内容を編集します</DialogDescription>
+
           </DialogHeader>
           {editingNewsData && (
             <form onSubmit={handleUpdate} className="space-y-5">
