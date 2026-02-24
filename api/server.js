@@ -15,8 +15,9 @@ import { eq, desc } from "drizzle-orm";
 
 // drizzle/schema.ts
 import { integer, text, sqliteTable } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 var admins = sqliteTable("admins", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`),
   email: text("email").notNull().unique(),
   passwordHash: text("passwordHash").notNull(),
   name: text("name").notNull(),
@@ -27,7 +28,7 @@ var admins = sqliteTable("admins", {
   lastSignedIn: integer("lastSignedIn", { mode: "timestamp" })
 });
 var news = sqliteTable("news", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   content: text("content").notNull(),
@@ -40,7 +41,7 @@ var news = sqliteTable("news", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
 });
 var jobs = sqliteTable("jobs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description").notNull(),
@@ -56,7 +57,7 @@ var jobs = sqliteTable("jobs", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
 });
 var auditLogs = sqliteTable("audit_logs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`),
   adminId: integer("adminId").notNull(),
   adminEmail: text("adminEmail").notNull(),
   action: text("action").notNull(),
@@ -71,7 +72,7 @@ var auditLogs = sqliteTable("audit_logs", {
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
 });
 var users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`),
   openId: text("openId").notNull().unique(),
   name: text("name"),
   email: text("email"),
@@ -161,8 +162,7 @@ async function getNewsById(id) {
 async function createNews(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const { id: _id, ...insertData } = data;
-  const result = await db.insert(news).values(insertData).returning({ id: news.id });
+  const result = await db.insert(news).values(data).returning({ id: news.id });
   return result;
 }
 async function updateNews(id, data) {
@@ -189,8 +189,7 @@ async function getJobById(id) {
 async function createJob(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const { id: _id, ...insertData } = data;
-  const result = await db.insert(jobs).values(insertData).returning({ id: jobs.id });
+  const result = await db.insert(jobs).values(data).returning({ id: jobs.id });
   return result;
 }
 async function updateJob(id, data) {

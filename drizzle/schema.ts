@@ -1,11 +1,12 @@
 import { integer, text, sqliteTable } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 
 /**
  * 管理者ユーザーテーブル
  * メールアドレス+パスワードによる独自認証を使用
  */
 export const admins = sqliteTable("admins", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`),
   email: text("email").notNull().unique(),
   passwordHash: text("passwordHash").notNull(),
   name: text("name").notNull(),
@@ -23,7 +24,7 @@ export type InsertAdmin = typeof admins.$inferInsert;
  * NEWS記事テーブル
  */
 export const news = sqliteTable("news", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   content: text("content").notNull(),
@@ -43,7 +44,7 @@ export type InsertNews = typeof news.$inferInsert;
  * 求人情報テーブル
  */
 export const jobs = sqliteTable("jobs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description").notNull(),
@@ -67,7 +68,7 @@ export type InsertJob = typeof jobs.$inferInsert;
  * 管理者の操作履歴を記録
  */
 export const auditLogs = sqliteTable("audit_logs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`),
   adminId: integer("adminId").notNull(),
   adminEmail: text("adminEmail").notNull(),
   action: text("action").notNull(), // 例: "create_news", "update_job", "delete_news"
@@ -87,7 +88,7 @@ export type InsertAuditLog = typeof auditLogs.$inferInsert;
  * このプロジェクトでは使用しないが、スキーマとして保持
  */
 export const users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`),
   openId: text("openId").notNull().unique(),
   name: text("name"),
   email: text("email"),
