@@ -179,23 +179,22 @@ export default function JobsManagement() {
               <DialogDescription>新しい求人情報を作成します</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-5">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="create-title">タイトル</Label>
-                  <Input id="create-title" name="title" required className="h-10" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="create-slug">スラッグ</Label>
-                  <Input id="create-slug" name="slug" required className="h-10" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-title">求人タイトル <span className="text-destructive">*</span></Label>
+                <Input id="create-title" name="title" placeholder="例: エンジニア（バックエンド）を募集しています" required className="h-10" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="create-description">説明</Label>
-                <Textarea id="create-description" name="description" rows={8} required className="resize-none" />
+                <Label htmlFor="create-slug">URL識別子（英数字・ハイフンのみ） <span className="text-destructive">*</span></Label>
+                <Input id="create-slug" name="slug" placeholder="例: backend-engineer-2025" required className="h-10" />
+                <p className="text-xs text-muted-foreground">求人ページのURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="create-requirements">応募要件</Label>
-                <Textarea id="create-requirements" name="requirements" rows={5} className="resize-none" />
+                <Label htmlFor="create-description">仕事内容・求人説明 <span className="text-destructive">*</span></Label>
+                <Textarea id="create-description" name="description" rows={8} placeholder="仕事の内容や現場の雰囲気、待遇などを詳しく記載してください。Markdown形式に対応しています。" required className="resize-none" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-requirements">応募要件・必須スキル</Label>
+                <Textarea id="create-requirements" name="requirements" rows={5} placeholder="必須スキルや経験年数、歓迎するスキルなどを記載してください。" className="resize-none" />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
@@ -258,7 +257,7 @@ export default function JobsManagement() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="タイトル、スラッグ、勤務地で検索..."
+                placeholder="タイトル、URL識別子、勤務地で検索..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-10"
@@ -408,22 +407,21 @@ export default function JobsManagement() {
           </DialogHeader>
           {editingJobData && (
             <form onSubmit={handleUpdate} className="space-y-5">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-title">タイトル</Label>
-                  <Input id="edit-title" name="title" defaultValue={editingJobData.title} required className="h-10" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-slug">スラッグ</Label>
-                  <Input id="edit-slug" name="slug" defaultValue={editingJobData.slug} required className="h-10" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-title">求人タイトル <span className="text-destructive">*</span></Label>
+                <Input id="edit-title" name="title" defaultValue={editingJobData.title} required className="h-10" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-description">説明</Label>
+                <Label htmlFor="edit-slug">URL識別子（英数字・ハイフンのみ） <span className="text-destructive">*</span></Label>
+                <Input id="edit-slug" name="slug" defaultValue={editingJobData.slug} required className="h-10" />
+                <p className="text-xs text-muted-foreground">求人ページのURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">仕事内容・求人説明 <span className="text-destructive">*</span></Label>
                 <Textarea id="edit-description" name="description" rows={8} defaultValue={editingJobData.description} required className="resize-none" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-requirements">応募要件</Label>
+                <Label htmlFor="edit-requirements">応募要件・必須スキル</Label>
                 <Textarea id="edit-requirements" name="requirements" rows={5} defaultValue={editingJobData.requirements || ""} className="resize-none" />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">

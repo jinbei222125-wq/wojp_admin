@@ -154,27 +154,26 @@ export default function NewsManagement() {
               <DialogDescription>新しいNEWS記事を作成します</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-5">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="create-title">タイトル</Label>
-                  <Input id="create-title" name="title" required className="h-10" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="create-slug">スラッグ</Label>
-                  <Input id="create-slug" name="slug" required className="h-10" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-title">タイトル <span className="text-destructive">*</span></Label>
+                <Input id="create-title" name="title" placeholder="例: 2025年度第1回求人のお知らせ" required className="h-10" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="create-content">本文</Label>
-                <Textarea id="create-content" name="content" rows={10} required className="resize-none" />
+                <Label htmlFor="create-slug">URL識別子（英数字・ハイフンのみ） <span className="text-destructive">*</span></Label>
+                <Input id="create-slug" name="slug" placeholder="例: 2025-recruitment-notice" required className="h-10" />
+                <p className="text-xs text-muted-foreground">記事のURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="create-excerpt">抜粋</Label>
-                <Textarea id="create-excerpt" name="excerpt" rows={3} className="resize-none" />
+                <Label htmlFor="create-excerpt">一言説明（記事の概要）</Label>
+                <Textarea id="create-excerpt" name="excerpt" rows={3} placeholder="一覧ページや記事先頭に表示される短い説明文です。例: 今年度の新卒採用についてお知らせします。" className="resize-none" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="create-thumbnailUrl">サムネイルURL</Label>
-                <Input id="create-thumbnailUrl" name="thumbnailUrl" type="url" className="h-10" />
+                <Label htmlFor="create-content">本文 <span className="text-destructive">*</span></Label>
+                <Textarea id="create-content" name="content" rows={10} placeholder="記事の詳細内容を入力してください。Markdown形式に対応しています。" required className="resize-none" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-thumbnailUrl">サムネイル画像URL</Label>
+                <Input id="create-thumbnailUrl" name="thumbnailUrl" type="url" placeholder="https://example.com/image.jpg" className="h-10" />
               </div>
               <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                 <div>
@@ -207,7 +206,7 @@ export default function NewsManagement() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="タイトルまたはスラッグで検索..."
+                placeholder="タイトルまたはURL識別子で検索..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-10"
@@ -345,27 +344,26 @@ export default function NewsManagement() {
           </DialogHeader>
           {editingNewsData && (
             <form onSubmit={handleUpdate} className="space-y-5">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-title">タイトル</Label>
-                  <Input id="edit-title" name="title" defaultValue={editingNewsData.title} required className="h-10" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-slug">スラッグ</Label>
-                  <Input id="edit-slug" name="slug" defaultValue={editingNewsData.slug} required className="h-10" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-title">タイトル <span className="text-destructive">*</span></Label>
+                <Input id="edit-title" name="title" defaultValue={editingNewsData.title} required className="h-10" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-content">本文</Label>
+                <Label htmlFor="edit-slug">URL識別子（英数字・ハイフンのみ） <span className="text-destructive">*</span></Label>
+                <Input id="edit-slug" name="slug" defaultValue={editingNewsData.slug} required className="h-10" />
+                <p className="text-xs text-muted-foreground">記事のURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-excerpt">一言説明（記事の概要）</Label>
+                <Textarea id="edit-excerpt" name="excerpt" rows={3} defaultValue={editingNewsData.excerpt || ""} placeholder="一覧ページや記事先頭に表示される短い説明文です。" className="resize-none" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-content">本文 <span className="text-destructive">*</span></Label>
                 <Textarea id="edit-content" name="content" rows={10} defaultValue={editingNewsData.content} required className="resize-none" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-excerpt">抜粋</Label>
-                <Textarea id="edit-excerpt" name="excerpt" rows={3} defaultValue={editingNewsData.excerpt || ""} className="resize-none" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-thumbnailUrl">サムネイルURL</Label>
-                <Input id="edit-thumbnailUrl" name="thumbnailUrl" type="url" defaultValue={editingNewsData.thumbnailUrl || ""} className="h-10" />
+                <Label htmlFor="edit-thumbnailUrl">サムネイル画像URL</Label>
+                <Input id="edit-thumbnailUrl" name="thumbnailUrl" type="url" defaultValue={editingNewsData.thumbnailUrl || ""} placeholder="https://example.com/image.jpg" className="h-10" />
               </div>
               <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                 <div>
