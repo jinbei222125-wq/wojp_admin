@@ -9,12 +9,14 @@
 import "dotenv/config";
 import express from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import multer from "multer";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { adminAppRouter } from "../adminAppRouter";
 import { createAdminContext } from "../adminContext";
 import { getDb } from "../lib/db";
+import { storagePut } from "../storage";
 
 export function createApp() {
   const app = express();
@@ -23,6 +25,35 @@ export function createApp() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
   registerOAuthRoutes(app);
+
+  // 画像アップロードエンドポイント（tRPCより先に登録）
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    fileFilter: (_req: any, file: any, cb: any) => {
+      const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+      if (allowed.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error("JPG/PNG/GIF/WebP のみアップロード可能です"));
+      }
+    },
+  });
+
+  app.post("/api/admin/upload-image", upload.single("file"), async (req: any, res: any) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "ファイルが選択されていません" });
+      }
+      const ext = req.file.mimetype.split("/")[1].replace("jpeg", "jpg");
+      const key = `uploads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { url } = await storagePut(key, req.file.buffer, req.file.mimetype);
+      return res.json({ url });
+    } catch (e: any) {
+      console.error("[Upload] Error:", e);
+      return res.status(500).json({ error: e.message || "アップロードに失敗しました" });
+    }
+  });
 
   app.use(
     "/api/admin",

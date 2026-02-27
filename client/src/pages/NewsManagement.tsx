@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import TiptapEditor from "@/components/TiptapEditor";
+import { ImageUpload } from "@/components/ImageUpload";
 
 /** slug入力欄のリアルタイム重複チェックコンポーネント */
 function SlugInput({
@@ -350,17 +351,12 @@ export default function NewsManagement() {
                   minHeight="280px"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="create-thumbnailUrl">サムネイル画像URL</Label>
-                <Input
-                  id="create-thumbnailUrl"
-                  value={createThumbnailUrl}
-                  onChange={(e) => setCreateThumbnailUrl(e.target.value)}
-                  type="url"
-                  placeholder="https://example.com/image.jpg"
-                  className="h-10"
-                />
-              </div>
+              <ImageUpload
+                id="create-thumbnailUrl"
+                value={createThumbnailUrl}
+                onChange={setCreateThumbnailUrl}
+                label="サムネイル画像"
+              />
               <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                 <div>
                   <Label htmlFor="create-isPublished" className="font-medium">公開する</Label>
@@ -577,17 +573,12 @@ export default function NewsManagement() {
                   minHeight="280px"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-thumbnailUrl">サムネイル画像URL</Label>
-                <Input
-                  id="edit-thumbnailUrl"
-                  value={editThumbnailUrl}
-                  onChange={(e) => setEditThumbnailUrl(e.target.value)}
-                  type="url"
-                  placeholder="https://example.com/image.jpg"
-                  className="h-10"
-                />
-              </div>
+              <ImageUpload
+                id="edit-thumbnailUrl"
+                value={editThumbnailUrl}
+                onChange={setEditThumbnailUrl}
+                label="サムネイル画像"
+              />
               <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                 <div>
                   <Label htmlFor="edit-isPublished" className="font-medium">公開する</Label>
