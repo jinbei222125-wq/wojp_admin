@@ -327,6 +327,7 @@ export default function NewsManagement() {
                   id="create-slug"
                   name="slug"
                   checkEndpoint="news"
+                  onChange={(val) => setCreateSlug(val)}
                 />
               </div>
               <div className="space-y-2">
@@ -553,6 +554,7 @@ export default function NewsManagement() {
                   defaultValue={editingNewsData.slug}
                   excludeId={editingNewsData.id}
                   checkEndpoint="news"
+                  onChange={(val) => setEditSlug(val)}
                 />
               </div>
               <div className="space-y-2">

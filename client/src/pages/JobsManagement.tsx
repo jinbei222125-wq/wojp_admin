@@ -44,11 +44,13 @@ function SlugInput({
   name,
   defaultValue,
   excludeId,
+  onChange,
 }: {
   id: string;
   name: string;
   defaultValue?: string;
   excludeId?: number;
+  onChange?: (value: string) => void;
 }) {
   const [slug, setSlug] = useState(defaultValue ?? "");
   const [debouncedSlug, setDebouncedSlug] = useState(defaultValue ?? "");
@@ -70,6 +72,7 @@ function SlugInput({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
     setSlug(val);
+    onChange?.(val);
   };
 
   const showStatus = debouncedSlug.length > 0;
@@ -167,11 +170,13 @@ export default function JobsManagement() {
   const [editEmploymentType, setEditEmploymentType] = useState<string>("full_time");
 
   // 作成フォームの本文状態
+  const [createSlug, setCreateSlug] = useState("");
   const [createDescription, setCreateDescription] = useState("");
   const [createRequirements, setCreateRequirements] = useState("");
   const [createIsPublished, setCreateIsPublished] = useState(false);
 
   // 編集フォームの本文状態
+  const [editSlug, setEditSlug] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editRequirements, setEditRequirements] = useState("");
   const [editIsPublished, setEditIsPublished] = useState(false);
@@ -242,7 +247,7 @@ export default function JobsManagement() {
     }
     createMutation.mutate({
       title: formData.get("title") as string,
-      slug: formData.get("slug") as string,
+      slug: createSlug,
       description: createDescription,
       requirements: createRequirements,
       location: formData.get("location") as string,
@@ -265,7 +270,7 @@ export default function JobsManagement() {
     updateMutation.mutate({
       id: editingJob,
       title: formData.get("title") as string,
-      slug: formData.get("slug") as string,
+      slug: editSlug,
       description: editDescription,
       requirements: editRequirements,
       location: formData.get("location") as string,
@@ -281,6 +286,7 @@ export default function JobsManagement() {
   const openEditJobDialog = (jobId: number) => {
     const job = jobsList?.find((j) => j.id === jobId);
     if (!job) return;
+    setEditSlug(job.slug);
     setEditDescription(job.description);
     setEditRequirements(job.requirements || "");
     setEditIsPublished(job.isPublished);
@@ -317,7 +323,7 @@ export default function JobsManagement() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="create-slug">URL識別子（英数字・ハイフンのみ） <span className="text-destructive">*</span></Label>
-                <SlugInput id="create-slug" name="slug" />
+                <SlugInput id="create-slug" name="slug" onChange={(val) => setCreateSlug(val)} />
               </div>
               <div className="space-y-2">
                 <Label>仕事内容・求人説明 <span className="text-destructive">*</span></Label>
@@ -553,7 +559,7 @@ export default function JobsManagement() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-slug">URL識別子（英数字・ハイフンのみ） <span className="text-destructive">*</span></Label>
-                <SlugInput id="edit-slug" name="slug" defaultValue={editingJobData.slug} excludeId={editingJobData.id} />
+                <SlugInput id="edit-slug" name="slug" defaultValue={editingJobData.slug} excludeId={editingJobData.id} onChange={(val) => setEditSlug(val)} />
               </div>
               <div className="space-y-2">
                 <Label>仕事内容・求人説明 <span className="text-destructive">*</span></Label>
