@@ -430,6 +430,7 @@ export const categoryRouter = t.router({
       z.object({
         name: z.string().min(1, "カテゴリ名は必須です").max(50),
         slug: z.string().min(1, "スラッグは必須です").max(50).regex(/^[a-z0-9-]+$/, "スラッグは英小文字・数字・ハイフンのみ使用できます"),
+        color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "有効なカラーコードを入力してください").default("#6B7280"),
         sortOrder: z.number().int().default(0),
       })
     )
@@ -437,6 +438,7 @@ export const categoryRouter = t.router({
       await createNewsCategory({
         name: input.name,
         slug: input.slug,
+        color: input.color,
         sortOrder: input.sortOrder,
       });
       return { success: true };
@@ -449,6 +451,7 @@ export const categoryRouter = t.router({
         id: z.number().int(),
         name: z.string().min(1).max(50).optional(),
         slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/).optional(),
+        color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
         sortOrder: z.number().int().optional(),
       })
     )

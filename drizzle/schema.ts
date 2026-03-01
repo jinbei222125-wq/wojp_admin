@@ -27,6 +27,7 @@ export const newsCategories = sqliteTable("news_categories", {
   id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
   name: text("name").notNull().unique(),
   slug: text("slug").notNull().unique(),
+  color: text("color").notNull().default("#6B7280"),
   sortOrder: integer("sortOrder").notNull().default(0),
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),

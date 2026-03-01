@@ -21,12 +21,82 @@ import {
 import { toast } from "sonner";
 import { Pencil, Trash2, Plus, GripVertical } from "lucide-react";
 
+// よく使うプリセットカラー
+const PRESET_COLORS = [
+  "#6B7280", // グレー（デフォルト）
+  "#EF4444", // 赤
+  "#F97316", // オレンジ
+  "#EAB308", // 黄
+  "#22C55E", // 緑
+  "#14B8A6", // ティール
+  "#3B82F6", // 青
+  "#8B5CF6", // 紫
+  "#EC4899", // ピンク
+  "#1F3864", // ネイビー
+];
+
 type Category = {
   id: number;
   name: string;
   slug: string;
+  color: string;
   sortOrder: number;
 };
+
+/** カラーピッカーコンポーネント */
+function ColorPicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (color: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      {/* プリセットカラー */}
+      <div className="flex flex-wrap gap-2">
+        {PRESET_COLORS.map((c) => (
+          <button
+            key={c}
+            type="button"
+            className={`w-7 h-7 rounded-full border-2 transition-transform hover:scale-110 ${
+              value === c ? "border-foreground scale-110 shadow-md" : "border-transparent"
+            }`}
+            style={{ backgroundColor: c }}
+            onClick={() => onChange(c)}
+            title={c}
+          />
+        ))}
+      </div>
+      {/* カスタムカラー入力 */}
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-9 h-9 rounded cursor-pointer border border-input p-0.5 bg-transparent"
+        />
+        <Input
+          value={value}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) onChange(v);
+          }}
+          placeholder="#6B7280"
+          className="w-32 font-mono text-sm"
+          maxLength={7}
+        />
+        {/* プレビュー */}
+        <span
+          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white"
+          style={{ backgroundColor: /^#[0-9A-Fa-f]{6}$/.test(value) ? value : "#6B7280" }}
+        >
+          プレビュー
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default function CategoryManagement() {
   const utils = trpc.useUtils();
@@ -36,6 +106,7 @@ export default function CategoryManagement() {
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newSlug, setNewSlug] = useState("");
+  const [newColor, setNewColor] = useState("#6B7280");
   const [newSortOrder, setNewSortOrder] = useState(0);
 
   // 編集モーダル
@@ -43,6 +114,7 @@ export default function CategoryManagement() {
   const [editTarget, setEditTarget] = useState<Category | null>(null);
   const [editName, setEditName] = useState("");
   const [editSlug, setEditSlug] = useState("");
+  const [editColor, setEditColor] = useState("#6B7280");
   const [editSortOrder, setEditSortOrder] = useState(0);
 
   // 削除確認モーダル
@@ -56,6 +128,7 @@ export default function CategoryManagement() {
       setCreateOpen(false);
       setNewName("");
       setNewSlug("");
+      setNewColor("#6B7280");
       setNewSortOrder(0);
     },
     onError: (e) => toast.error(`作成失敗: ${e.message}`),
@@ -94,6 +167,7 @@ export default function CategoryManagement() {
     setEditTarget(cat);
     setEditName(cat.name);
     setEditSlug(cat.slug);
+    setEditColor(cat.color ?? "#6B7280");
     setEditSortOrder(cat.sortOrder);
     setEditOpen(true);
   };
@@ -101,14 +175,16 @@ export default function CategoryManagement() {
   const handleCreate = () => {
     if (!newName.trim()) return toast.error("カテゴリ名を入力してください");
     if (!newSlug.trim()) return toast.error("スラッグを入力してください");
-    createMutation.mutate({ name: newName.trim(), slug: newSlug.trim(), sortOrder: newSortOrder });
+    if (!/^#[0-9A-Fa-f]{6}$/.test(newColor)) return toast.error("有効なカラーコードを入力してください");
+    createMutation.mutate({ name: newName.trim(), slug: newSlug.trim(), color: newColor, sortOrder: newSortOrder });
   };
 
   const handleUpdate = () => {
     if (!editTarget) return;
     if (!editName.trim()) return toast.error("カテゴリ名を入力してください");
     if (!editSlug.trim()) return toast.error("スラッグを入力してください");
-    updateMutation.mutate({ id: editTarget.id, name: editName.trim(), slug: editSlug.trim(), sortOrder: editSortOrder });
+    if (!/^#[0-9A-Fa-f]{6}$/.test(editColor)) return toast.error("有効なカラーコードを入力してください");
+    updateMutation.mutate({ id: editTarget.id, name: editName.trim(), slug: editSlug.trim(), color: editColor, sortOrder: editSortOrder });
   };
 
   return (
@@ -132,6 +208,7 @@ export default function CategoryManagement() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-10"></TableHead>
+                <TableHead className="w-16 text-center">カラー</TableHead>
                 <TableHead>カテゴリ名</TableHead>
                 <TableHead>スラッグ</TableHead>
                 <TableHead className="w-24 text-center">表示順</TableHead>
@@ -141,7 +218,7 @@ export default function CategoryManagement() {
             <TableBody>
               {categories.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                     カテゴリがありません
                   </TableCell>
                 </TableRow>
@@ -151,7 +228,21 @@ export default function CategoryManagement() {
                     <TableCell>
                       <GripVertical className="w-4 h-4 text-muted-foreground" />
                     </TableCell>
-                    <TableCell className="font-medium">{cat.name}</TableCell>
+                    <TableCell className="text-center">
+                      <span
+                        className="inline-block w-6 h-6 rounded-full border border-border shadow-sm"
+                        style={{ backgroundColor: (cat as any).color ?? "#6B7280" }}
+                        title={(cat as any).color ?? "#6B7280"}
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <span
+                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                        style={{ backgroundColor: (cat as any).color ?? "#6B7280" }}
+                      >
+                        {cat.name}
+                      </span>
+                    </TableCell>
                     <TableCell>
                       <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{cat.slug}</code>
                     </TableCell>
@@ -161,7 +252,7 @@ export default function CategoryManagement() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleOpenEdit(cat)}
+                          onClick={() => handleOpenEdit(cat as Category)}
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
@@ -169,7 +260,7 @@ export default function CategoryManagement() {
                           variant="ghost"
                           size="sm"
                           className="text-destructive hover:text-destructive"
-                          onClick={() => { setDeleteTarget(cat); setDeleteOpen(true); }}
+                          onClick={() => { setDeleteTarget(cat as Category); setDeleteOpen(true); }}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -213,6 +304,10 @@ export default function CategoryManagement() {
               <p className="text-xs text-muted-foreground">英小文字・数字・ハイフンのみ使用できます</p>
             </div>
             <div className="space-y-1.5">
+              <Label>カラー</Label>
+              <ColorPicker value={newColor} onChange={setNewColor} />
+            </div>
+            <div className="space-y-1.5">
               <Label>表示順</Label>
               <Input
                 type="number"
@@ -254,6 +349,10 @@ export default function CategoryManagement() {
                 placeholder="例: press-release"
               />
               <p className="text-xs text-muted-foreground">英小文字・数字・ハイフンのみ使用できます</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label>カラー</Label>
+              <ColorPicker value={editColor} onChange={setEditColor} />
             </div>
             <div className="space-y-1.5">
               <Label>表示順</Label>
