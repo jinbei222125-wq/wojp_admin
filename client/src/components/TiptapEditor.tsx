@@ -1,4 +1,5 @@
 import { useEditor, EditorContent } from "@tiptap/react";
+import { marked } from "marked";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
@@ -100,9 +101,26 @@ export default function TiptapEditor({
 
   // 外部からvalueが変わった場合に同期（編集中は上書きしない）
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value);
+    if (!editor) return;
+    const currentHtml = editor.getHTML();
+    if (value === currentHtml) return;
+
+    // <pre><code>Markdown</code></pre> パターンを検出して HTML に変換
+    const preCodePattern = /^<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>(<p><\/p>)?$/i;
+    const match = value.trim().match(preCodePattern);
+    if (match) {
+      const markdown = match[1]
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+      const html = marked.parse(markdown) as string;
+      editor.commands.setContent(html);
+      return;
     }
+
+    editor.commands.setContent(value);
   }, [value, editor]);
 
   const setLink = useCallback(() => {
