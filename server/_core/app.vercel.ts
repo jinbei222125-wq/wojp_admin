@@ -16,7 +16,7 @@ import { createContext } from "./context";
 import { adminAppRouter } from "../adminAppRouter";
 import { createAdminContext } from "../adminContext";
 import { getDb } from "../lib/db";
-import { storagePut } from "../storage";
+import { v2 as cloudinary } from "cloudinary";
 
 export function createApp() {
   const app = express();
@@ -25,6 +25,13 @@ export function createApp() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
   registerOAuthRoutes(app);
+
+  // Cloudinary設定
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
 
   // 画像アップロードエンドポイント（tRPCより先に登録）
   const upload = multer({
@@ -45,10 +52,17 @@ export function createApp() {
       if (!req.file) {
         return res.status(400).json({ error: "ファイルが選択されていません" });
       }
-      const ext = req.file.mimetype.split("/")[1].replace("jpeg", "jpg");
-      const key = `uploads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { url } = await storagePut(key, req.file.buffer, req.file.mimetype);
-      return res.json({ url });
+
+      // Cloudinaryにアップロード（Base64経由）
+      const base64 = req.file.buffer.toString("base64");
+      const dataUri = `data:${req.file.mimetype};base64,${base64}`;
+
+      const result = await cloudinary.uploader.upload(dataUri, {
+        folder: "wojp_admin",
+        resource_type: "image",
+      });
+
+      return res.json({ url: result.secure_url });
     } catch (e: any) {
       console.error("[Upload] Error:", e);
       return res.status(500).json({ error: e.message || "アップロードに失敗しました" });
