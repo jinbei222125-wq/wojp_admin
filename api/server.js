@@ -35,6 +35,7 @@ var news = sqliteTable("news", {
   content: text("content").notNull(),
   excerpt: text("excerpt"),
   thumbnailUrl: text("thumbnailUrl"),
+  category: text("category").default("\u304A\u77E5\u3089\u305B"),
   isPublished: integer("isPublished", { mode: "boolean" }).notNull().default(false),
   publishedAt: integer("publishedAt", { mode: "timestamp" }),
   authorId: integer("authorId").notNull(),
@@ -1089,6 +1090,7 @@ var newsRouter = t3.router({
       content: z3.string().min(1, "\u672C\u6587\u306F\u5FC5\u9808\u3067\u3059"),
       excerpt: z3.string().max(500, "\u62BD\u51FA\u306F500\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
       thumbnailUrl: z3.string().url("\u6709\u52B9\u306AURL\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional().or(z3.literal("")),
+      category: z3.string().optional().default("\u304A\u77E5\u3089\u305B"),
       isPublished: z3.boolean().default(false)
     })
   ).mutation(async ({ input, ctx }) => {
@@ -1118,6 +1120,7 @@ var newsRouter = t3.router({
       content: z3.string().min(1, "\u672C\u6587\u306F\u5FC5\u9808\u3067\u3059").optional(),
       excerpt: z3.string().max(500, "\u62BD\u51FA\u306F500\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
       thumbnailUrl: z3.string().url("\u6709\u52B9\u306AURL\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional().or(z3.literal("")),
+      category: z3.string().optional(),
       isPublished: z3.boolean().optional()
     })
   ).mutation(async ({ input, ctx }) => {

@@ -30,6 +30,7 @@ export const news = sqliteTable("news", {
   content: text("content").notNull(),
   excerpt: text("excerpt"),
   thumbnailUrl: text("thumbnailUrl"),
+  category: text("category").default("お知らせ"),
   isPublished: integer("isPublished", { mode: "boolean" }).notNull().default(false),
   publishedAt: integer("publishedAt", { mode: "timestamp" }),
   authorId: integer("authorId").notNull(),

@@ -168,6 +168,7 @@ export default function NewsManagement() {
   const [createExcerpt, setCreateExcerpt] = useState("");
   const [createContent, setCreateContent] = useState("");
   const [createThumbnailUrl, setCreateThumbnailUrl] = useState("");
+  const [createCategory, setCreateCategory] = useState("お知らせ");
   const [createIsPublished, setCreateIsPublished] = useState(false);
 
   // 編集フォームの状態
@@ -176,6 +177,7 @@ export default function NewsManagement() {
   const [editExcerpt, setEditExcerpt] = useState("");
   const [editContent, setEditContent] = useState("");
   const [editThumbnailUrl, setEditThumbnailUrl] = useState("");
+  const [editCategory, setEditCategory] = useState("お知らせ");
   const [editIsPublished, setEditIsPublished] = useState(false);
 
   const filteredNews = useMemo(() => {
@@ -252,6 +254,7 @@ export default function NewsManagement() {
       content: createContent,
       excerpt: createExcerpt,
       thumbnailUrl: createThumbnailUrl,
+      category: createCategory,
       isPublished: createIsPublished,
     });
   };
@@ -270,6 +273,7 @@ export default function NewsManagement() {
       content: editContent,
       excerpt: editExcerpt,
       thumbnailUrl: editThumbnailUrl,
+      category: editCategory,
       isPublished: editIsPublished,
     });
   };
@@ -285,6 +289,7 @@ export default function NewsManagement() {
     setEditExcerpt(news.excerpt || "");
     setEditContent(news.content);
     setEditThumbnailUrl(news.thumbnailUrl || "");
+    setEditCategory((news as any).category || "お知らせ");
     setEditIsPublished(news.isPublished);
     setEditingNews(newsId);
   };
@@ -357,6 +362,20 @@ export default function NewsManagement() {
                 onChange={setCreateThumbnailUrl}
                 label="サムネイル画像"
               />
+              <div className="space-y-2">
+                <Label htmlFor="create-category">カテゴリ</Label>
+                <Select value={createCategory} onValueChange={setCreateCategory}>
+                  <SelectTrigger id="create-category" className="h-10">
+                    <SelectValue placeholder="カテゴリを選択" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="お知らせ">お知らせ</SelectItem>
+                    <SelectItem value="重要なお知らせ">重要なお知らせ</SelectItem>
+                    <SelectItem value="プレスリリース">プレスリリース</SelectItem>
+                    <SelectItem value="メディア掲載">メディア掲載</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                 <div>
                   <Label htmlFor="create-isPublished" className="font-medium">公開する</Label>
@@ -579,6 +598,20 @@ export default function NewsManagement() {
                 onChange={setEditThumbnailUrl}
                 label="サムネイル画像"
               />
+              <div className="space-y-2">
+                <Label htmlFor="edit-category">カテゴリ</Label>
+                <Select value={editCategory} onValueChange={setEditCategory}>
+                  <SelectTrigger id="edit-category" className="h-10">
+                    <SelectValue placeholder="カテゴリを選択" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="お知らせ">お知らせ</SelectItem>
+                    <SelectItem value="重要なお知らせ">重要なお知らせ</SelectItem>
+                    <SelectItem value="プレスリリース">プレスリリース</SelectItem>
+                    <SelectItem value="メディア掲載">メディア掲載</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                 <div>
                   <Label htmlFor="edit-isPublished" className="font-medium">公開する</Label>

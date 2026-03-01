@@ -94,6 +94,7 @@ export const newsRouter = t.router({
         content: z.string().min(1, "本文は必須です"),
         excerpt: z.string().max(500, "抽出は500文字以内で入力してください").optional(),
         thumbnailUrl: z.string().url("有効なURLを入力してください").optional().or(z.literal("")),
+        category: z.string().optional().default("お知らせ"),
         isPublished: z.boolean().default(false),
       })
     )
@@ -129,6 +130,7 @@ export const newsRouter = t.router({
         content: z.string().min(1, "本文は必須です").optional(),
         excerpt: z.string().max(500, "抽出は500文字以内で入力してください").optional(),
         thumbnailUrl: z.string().url("有効なURLを入力してください").optional().or(z.literal("")),
+        category: z.string().optional(),
         isPublished: z.boolean().optional(),
       })
     )
