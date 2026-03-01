@@ -156,6 +156,7 @@ function SlugInput({
 export default function NewsManagement() {
   const utils = adminTrpc.useUtils();
   const { data: newsList, isLoading } = adminTrpc.news.list.useQuery();
+  const { data: categories = [] } = adminTrpc.category.list.useQuery();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingNews, setEditingNews] = useState<number | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: number; title: string } | null>(null);
@@ -369,10 +370,18 @@ export default function NewsManagement() {
                     <SelectValue placeholder="カテゴリを選択" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="お知らせ">お知らせ</SelectItem>
-                    <SelectItem value="重要なお知らせ">重要なお知らせ</SelectItem>
-                    <SelectItem value="プレスリリース">プレスリリース</SelectItem>
-                    <SelectItem value="メディア掲載">メディア掲載</SelectItem>
+                    {categories.length > 0 ? (
+                      categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                      ))
+                    ) : (
+                      <>
+                        <SelectItem value="お知らせ">お知らせ</SelectItem>
+                        <SelectItem value="重要なお知らせ">重要なお知らせ</SelectItem>
+                        <SelectItem value="プレスリリース">プレスリリース</SelectItem>
+                        <SelectItem value="メディア掃載">メディア掃載</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -605,10 +614,18 @@ export default function NewsManagement() {
                     <SelectValue placeholder="カテゴリを選択" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="お知らせ">お知らせ</SelectItem>
-                    <SelectItem value="重要なお知らせ">重要なお知らせ</SelectItem>
-                    <SelectItem value="プレスリリース">プレスリリース</SelectItem>
-                    <SelectItem value="メディア掲載">メディア掲載</SelectItem>
+                    {categories.length > 0 ? (
+                      categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                      ))
+                    ) : (
+                      <>
+                        <SelectItem value="お知らせ">お知らせ</SelectItem>
+                        <SelectItem value="重要なお知らせ">重要なお知らせ</SelectItem>
+                        <SelectItem value="プレスリリース">プレスリリース</SelectItem>
+                        <SelectItem value="メディア掃載">メディア掃載</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

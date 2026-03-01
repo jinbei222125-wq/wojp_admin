@@ -15,6 +15,11 @@ import {
   createJob,
   updateJob,
   deleteJob,
+  getAllNewsCategories,
+  getNewsCategoryById,
+  createNewsCategory,
+  updateNewsCategory,
+  deleteNewsCategory,
 } from "./db";
 import { createAuditLog } from "./db";
 
@@ -406,5 +411,66 @@ export const jobsRouter = t.router({
       );
 
       return { success: true, isPublished: newStatus };
+    }),
+});
+
+// ============================================
+// NEWSカテゴリルーター
+// ============================================
+
+export const categoryRouter = t.router({
+  // カテゴリ一覧取得（認証不要 - NEWS作成フォームでも使用）
+  list: t.procedure.query(async () => {
+    return getAllNewsCategories();
+  }),
+
+  // カテゴリ作成
+  create: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1, "カテゴリ名は必須です").max(50),
+        slug: z.string().min(1, "スラッグは必須です").max(50).regex(/^[a-z0-9-]+$/, "スラッグは英小文字・数字・ハイフンのみ使用できます"),
+        sortOrder: z.number().int().default(0),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await createNewsCategory({
+        name: input.name,
+        slug: input.slug,
+        sortOrder: input.sortOrder,
+      });
+      return { success: true };
+    }),
+
+  // カテゴリ更新
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.number().int(),
+        name: z.string().min(1).max(50).optional(),
+        slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/).optional(),
+        sortOrder: z.number().int().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      const existing = await getNewsCategoryById(id);
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "カテゴリが見つかりません" });
+      }
+      await updateNewsCategory(id, data);
+      return { success: true };
+    }),
+
+  // カテゴリ削除
+  delete: protectedProcedure
+    .input(z.number().int())
+    .mutation(async ({ input: id }) => {
+      const existing = await getNewsCategoryById(id);
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "カテゴリが見つかりません" });
+      }
+      await deleteNewsCategory(id);
+      return { success: true };
     }),
 });

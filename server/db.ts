@@ -1,5 +1,5 @@
 import { eq, desc } from "drizzle-orm";
-import { admins, news, jobs, auditLogs, users, InsertAdmin, InsertNews, InsertJob, InsertAuditLog, InsertUser } from "../drizzle/schema";
+import { admins, news, jobs, auditLogs, users, newsCategories, InsertAdmin, InsertNews, InsertJob, InsertAuditLog, InsertUser, InsertNewsCategory } from "../drizzle/schema";
 import { getDb } from "./lib/db";
 
 // Re-export getDb for backward compatibility
@@ -259,4 +259,39 @@ export async function getUserByOpenId(openId: string) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+// ============================================
+// NEWSカテゴリ関連
+// ============================================
+
+export async function getAllNewsCategories() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(newsCategories).orderBy(newsCategories.sortOrder);
+}
+
+export async function getNewsCategoryById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(newsCategories).where(eq(newsCategories.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createNewsCategory(data: InsertNewsCategory) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(newsCategories).values(data);
+}
+
+export async function updateNewsCategory(id: number, data: Partial<InsertNewsCategory>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(newsCategories).set({ ...data, updatedAt: new Date() }).where(eq(newsCategories.id, id));
+}
+
+export async function deleteNewsCategory(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(newsCategories).where(eq(newsCategories.id, id));
 }

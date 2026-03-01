@@ -21,6 +21,21 @@ export type Admin = typeof admins.$inferSelect;
 export type InsertAdmin = typeof admins.$inferInsert;
 
 /**
+ * NEWSカテゴリマスターテーブル
+ */
+export const newsCategories = sqliteTable("news_categories", {
+  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
+  name: text("name").notNull().unique(),
+  slug: text("slug").notNull().unique(),
+  sortOrder: integer("sortOrder").notNull().default(0),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
+export type NewsCategory = typeof newsCategories.$inferSelect;
+export type InsertNewsCategory = typeof newsCategories.$inferInsert;
+
+/**
  * NEWS記事テーブル
  */
 export const news = sqliteTable("news", {

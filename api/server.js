@@ -28,6 +28,14 @@ var admins = sqliteTable("admins", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
   lastSignedIn: integer("lastSignedIn", { mode: "timestamp" })
 });
+var newsCategories = sqliteTable("news_categories", {
+  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
+  name: text("name").notNull().unique(),
+  slug: text("slug").notNull().unique(),
+  sortOrder: integer("sortOrder").notNull().default(0),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
+});
 var news = sqliteTable("news", {
   id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
   title: text("title").notNull(),
@@ -296,6 +304,32 @@ async function getUserByOpenId(openId) {
   }
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result.length > 0 ? result[0] : void 0;
+}
+async function getAllNewsCategories() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(newsCategories).orderBy(newsCategories.sortOrder);
+}
+async function getNewsCategoryById(id) {
+  const db = await getDb();
+  if (!db) return void 0;
+  const result = await db.select().from(newsCategories).where(eq(newsCategories.id, id)).limit(1);
+  return result.length > 0 ? result[0] : void 0;
+}
+async function createNewsCategory(data) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(newsCategories).values(data);
+}
+async function updateNewsCategory(id, data) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(newsCategories).set({ ...data, updatedAt: /* @__PURE__ */ new Date() }).where(eq(newsCategories.id, id));
+}
+async function deleteNewsCategory(id) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(newsCategories).where(eq(newsCategories.id, id));
 }
 
 // server/_core/cookies.ts
@@ -1339,6 +1373,53 @@ var jobsRouter = t3.router({
     return { success: true, isPublished: newStatus };
   })
 });
+var categoryRouter = t3.router({
+  // カテゴリ一覧取得（認証不要 - NEWS作成フォームでも使用）
+  list: t3.procedure.query(async () => {
+    return getAllNewsCategories();
+  }),
+  // カテゴリ作成
+  create: protectedProcedure3.input(
+    z3.object({
+      name: z3.string().min(1, "\u30AB\u30C6\u30B4\u30EA\u540D\u306F\u5FC5\u9808\u3067\u3059").max(50),
+      slug: z3.string().min(1, "\u30B9\u30E9\u30C3\u30B0\u306F\u5FC5\u9808\u3067\u3059").max(50).regex(/^[a-z0-9-]+$/, "\u30B9\u30E9\u30C3\u30B0\u306F\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\u30CF\u30A4\u30D5\u30F3\u306E\u307F\u4F7F\u7528\u3067\u304D\u307E\u3059"),
+      sortOrder: z3.number().int().default(0)
+    })
+  ).mutation(async ({ input }) => {
+    await createNewsCategory({
+      name: input.name,
+      slug: input.slug,
+      sortOrder: input.sortOrder
+    });
+    return { success: true };
+  }),
+  // カテゴリ更新
+  update: protectedProcedure3.input(
+    z3.object({
+      id: z3.number().int(),
+      name: z3.string().min(1).max(50).optional(),
+      slug: z3.string().min(1).max(50).regex(/^[a-z0-9-]+$/).optional(),
+      sortOrder: z3.number().int().optional()
+    })
+  ).mutation(async ({ input }) => {
+    const { id, ...data } = input;
+    const existing = await getNewsCategoryById(id);
+    if (!existing) {
+      throw new TRPCError4({ code: "NOT_FOUND", message: "\u30AB\u30C6\u30B4\u30EA\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+    }
+    await updateNewsCategory(id, data);
+    return { success: true };
+  }),
+  // カテゴリ削除
+  delete: protectedProcedure3.input(z3.number().int()).mutation(async ({ input: id }) => {
+    const existing = await getNewsCategoryById(id);
+    if (!existing) {
+      throw new TRPCError4({ code: "NOT_FOUND", message: "\u30AB\u30C6\u30B4\u30EA\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+    }
+    await deleteNewsCategory(id);
+    return { success: true };
+  })
+});
 
 // server/auditRouter.ts
 import { TRPCError as TRPCError5, initTRPC as initTRPC4 } from "@trpc/server";
@@ -1391,7 +1472,8 @@ var adminAppRouter = t5.router({
   auth: adminAuthRouter,
   news: newsRouter,
   jobs: jobsRouter,
-  audit: auditRouter
+  audit: auditRouter,
+  category: categoryRouter
 });
 
 // server/_core/app.vercel.ts
