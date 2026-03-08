@@ -2,7 +2,7 @@ import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { AdminContext } from "./adminContext";
 import { adminAuthRouter } from "./adminRouter";
-import { newsRouter, jobsRouter } from "./contentRouter";
+import { newsRouter, jobsRouter, categoryRouter } from "./contentRouter";
 import { auditRouter } from "./auditRouter";
 
 const t = initTRPC.context<AdminContext>().create({
@@ -17,6 +17,7 @@ export const adminAppRouter = t.router({
   news: newsRouter,
   jobs: jobsRouter,
   audit: auditRouter,
+  category: categoryRouter,
 });
 
 export type AdminAppRouter = typeof adminAppRouter;

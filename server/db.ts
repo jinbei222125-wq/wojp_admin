@@ -1,5 +1,5 @@
 import { eq, desc } from "drizzle-orm";
-import { admins, news, jobs, auditLogs, users, InsertAdmin, InsertNews, InsertJob, InsertAuditLog, InsertUser } from "../drizzle/schema";
+import { admins, news, jobs, auditLogs, users, newsCategories, InsertAdmin, InsertNews, InsertJob, InsertAuditLog, InsertUser, InsertNewsCategory } from "../drizzle/schema";
 import { getDb } from "./lib/db";
 
 // Re-export getDb for backward compatibility
@@ -39,6 +39,18 @@ export async function updateAdminLastSignedIn(id: number) {
   await db.update(admins).set({ lastSignedIn: new Date() }).where(eq(admins.id, id));
 }
 
+export async function updateAdminEmail(id: number, email: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(admins).set({ email, updatedAt: new Date() }).where(eq(admins.id, id));
+}
+
+export async function updateAdminPassword(id: number, passwordHash: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(admins).set({ passwordHash, updatedAt: new Date() }).where(eq(admins.id, id));
+}
+
 // ============================================
 // NEWS記事関連
 // ============================================
@@ -56,6 +68,17 @@ export async function getNewsById(id: number) {
   
   const result = await db.select().from(news).where(eq(news.id, id)).limit(1);
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getNewsBySlug(slug: string, excludeId?: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select({ id: news.id }).from(news).where(eq(news.slug, slug)).limit(1);
+  if (result.length === 0) return undefined;
+  // 編集時は自分自身のIDを除外
+  if (excludeId !== undefined && result[0].id === excludeId) return undefined;
+  return result[0];
 }
 
 export async function createNews(data: InsertNews) {
@@ -97,6 +120,17 @@ export async function getJobById(id: number) {
   
   const result = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getJobBySlug(slug: string, excludeId?: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.slug, slug)).limit(1);
+  if (result.length === 0) return undefined;
+  // 編集時は自分自身のIDを除外
+  if (excludeId !== undefined && result[0].id === excludeId) return undefined;
+  return result[0];
 }
 
 export async function createJob(data: InsertJob) {
@@ -204,7 +238,9 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    // SQLite does not support onDuplicateKeyUpdate; use insert or replace via conflict handling
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet,
     });
   } catch (error) {
@@ -223,4 +259,39 @@ export async function getUserByOpenId(openId: string) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+// ============================================
+// NEWSカテゴリ関連
+// ============================================
+
+export async function getAllNewsCategories() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(newsCategories).orderBy(newsCategories.sortOrder);
+}
+
+export async function getNewsCategoryById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(newsCategories).where(eq(newsCategories.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createNewsCategory(data: InsertNewsCategory) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(newsCategories).values(data);
+}
+
+export async function updateNewsCategory(id: number, data: Partial<InsertNewsCategory>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(newsCategories).set({ ...data, updatedAt: new Date() }).where(eq(newsCategories.id, id));
+}
+
+export async function deleteNewsCategory(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(newsCategories).where(eq(newsCategories.id, id));
 }

@@ -8,11 +8,10 @@ import { createContext } from "./context";
 import { serveStatic } from "./vite";
 import { adminAppRouter } from "../adminAppRouter";
 import { createAdminContext } from "../adminContext";
-
 /**
  * Create and return the Express application.
- * Used by both the Node server (index.ts) and Vercel serverless (server.ts).
- * On Vercel, express.static() is ignored; static assets are served from public/ by CDN.
+ * Used by the local dev server (server/_core/index.ts).
+ * For Vercel, use app.vercel.ts instead (does not import vite).
  */
 export function createApp() {
   const app = express();

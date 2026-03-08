@@ -20,7 +20,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, Newspaper, Briefcase, FileText, LogOut, ChevronRight, Settings } from "lucide-react";
+import { LayoutDashboard, Newspaper, Briefcase, FileText, LogOut, ChevronRight, Settings, Tag } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation, Link } from "wouter";
 import { Button } from "./ui/button";
@@ -32,8 +32,10 @@ import { cn } from "@/lib/utils";
 const menuItems = [
   { icon: LayoutDashboard, label: "ダッシュボード", path: "/", description: "概要と統計" },
   { icon: Newspaper, label: "NEWS記事", path: "/news", description: "記事の管理" },
+  { icon: Tag, label: "カテゴリ管理", path: "/categories", description: "NEWSカテゴリ" },
   { icon: Briefcase, label: "求人情報", path: "/jobs", description: "求人の管理" },
   { icon: FileText, label: "監査ログ", path: "/audit", description: "操作履歴" },
+  { icon: Settings, label: "設定", path: "/settings", description: "アカウント設定" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "admin-sidebar-width";
@@ -264,6 +266,13 @@ function ResizableSidebar({
               <p className="text-sm font-medium">{admin.name}</p>
               <p className="text-xs text-muted-foreground">{admin.email}</p>
             </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/settings">
+                <Settings className="mr-2 h-4 w-4" />
+                アカウント設定
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive">
               <LogOut className="mr-2 h-4 w-4" />

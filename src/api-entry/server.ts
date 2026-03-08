@@ -2,11 +2,14 @@
  * Vercel serverless entry: all /api/* requests are routed here via rewrites.
  * Built to api/server.js by build:api so api/ contains only build output (no .ts).
  *
+ * Uses app.vercel.ts (NOT app.ts) to avoid bundling vite and its plugins
+ * into the serverless function.
+ *
  * vercel.json rewrites /api/:path* → /api/server?path=:path*
  * Vercel injects the matched path as req.query.path (string | string[]).
  * We reconstruct req.url so Express can route to /api/admin/*, /api/trpc/*, etc.
  */
-import { createApp } from "../../server/_core/app";
+import { createApp } from "../../server/_core/app.vercel";
 import type { IncomingMessage, ServerResponse } from "http";
 
 const app = createApp();
@@ -15,7 +18,8 @@ export default function handler(
   req: IncomingMessage & { query?: Record<string, string | string[]> },
   res: ServerResponse
 ) {
-  // Extract the path segments injected by Vercel rewrite (path=:path*)
+  // Vercel injects path segments from the rewrite rule "/api/:path*" → "?path=:path*"
+  // e.g. /api/admin/auth.me  →  req.query.path = "admin/auth.me"
   const pathSegments = req.query?.path;
   const pathStr = Array.isArray(pathSegments)
     ? pathSegments.join("/")
@@ -23,15 +27,13 @@ export default function handler(
     ? pathSegments
     : "";
 
-  // req.url at this point looks like:
-  //   /api/server?path=admin%2Fauth.me&batch=1&input=...
-  // We need to strip the "path=..." param and rebuild as:
-  //   /api/admin/auth.me?batch=1&input=...
+  // req.url looks like: /api/server?path=admin%2Fauth.me&batch=1&input=...
+  // Strip the injected "path" param and rebuild as: /api/admin/auth.me?batch=1&input=...
   const rawUrl = req.url ?? "";
   const qIdx = rawUrl.indexOf("?");
   if (qIdx !== -1) {
     const params = new URLSearchParams(rawUrl.slice(qIdx + 1));
-    params.delete("path"); // remove the routing param we injected
+    params.delete("path");
     const remaining = params.toString();
     req.url = `/api/${pathStr}${remaining ? "?" + remaining : ""}`;
   } else {

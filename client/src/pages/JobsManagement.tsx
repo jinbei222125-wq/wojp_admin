@@ -32,10 +32,117 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus, Eye, EyeOff, Search, MapPin, Briefcase, Loader2, Filter, Calendar, Banknote } from "lucide-react";
+import { Pencil, Trash2, Plus, Eye, EyeOff, Search, MapPin, Briefcase, Loader2, Filter, Calendar, Banknote, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import TiptapEditor from "@/components/TiptapEditor";
+
+/** slug入力欄のリアルタイム重複チェックコンポーネント */
+function SlugInput({
+  id,
+  name,
+  defaultValue,
+  excludeId,
+  onChange,
+}: {
+  id: string;
+  name: string;
+  defaultValue?: string;
+  excludeId?: number;
+  onChange?: (value: string) => void;
+}) {
+  const [slug, setSlug] = useState(defaultValue ?? "");
+  const [debouncedSlug, setDebouncedSlug] = useState(defaultValue ?? "");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSlug(slug);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [slug]);
+
+  const isValidFormat = /^[a-z0-9-]+$/.test(debouncedSlug) && debouncedSlug.length > 0;
+
+  const checkQuery = adminTrpc.jobs.checkSlug.useQuery(
+    { slug: debouncedSlug, excludeId },
+    { enabled: isValidFormat, retry: false }
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    setSlug(val);
+    onChange?.(val);
+  };
+
+  const showStatus = debouncedSlug.length > 0;
+  const isChecking = checkQuery.isFetching;
+  const isAvailable = checkQuery.data?.available;
+  const isDuplicate = checkQuery.data?.reason === "duplicate";
+  const isInvalidFormat = debouncedSlug.length > 0 && !isValidFormat;
+
+  return (
+    <div className="space-y-1.5">
+      <div className="relative">
+        <Input
+          id={id}
+          name={name}
+          value={slug}
+          onChange={handleChange}
+          placeholder="例: backend-engineer-2025"
+          required
+          className={cn(
+            "h-10 pr-10",
+            showStatus && isDuplicate && "border-destructive focus-visible:ring-destructive/50",
+            showStatus && isAvailable && "border-emerald-500 focus-visible:ring-emerald-500/50"
+          )}
+        />
+        {showStatus && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {isChecking ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : isInvalidFormat ? (
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+            ) : isDuplicate ? (
+              <XCircle className="h-4 w-4 text-destructive" />
+            ) : isAvailable ? (
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            ) : null}
+          </div>
+        )}
+      </div>
+      {showStatus && (
+        <p
+          className={cn(
+            "text-xs",
+            isInvalidFormat
+              ? "text-amber-600"
+              : isDuplicate
+              ? "text-destructive"
+              : isAvailable
+              ? "text-emerald-600"
+              : "text-muted-foreground"
+          )}
+        >
+          {isChecking
+            ? "確認中..."
+            : isInvalidFormat
+            ? "英小文字・数字・ハイフン（-）のみ使用できます"
+            : isDuplicate
+            ? "このURL識別子はすでに使用されています。別の値を入力してください。"
+            : isAvailable
+            ? "このURL識別子は使用できます"
+            : "求人ページのURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。"}
+        </p>
+      )}
+      {!showStatus && (
+        <p className="text-xs text-muted-foreground">
+          求人ページのURLに使われます。英小文字・数字・ハイフン（-）のみ使用可能です。
+        </p>
+      )}
+    </div>
+  );
+}
 
 const employmentTypeLabels: Record<string, string> = {
   full_time: "正社員",
@@ -61,6 +168,18 @@ export default function JobsManagement() {
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
   const [createEmploymentType, setCreateEmploymentType] = useState<string>("full_time");
   const [editEmploymentType, setEditEmploymentType] = useState<string>("full_time");
+
+  // 作成フォームの本文状態
+  const [createSlug, setCreateSlug] = useState("");
+  const [createDescription, setCreateDescription] = useState("");
+  const [createRequirements, setCreateRequirements] = useState("");
+  const [createIsPublished, setCreateIsPublished] = useState(false);
+
+  // 編集フォームの本文状態
+  const [editSlug, setEditSlug] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editRequirements, setEditRequirements] = useState("");
+  const [editIsPublished, setEditIsPublished] = useState(false);
 
   const filteredJobs = useMemo(() => {
     if (!jobsList) return [];
@@ -122,15 +241,19 @@ export default function JobsManagement() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const closingDateStr = formData.get("closingDate") as string;
+    if (!createDescription || createDescription === "<p></p>") {
+      toast.error("仕事内容・求人説明を入力してください");
+      return;
+    }
     createMutation.mutate({
       title: formData.get("title") as string,
-      slug: formData.get("slug") as string,
-      description: formData.get("description") as string,
-      requirements: formData.get("requirements") as string,
+      slug: createSlug,
+      description: createDescription,
+      requirements: createRequirements,
       location: formData.get("location") as string,
       employmentType: createEmploymentType as any,
       salaryRange: formData.get("salaryRange") as string,
-      isPublished: formData.get("isPublished") === "on",
+      isPublished: createIsPublished,
       closingDate: closingDateStr ? new Date(closingDateStr) : undefined,
     });
   };
@@ -140,21 +263,36 @@ export default function JobsManagement() {
     if (!editingJob) return;
     const formData = new FormData(e.currentTarget);
     const closingDateStr = formData.get("closingDate") as string;
+    if (!editDescription || editDescription === "<p></p>") {
+      toast.error("仕事内容・求人説明を入力してください");
+      return;
+    }
     updateMutation.mutate({
       id: editingJob,
       title: formData.get("title") as string,
-      slug: formData.get("slug") as string,
-      description: formData.get("description") as string,
-      requirements: formData.get("requirements") as string,
+      slug: editSlug,
+      description: editDescription,
+      requirements: editRequirements,
       location: formData.get("location") as string,
       employmentType: editEmploymentType as any,
       salaryRange: formData.get("salaryRange") as string,
-      isPublished: formData.get("isPublished") === "on",
+      isPublished: editIsPublished,
       closingDate: closingDateStr ? new Date(closingDateStr) : undefined,
     });
   };
 
   const editingJobData = jobsList?.find((j) => j.id === editingJob);
+
+  const openEditJobDialog = (jobId: number) => {
+    const job = jobsList?.find((j) => j.id === jobId);
+    if (!job) return;
+    setEditSlug(job.slug);
+    setEditDescription(job.description);
+    setEditRequirements(job.requirements || "");
+    setEditIsPublished(job.isPublished);
+    setEditEmploymentType(job.employmentType || "full_time");
+    setEditingJob(jobId);
+  };
 
   return (
     <div className="space-y-6">
@@ -176,26 +314,34 @@ export default function JobsManagement() {
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>求人情報を作成</DialogTitle>
-              <DialogDescription>新しい求人情報を作成します</DialogDescription>
+
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-5">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="create-title">タイトル</Label>
-                  <Input id="create-title" name="title" required className="h-10" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="create-slug">スラッグ</Label>
-                  <Input id="create-slug" name="slug" required className="h-10" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-title">求人タイトル <span className="text-destructive">*</span></Label>
+                <Input id="create-title" name="title" placeholder="例: エンジニア（バックエンド）を募集しています" required className="h-10" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="create-description">説明</Label>
-                <Textarea id="create-description" name="description" rows={8} required className="resize-none" />
+                <Label htmlFor="create-slug">URL識別子（英数字・ハイフンのみ） <span className="text-destructive">*</span></Label>
+                <SlugInput id="create-slug" name="slug" onChange={(val) => setCreateSlug(val)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="create-requirements">応募要件</Label>
-                <Textarea id="create-requirements" name="requirements" rows={5} className="resize-none" />
+                <Label>仕事内容・求人説明 <span className="text-destructive">*</span></Label>
+                <TiptapEditor
+                  value={createDescription}
+                  onChange={setCreateDescription}
+                  placeholder="仕事の内容や現場の雰囲気、待遇などを詳しく記載してください。ツールバーで見出し・太字・リストなどを設定できます。"
+                  minHeight="240px"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>応募要件・必須スキル</Label>
+                <TiptapEditor
+                  value={createRequirements}
+                  onChange={setCreateRequirements}
+                  placeholder="必須スキルや経験年数、歓迎するスキルなどを記載してください。"
+                  minHeight="160px"
+                />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
@@ -232,7 +378,7 @@ export default function JobsManagement() {
                   <Label htmlFor="create-isPublished" className="font-medium">公開する</Label>
                   <p className="text-sm text-muted-foreground">作成後すぐに公開します</p>
                 </div>
-                <Switch id="create-isPublished" name="isPublished" />
+                <Switch id="create-isPublished" checked={createIsPublished} onCheckedChange={setCreateIsPublished} />
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
@@ -258,7 +404,7 @@ export default function JobsManagement() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="タイトル、スラッグ、勤務地で検索..."
+                placeholder="タイトル、URL識別子、勤務地で検索..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-10"
@@ -342,7 +488,7 @@ export default function JobsManagement() {
                         <Button
                           size="icon"
                           variant="ghost"
-                          onClick={() => togglePublishMutation.mutate(job.id)}
+                          onClick={() => job.id != null && togglePublishMutation.mutate(job.id)}
                           disabled={togglePublishMutation.isPending}
                           className="h-9 w-9"
                         >
@@ -356,8 +502,7 @@ export default function JobsManagement() {
                           size="icon"
                           variant="ghost"
                           onClick={() => {
-                            setEditingJob(job.id);
-                            setEditEmploymentType(job.employmentType);
+                            if (job.id != null) openEditJobDialog(job.id);
                           }}
                           className="h-9 w-9"
                         >
@@ -366,7 +511,7 @@ export default function JobsManagement() {
                         <Button
                           size="icon"
                           variant="ghost"
-                          onClick={() => setDeleteConfirm({ id: job.id, title: job.title })}
+                          onClick={() => job.id != null && setDeleteConfirm({ id: job.id, title: job.title })}
                           className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -404,27 +549,35 @@ export default function JobsManagement() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>求人情報を編集</DialogTitle>
-            <DialogDescription>求人情報の内容を編集します</DialogDescription>
+
           </DialogHeader>
           {editingJobData && (
             <form onSubmit={handleUpdate} className="space-y-5">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-title">タイトル</Label>
-                  <Input id="edit-title" name="title" defaultValue={editingJobData.title} required className="h-10" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-slug">スラッグ</Label>
-                  <Input id="edit-slug" name="slug" defaultValue={editingJobData.slug} required className="h-10" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-title">求人タイトル <span className="text-destructive">*</span></Label>
+                <Input id="edit-title" name="title" defaultValue={editingJobData.title} required className="h-10" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-description">説明</Label>
-                <Textarea id="edit-description" name="description" rows={8} defaultValue={editingJobData.description} required className="resize-none" />
+                <Label htmlFor="edit-slug">URL識別子（英数字・ハイフンのみ） <span className="text-destructive">*</span></Label>
+                <SlugInput id="edit-slug" name="slug" defaultValue={editingJobData.slug} excludeId={editingJobData.id} onChange={(val) => setEditSlug(val)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-requirements">応募要件</Label>
-                <Textarea id="edit-requirements" name="requirements" rows={5} defaultValue={editingJobData.requirements || ""} className="resize-none" />
+                <Label>仕事内容・求人説明 <span className="text-destructive">*</span></Label>
+                <TiptapEditor
+                  value={editDescription}
+                  onChange={setEditDescription}
+                  placeholder="仕事の内容や現場の雰囲気、待遇などを詳しく記載してください。"
+                  minHeight="240px"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>応募要件・必須スキル</Label>
+                <TiptapEditor
+                  value={editRequirements}
+                  onChange={setEditRequirements}
+                  placeholder="必須スキルや経験年数、歓迎するスキルなどを記載してください。"
+                  minHeight="160px"
+                />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
@@ -467,7 +620,7 @@ export default function JobsManagement() {
                   <Label htmlFor="edit-isPublished" className="font-medium">公開する</Label>
                   <p className="text-sm text-muted-foreground">この求人を公開します</p>
                 </div>
-                <Switch id="edit-isPublished" name="isPublished" defaultChecked={editingJobData.isPublished} />
+                <Switch id="edit-isPublished" checked={editIsPublished} onCheckedChange={setEditIsPublished} />
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setEditingJob(null)}>

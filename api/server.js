@@ -1,8 +1,8 @@
-// server/_core/app.ts
+// server/_core/app.vercel.ts
 import "dotenv/config";
-import express2 from "express";
-import path3 from "path";
+import express from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import multer from "multer";
 
 // shared/const.ts
 var COOKIE_NAME = "app_session_id";
@@ -16,8 +16,9 @@ import { eq, desc } from "drizzle-orm";
 
 // drizzle/schema.ts
 import { integer, text, sqliteTable } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 var admins = sqliteTable("admins", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
   email: text("email").notNull().unique(),
   passwordHash: text("passwordHash").notNull(),
   name: text("name").notNull(),
@@ -27,13 +28,22 @@ var admins = sqliteTable("admins", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
   lastSignedIn: integer("lastSignedIn", { mode: "timestamp" })
 });
+var newsCategories = sqliteTable("news_categories", {
+  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
+  name: text("name").notNull().unique(),
+  slug: text("slug").notNull().unique(),
+  sortOrder: integer("sortOrder").notNull().default(0),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
+});
 var news = sqliteTable("news", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   content: text("content").notNull(),
   excerpt: text("excerpt"),
   thumbnailUrl: text("thumbnailUrl"),
+  category: text("category").default("\u304A\u77E5\u3089\u305B"),
   isPublished: integer("isPublished", { mode: "boolean" }).notNull().default(false),
   publishedAt: integer("publishedAt", { mode: "timestamp" }),
   authorId: integer("authorId").notNull(),
@@ -41,7 +51,7 @@ var news = sqliteTable("news", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
 });
 var jobs = sqliteTable("jobs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description").notNull(),
@@ -57,7 +67,7 @@ var jobs = sqliteTable("jobs", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
 });
 var auditLogs = sqliteTable("audit_logs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
   adminId: integer("adminId").notNull(),
   adminEmail: text("adminEmail").notNull(),
   action: text("action").notNull(),
@@ -72,7 +82,7 @@ var auditLogs = sqliteTable("audit_logs", {
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
 });
 var users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
   openId: text("openId").notNull().unique(),
   name: text("name"),
   email: text("email"),
@@ -138,6 +148,16 @@ async function updateAdminLastSignedIn(id) {
   if (!db) return;
   await db.update(admins).set({ lastSignedIn: /* @__PURE__ */ new Date() }).where(eq(admins.id, id));
 }
+async function updateAdminEmail(id, email) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(admins).set({ email, updatedAt: /* @__PURE__ */ new Date() }).where(eq(admins.id, id));
+}
+async function updateAdminPassword(id, passwordHash) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(admins).set({ passwordHash, updatedAt: /* @__PURE__ */ new Date() }).where(eq(admins.id, id));
+}
 async function getAllNews() {
   const db = await getDb();
   if (!db) return [];
@@ -148,6 +168,14 @@ async function getNewsById(id) {
   if (!db) return void 0;
   const result = await db.select().from(news).where(eq(news.id, id)).limit(1);
   return result.length > 0 ? result[0] : void 0;
+}
+async function getNewsBySlug(slug, excludeId) {
+  const db = await getDb();
+  if (!db) return void 0;
+  const result = await db.select({ id: news.id }).from(news).where(eq(news.slug, slug)).limit(1);
+  if (result.length === 0) return void 0;
+  if (excludeId !== void 0 && result[0].id === excludeId) return void 0;
+  return result[0];
 }
 async function createNews(data) {
   const db = await getDb();
@@ -175,6 +203,14 @@ async function getJobById(id) {
   if (!db) return void 0;
   const result = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
   return result.length > 0 ? result[0] : void 0;
+}
+async function getJobBySlug(slug, excludeId) {
+  const db = await getDb();
+  if (!db) return void 0;
+  const result = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.slug, slug)).limit(1);
+  if (result.length === 0) return void 0;
+  if (excludeId !== void 0 && result[0].id === excludeId) return void 0;
+  return result[0];
 }
 async function createJob(data) {
   const db = await getDb();
@@ -251,7 +287,8 @@ async function upsertUser(user) {
     if (Object.keys(updateSet).length === 0) {
       updateSet.lastSignedIn = /* @__PURE__ */ new Date();
     }
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet
     });
   } catch (error) {
@@ -267,6 +304,32 @@ async function getUserByOpenId(openId) {
   }
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result.length > 0 ? result[0] : void 0;
+}
+async function getAllNewsCategories() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(newsCategories).orderBy(newsCategories.sortOrder);
+}
+async function getNewsCategoryById(id) {
+  const db = await getDb();
+  if (!db) return void 0;
+  const result = await db.select().from(newsCategories).where(eq(newsCategories.id, id)).limit(1);
+  return result.length > 0 ? result[0] : void 0;
+}
+async function createNewsCategory(data) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(newsCategories).values(data);
+}
+async function updateNewsCategory(id, data) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(newsCategories).set({ ...data, updatedAt: /* @__PURE__ */ new Date() }).where(eq(newsCategories.id, id));
+}
+async function deleteNewsCategory(id) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(newsCategories).where(eq(newsCategories.id, id));
 }
 
 // server/_core/cookies.ts
@@ -311,7 +374,10 @@ var ENV = {
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
-  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? ""
+  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "",
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY ?? "",
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET ?? ""
 };
 
 // server/_core/sdk.ts
@@ -533,8 +599,8 @@ function getQueryParam(req, key) {
   const value = req.query[key];
   return typeof value === "string" ? value : void 0;
 }
-function registerOAuthRoutes(app) {
-  app.get("/api/oauth/callback", async (req, res) => {
+function registerOAuthRoutes(app2) {
+  app2.get("/api/oauth/callback", async (req, res) => {
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
     if (!code || !state) {
@@ -743,69 +809,6 @@ async function createContext(opts) {
   };
 }
 
-// server/_core/vite.ts
-import express from "express";
-import fs from "fs";
-import { nanoid } from "nanoid";
-import path2 from "path";
-import { createServer as createViteServer } from "vite";
-
-// vite.config.ts
-import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
-import tailwindcss from "@tailwindcss/vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
-import { defineConfig } from "vite";
-import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
-var plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime()];
-var vite_config_default = defineConfig({
-  plugins,
-  resolve: {
-    alias: {
-      "@": path.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets")
-    }
-  },
-  envDir: path.resolve(import.meta.dirname),
-  root: path.resolve(import.meta.dirname, "client"),
-  publicDir: path.resolve(import.meta.dirname, "client", "public"),
-  build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
-    emptyOutDir: true
-  },
-  server: {
-    host: true,
-    allowedHosts: [
-      ".manuspre.computer",
-      ".manus.computer",
-      ".manus-asia.computer",
-      ".manuscomputer.ai",
-      ".manusvm.computer",
-      "localhost",
-      "127.0.0.1"
-    ],
-    fs: {
-      strict: true,
-      deny: ["**/.*"]
-    }
-  }
-});
-
-// server/_core/vite.ts
-function serveStatic(app) {
-  const distPath = process.env.NODE_ENV === "development" ? path2.resolve(import.meta.dirname, "../..", "dist", "public") : path2.resolve(import.meta.dirname, "public");
-  if (!fs.existsSync(distPath)) {
-    console.error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`
-    );
-  }
-  app.use(express.static(distPath));
-  app.use("*", (_req, res) => {
-    res.sendFile(path2.resolve(distPath, "index.html"));
-  });
-}
-
 // server/adminAppRouter.ts
 import { initTRPC as initTRPC5 } from "@trpc/server";
 import superjson5 from "superjson";
@@ -887,7 +890,7 @@ var adminAuthRouter = t2.router({
   login: publicProcedure2.input(
     z2.object({
       email: z2.string().email(),
-      password: z2.string().min(6)
+      password: z2.string().min(1, "\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044")
     })
   ).mutation(async ({ input, ctx }) => {
     let admin;
@@ -927,15 +930,15 @@ var adminAuthRouter = t2.router({
     }
     await updateAdminLastSignedIn(admin.id);
     const token = await generateAdminToken(admin.id, admin.email);
-    const cookieOptions = {
-      httpOnly: true,
-      secure: !ENV.isProduction ? false : true,
-      sameSite: !ENV.isProduction ? "lax" : "none",
-      maxAge: 7 * 24 * 60 * 60,
-      // 7日
-      path: "/"
-    };
-    const cookieString = `${ADMIN_COOKIE_NAME}=${token}; HttpOnly; ${cookieOptions.secure ? "Secure;" : ""} SameSite=${cookieOptions.sameSite}; Max-Age=${cookieOptions.maxAge}; Path=${cookieOptions.path}`;
+    const isSecure = ENV.isProduction;
+    const cookieString = [
+      `${ADMIN_COOKIE_NAME}=${token}`,
+      "HttpOnly",
+      isSecure ? "Secure" : "",
+      "SameSite=Lax",
+      `Max-Age=${7 * 24 * 60 * 60}`,
+      "Path=/"
+    ].filter(Boolean).join("; ");
     ctx.res.setHeader("Set-Cookie", cookieString);
     return {
       success: true,
@@ -951,14 +954,15 @@ var adminAuthRouter = t2.router({
    * ログアウト
    */
   logout: publicProcedure2.mutation(({ ctx }) => {
-    const cookieOptions = {
-      httpOnly: true,
-      secure: !ENV.isProduction ? false : true,
-      sameSite: !ENV.isProduction ? "lax" : "none",
-      maxAge: -1,
-      path: "/"
-    };
-    const cookieString = `${ADMIN_COOKIE_NAME}=; HttpOnly; ${cookieOptions.secure ? "Secure;" : ""} SameSite=${cookieOptions.sameSite}; Max-Age=${cookieOptions.maxAge}; Path=${cookieOptions.path}`;
+    const isSecure = ENV.isProduction;
+    const cookieString = [
+      `${ADMIN_COOKIE_NAME}=`,
+      "HttpOnly",
+      isSecure ? "Secure" : "",
+      "SameSite=Lax",
+      "Max-Age=-1",
+      "Path=/"
+    ].filter(Boolean).join("; ");
     ctx.res.setHeader("Set-Cookie", cookieString);
     return { success: true };
   }),
@@ -977,13 +981,68 @@ var adminAuthRouter = t2.router({
     };
   }),
   /**
+   * メールアドレス変更
+   */
+  updateEmail: protectedProcedure2.input(
+    z2.object({
+      newEmail: z2.string().email("\u6709\u52B9\u306A\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
+      currentPassword: z2.string().min(1, "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044")
+    })
+  ).mutation(async ({ input, ctx }) => {
+    const admin = ctx.admin;
+    const isValid = await verifyPassword(input.currentPassword, admin.passwordHash);
+    if (!isValid) {
+      throw new TRPCError3({
+        code: "UNAUTHORIZED",
+        message: "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093"
+      });
+    }
+    const existing = await getAdminByEmail(input.newEmail);
+    if (existing && existing.id !== admin.id) {
+      throw new TRPCError3({
+        code: "BAD_REQUEST",
+        message: "\u305D\u306E\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u306F\u65E2\u306B\u4F7F\u7528\u3055\u308C\u3066\u3044\u307E\u3059"
+      });
+    }
+    await updateAdminEmail(admin.id, input.newEmail);
+    return { success: true };
+  }),
+  /**
+   * パスワード変更
+   */
+  updatePassword: protectedProcedure2.input(
+    z2.object({
+      currentPassword: z2.string().min(1, "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
+      newPassword: z2.string().min(8, "\u65B0\u3057\u3044\u30D1\u30B9\u30EF\u30FC\u30C9\u306F8\u6587\u5B57\u4EE5\u4E0A\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
+      confirmPassword: z2.string().min(1)
+    })
+  ).mutation(async ({ input, ctx }) => {
+    if (input.newPassword !== input.confirmPassword) {
+      throw new TRPCError3({
+        code: "BAD_REQUEST",
+        message: "\u65B0\u3057\u3044\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u4E00\u81F4\u3057\u307E\u305B\u3093"
+      });
+    }
+    const admin = ctx.admin;
+    const isValid = await verifyPassword(input.currentPassword, admin.passwordHash);
+    if (!isValid) {
+      throw new TRPCError3({
+        code: "UNAUTHORIZED",
+        message: "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093"
+      });
+    }
+    const newHash = await hashPassword(input.newPassword);
+    await updateAdminPassword(admin.id, newHash);
+    return { success: true };
+  }),
+  /**
    * 管理者を作成（開発用）
    * 本番環境では別の方法で管理者を作成することを推奨
    */
   createAdmin: publicProcedure2.input(
     z2.object({
       email: z2.string().email(),
-      password: z2.string().min(6),
+      password: z2.string().min(1, "\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
       name: z2.string().min(1),
       role: z2.enum(["admin", "super_admin"]).default("admin")
     })
@@ -1065,6 +1124,7 @@ var newsRouter = t3.router({
       content: z3.string().min(1, "\u672C\u6587\u306F\u5FC5\u9808\u3067\u3059"),
       excerpt: z3.string().max(500, "\u62BD\u51FA\u306F500\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
       thumbnailUrl: z3.string().url("\u6709\u52B9\u306AURL\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional().or(z3.literal("")),
+      category: z3.string().optional().default("\u304A\u77E5\u3089\u305B"),
       isPublished: z3.boolean().default(false)
     })
   ).mutation(async ({ input, ctx }) => {
@@ -1094,6 +1154,7 @@ var newsRouter = t3.router({
       content: z3.string().min(1, "\u672C\u6587\u306F\u5FC5\u9808\u3067\u3059").optional(),
       excerpt: z3.string().max(500, "\u62BD\u51FA\u306F500\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
       thumbnailUrl: z3.string().url("\u6709\u52B9\u306AURL\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional().or(z3.literal("")),
+      category: z3.string().optional(),
       isPublished: z3.boolean().optional()
     })
   ).mutation(async ({ input, ctx }) => {
@@ -1133,6 +1194,21 @@ var newsRouter = t3.router({
       JSON.stringify({ title: existing.title })
     );
     return { success: true };
+  }),
+  /**
+   * NEWS記事のslug重複チェック
+   */
+  checkSlug: protectedProcedure3.input(
+    z3.object({
+      slug: z3.string(),
+      excludeId: z3.number().optional()
+    })
+  ).query(async ({ input }) => {
+    if (!input.slug || !/^[a-z0-9-]+$/.test(input.slug)) {
+      return { available: false, reason: "invalid" };
+    }
+    const existing = await getNewsBySlug(input.slug, input.excludeId);
+    return { available: !existing, reason: existing ? "duplicate" : null };
   }),
   /**
    * NEWS記事の公開/非公開を切り替え
@@ -1260,6 +1336,21 @@ var jobsRouter = t3.router({
     return { success: true };
   }),
   /**
+   * 求人情報のslug重複チェック
+   */
+  checkSlug: protectedProcedure3.input(
+    z3.object({
+      slug: z3.string(),
+      excludeId: z3.number().optional()
+    })
+  ).query(async ({ input }) => {
+    if (!input.slug || !/^[a-z0-9-]+$/.test(input.slug)) {
+      return { available: false, reason: "invalid" };
+    }
+    const existing = await getJobBySlug(input.slug, input.excludeId);
+    return { available: !existing, reason: existing ? "duplicate" : null };
+  }),
+  /**
    * 求人情報の公開/非公開を切り替え
    */
   togglePublish: protectedProcedure3.input(z3.number()).mutation(async ({ input, ctx }) => {
@@ -1280,6 +1371,53 @@ var jobsRouter = t3.router({
       JSON.stringify({ title: existing.title })
     );
     return { success: true, isPublished: newStatus };
+  })
+});
+var categoryRouter = t3.router({
+  // カテゴリ一覧取得（認証不要 - NEWS作成フォームでも使用）
+  list: t3.procedure.query(async () => {
+    return getAllNewsCategories();
+  }),
+  // カテゴリ作成
+  create: protectedProcedure3.input(
+    z3.object({
+      name: z3.string().min(1, "\u30AB\u30C6\u30B4\u30EA\u540D\u306F\u5FC5\u9808\u3067\u3059").max(50),
+      slug: z3.string().min(1, "\u30B9\u30E9\u30C3\u30B0\u306F\u5FC5\u9808\u3067\u3059").max(50).regex(/^[a-z0-9-]+$/, "\u30B9\u30E9\u30C3\u30B0\u306F\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\u30CF\u30A4\u30D5\u30F3\u306E\u307F\u4F7F\u7528\u3067\u304D\u307E\u3059"),
+      sortOrder: z3.number().int().default(0)
+    })
+  ).mutation(async ({ input }) => {
+    await createNewsCategory({
+      name: input.name,
+      slug: input.slug,
+      sortOrder: input.sortOrder
+    });
+    return { success: true };
+  }),
+  // カテゴリ更新
+  update: protectedProcedure3.input(
+    z3.object({
+      id: z3.number().int(),
+      name: z3.string().min(1).max(50).optional(),
+      slug: z3.string().min(1).max(50).regex(/^[a-z0-9-]+$/).optional(),
+      sortOrder: z3.number().int().optional()
+    })
+  ).mutation(async ({ input }) => {
+    const { id, ...data } = input;
+    const existing = await getNewsCategoryById(id);
+    if (!existing) {
+      throw new TRPCError4({ code: "NOT_FOUND", message: "\u30AB\u30C6\u30B4\u30EA\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+    }
+    await updateNewsCategory(id, data);
+    return { success: true };
+  }),
+  // カテゴリ削除
+  delete: protectedProcedure3.input(z3.number().int()).mutation(async ({ input: id }) => {
+    const existing = await getNewsCategoryById(id);
+    if (!existing) {
+      throw new TRPCError4({ code: "NOT_FOUND", message: "\u30AB\u30C6\u30B4\u30EA\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+    }
+    await deleteNewsCategory(id);
+    return { success: true };
   })
 });
 
@@ -1334,52 +1472,113 @@ var adminAppRouter = t5.router({
   auth: adminAuthRouter,
   news: newsRouter,
   jobs: jobsRouter,
-  audit: auditRouter
+  audit: auditRouter,
+  category: categoryRouter
 });
 
-// server/_core/app.ts
+// server/_core/app.vercel.ts
+import { v2 as cloudinary } from "cloudinary";
 function createApp() {
-  const app = express2();
-  app.use(express2.json({ limit: "50mb" }));
-  app.use(express2.urlencoded({ limit: "50mb", extended: true }));
-  if (process.env.VERCEL) {
-    app.use((req, _res, next) => {
-      const pathPart = req.query["x-path"];
-      if (typeof pathPart === "string" && pathPart) {
-        const u = new URL(req.url || "/api", "http://_");
-        u.searchParams.delete("x-path");
-        req.url = "/api/" + pathPart + (u.search ? u.search : "");
+  const app2 = express();
+  app2.use(express.json({ limit: "50mb" }));
+  app2.use(express.urlencoded({ limit: "50mb", extended: true }));
+  registerOAuthRoutes(app2);
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 },
+    // 10MB
+    fileFilter: (_req, file, cb) => {
+      const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+      if (allowed.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error("JPG/PNG/GIF/WebP \u306E\u307F\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u53EF\u80FD\u3067\u3059"));
       }
-      next();
-    });
-  }
-  registerOAuthRoutes(app);
-  app.use(
+    }
+  });
+  app2.post("/api/admin/upload-image", upload.single("file"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "\u30D5\u30A1\u30A4\u30EB\u304C\u9078\u629E\u3055\u308C\u3066\u3044\u307E\u305B\u3093" });
+      }
+      const base64 = req.file.buffer.toString("base64");
+      const dataUri = `data:${req.file.mimetype};base64,${base64}`;
+      const result = await cloudinary.uploader.upload(dataUri, {
+        folder: "wojp_admin",
+        resource_type: "image"
+      });
+      return res.json({ url: result.secure_url });
+    } catch (e) {
+      console.error("[Upload] Error:", e);
+      return res.status(500).json({ error: e.message || "\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
+    }
+  });
+  app2.use(
     "/api/admin",
     createExpressMiddleware({
       router: adminAppRouter,
       createContext: ({ req, res }) => createAdminContext(req, res)
     })
   );
-  app.use(
+  app2.use(
     "/api/trpc",
     createExpressMiddleware({
       router: appRouter,
       createContext
     })
   );
-  if (!process.env.VERCEL) {
-    serveStatic(app);
-  } else {
-    app.use((_req, res) => {
-      res.sendFile(path3.join(process.cwd(), "public", "index.html"));
-    });
-  }
-  return app;
+  app2.get("/api/debug/db", async (_req, res) => {
+    const url = process.env.DATABASE_URL ?? "(not set)";
+    const token = process.env.DATABASE_AUTH_TOKEN ?? "(not set)";
+    const maskedToken = token.length > 20 ? token.slice(0, 10) + "..." + token.slice(-10) : token;
+    try {
+      const db = await getDb();
+      if (!db) {
+        return res.json({ status: "DB null - getDb() returned null", url, token: maskedToken });
+      }
+      const { createClient: createClient2 } = await import("@libsql/client");
+      const client = createClient2({ url, authToken: token });
+      const result = await client.execute(
+        "SELECT id, email, name, isActive FROM admins;"
+      );
+      return res.json({
+        status: "connected",
+        url,
+        token: maskedToken,
+        admins: result.rows
+      });
+    } catch (e) {
+      return res.json({ status: "error", error: e.message, url, token: maskedToken });
+    }
+  });
+  app2.use((_req, res) => {
+    res.status(404).json({ error: "Not found" });
+  });
+  return app2;
 }
 
-// src/api/index.ts
-var index_default = createApp();
+// src/api-entry/server.ts
+var app = createApp();
+function handler(req, res) {
+  const pathSegments = req.query?.path;
+  const pathStr = Array.isArray(pathSegments) ? pathSegments.join("/") : typeof pathSegments === "string" ? pathSegments : "";
+  const rawUrl = req.url ?? "";
+  const qIdx = rawUrl.indexOf("?");
+  if (qIdx !== -1) {
+    const params = new URLSearchParams(rawUrl.slice(qIdx + 1));
+    params.delete("path");
+    const remaining = params.toString();
+    req.url = `/api/${pathStr}${remaining ? "?" + remaining : ""}`;
+  } else {
+    req.url = `/api/${pathStr}`;
+  }
+  app(req, res);
+}
 export {
-  index_default as default
+  handler as default
 };
