@@ -1,0 +1,134 @@
+<section class="category-list" id="category-list">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-header__heading">{{ section.settings.heading }}</h2>
+    </div>
+
+    <div class="category-grid">
+      {% for block in section.blocks %}
+        <a href="{{ block.settings.url }}" class="category-card" {{ block.shopify_attributes }}>
+          <div class="category-card__image-wrap">
+            {% if block.settings.image != blank %}
+              <img
+                src="{{ block.settings.image | img_url: '400x300', crop: 'center' }}"
+                alt="{{ block.settings.title }}"
+                class="category-card__image"
+                width="400"
+                height="300"
+                loading="lazy"
+              >
+            {% else %}
+              <div class="category-card__image-placeholder">
+                <span>{{ block.settings.title }}</span>
+              </div>
+            {% endif %}
+            <div class="category-card__overlay"></div>
+          </div>
+          <div class="category-card__content">
+            <h3 class="category-card__title">{{ block.settings.title }}</h3>
+            {% if block.settings.subtitle != blank %}
+              <p class="category-card__subtitle">{{ block.settings.subtitle }}</p>
+            {% endif %}
+          </div>
+        </a>
+      {% else %}
+        <!-- ブロック未設定時のダミー -->
+        {% assign dummy_categories = 'カニ,ホタテ,鮭・サーモン,ホッケ,いか,松前漬け' | split: ',' %}
+        {% for cat in dummy_categories %}
+          <div class="category-card category-card--dummy">
+            <div class="category-card__image-wrap">
+              <div class="category-card__image-placeholder">
+                <span>{{ cat }}</span>
+              </div>
+              <div class="category-card__overlay"></div>
+            </div>
+            <div class="category-card__content">
+              <h3 class="category-card__title">{{ cat }}</h3>
+            </div>
+          </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "カテゴリ一覧",
+  "tag": "section",
+  "class": "section-category-list",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "見出し",
+      "default": "カテゴリから選ぶ"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "カテゴリ",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "カテゴリ画像"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "カテゴリ名",
+          "default": "カニ"
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "label": "サブテキスト",
+          "default": "タラバ・ズワイ・毛ガニ"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "リンク先"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "カテゴリ一覧",
+      "blocks": [
+        {
+          "type": "category",
+          "settings": {
+            "title": "カニ",
+            "subtitle": "タラバ・ズワイ・毛ガニ"
+          }
+        },
+        {
+          "type": "category",
+          "settings": {
+            "title": "ホタテ",
+            "subtitle": "北海道産 玉冷・貝柱"
+          }
+        },
+        {
+          "type": "category",
+          "settings": {
+            "title": "鮭・サーモン",
+            "subtitle": "紅鮭・定塩フィーレ"
+          }
+        },
+        {
+          "type": "category",
+          "settings": {
+            "title": "ホッケ・その他",
+            "subtitle": "縞ホッケ・きんき・いか"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

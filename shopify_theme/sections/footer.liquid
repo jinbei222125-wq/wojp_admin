@@ -1,0 +1,99 @@
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-main">
+    <div class="container">
+      <div class="footer-main__grid">
+
+        <!-- ショップ情報 -->
+        <div class="footer-col footer-col--about">
+          <div class="footer-logo">
+            {% if section.settings.logo != blank %}
+              <img
+                src="{{ section.settings.logo | img_url: '200x' }}"
+                alt="{{ shop.name }}"
+                class="footer-logo__img"
+                width="160"
+                height="auto"
+                loading="lazy"
+              >
+            {% else %}
+              <span class="footer-logo__text">{{ shop.name }}</span>
+            {% endif %}
+          </div>
+          <p class="footer-about__description">
+            北海道の豊かな海の幸を、産地直送でお届けします。
+            会員登録（月額500円）で、全商品を卸値でお買い求めいただけます。
+          </p>
+          <div class="footer-trust">
+            <span>🔒 SSL暗号化通信</span>
+            <span>💳 Shopify Payments</span>
+          </div>
+        </div>
+
+        <!-- カテゴリ -->
+        <div class="footer-col">
+          <h3 class="footer-col__heading">商品カテゴリ</h3>
+          <ul class="footer-nav">
+            <li><a href="/collections/kani">カニ</a></li>
+            <li><a href="/collections/hotate">ホタテ</a></li>
+            <li><a href="/collections/sake">鮭・サーモン</a></li>
+            <li><a href="/collections/hokke">ホッケ・その他</a></li>
+            <li><a href="/collections/all">すべての商品</a></li>
+          </ul>
+        </div>
+
+        <!-- ご利用ガイド -->
+        <div class="footer-col">
+          <h3 class="footer-col__heading">ご利用ガイド</h3>
+          <ul class="footer-nav">
+            <li><a href="/pages/membership">会員制度について</a></li>
+            <li><a href="/pages/shipping">配送について</a></li>
+            <li><a href="/pages/payment">お支払い方法</a></li>
+            <li><a href="/pages/returns">返品・交換について</a></li>
+            <li><a href="/pages/faq">よくある質問</a></li>
+          </ul>
+        </div>
+
+        <!-- 会社情報 -->
+        <div class="footer-col">
+          <h3 class="footer-col__heading">会社情報</h3>
+          <ul class="footer-nav">
+            <li><a href="/pages/about">会社概要</a></li>
+            <li><a href="/pages/tokushoho">特定商取引法に基づく表記</a></li>
+            <li><a href="/pages/privacy">プライバシーポリシー</a></li>
+            <li><a href="/pages/contact">お問い合わせ</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="container">
+      <div class="footer-bottom__inner">
+        <p class="footer-copyright">
+          &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.
+        </p>
+        <div class="footer-payment-icons">
+          <!-- 決済アイコン（Shopify標準） -->
+          {% for type in shop.enabled_payment_types %}
+            {{ type | payment_type_svg_tag: class: 'footer-payment-icon' }}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "フッター",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "フッターロゴ"
+    }
+  ]
+}
+{% endschema %}

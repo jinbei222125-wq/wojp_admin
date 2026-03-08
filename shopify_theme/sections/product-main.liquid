@@ -1,0 +1,489 @@
+<article class="product-page" itemscope itemtype="https://schema.org/Product">
+  <div class="container">
+    <div class="product-page__inner">
+
+      <!-- 商品画像 -->
+      <div class="product-page__gallery">
+        <div class="product-gallery__main">
+          {% if product.featured_image != blank %}
+            <img
+              id="product-main-image"
+              src="{{ product.featured_image | img_url: '800x800', crop: 'center' }}"
+              alt="{{ product.featured_image.alt | default: product.title }}"
+              class="product-gallery__main-img"
+              width="800"
+              height="800"
+              loading="eager"
+              itemprop="image"
+            >
+          {% else %}
+            <div class="product-gallery__placeholder">
+              <span>商品画像</span>
+            </div>
+          {% endif %}
+        </div>
+
+        {% if product.images.size > 1 %}
+          <div class="product-gallery__thumbs">
+            {% for image in product.images %}
+              <button
+                class="product-gallery__thumb {% if forloop.first %}product-gallery__thumb--active{% endif %}"
+                data-image-url="{{ image | img_url: '800x800', crop: 'center' }}"
+                data-image-alt="{{ image.alt | default: product.title }}"
+                aria-label="画像 {{ forloop.index }}"
+              >
+                <img
+                  src="{{ image | img_url: '120x120', crop: 'center' }}"
+                  alt="{{ image.alt | default: product.title }}"
+                  width="120"
+                  height="120"
+                  loading="lazy"
+                >
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- 商品情報 -->
+      <div class="product-page__info">
+        <!-- パンくず -->
+        <nav class="breadcrumb" aria-label="パンくずリスト">
+          <ol class="breadcrumb__list">
+            <li class="breadcrumb__item"><a href="/">ホーム</a></li>
+            {% if product.collections.first %}
+              <li class="breadcrumb__item"><a href="{{ product.collections.first.url }}">{{ product.collections.first.title }}</a></li>
+            {% endif %}
+            <li class="breadcrumb__item breadcrumb__item--current" aria-current="page">{{ product.title }}</li>
+          </ol>
+        </nav>
+
+        <h1 class="product-page__title" itemprop="name">{{ product.title }}</h1>
+
+        <!-- 価格（会員/非会員で切替） -->
+        <div class="product-page__price" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+          {% if customer and customer.tags contains 'member' %}
+            <!-- 会員価格表示 -->
+            {% assign member_price = product.metafields.custom.member_price %}
+            <div class="product-price product-price--member-view">
+              <span class="product-price__badge">会員価格</span>
+              {% if member_price != blank %}
+                <span class="product-price__value product-price__value--member" itemprop="price" content="{{ member_price | divided_by: 100.0 }}">{{ member_price | money }}</span>
+                <span class="product-price__compare">通常価格 {{ product.price | money }}</span>
+              {% else %}
+                <span class="product-price__value product-price__value--member" itemprop="price" content="{{ product.price | divided_by: 100.0 }}">{{ product.price | money }}</span>
+              {% endif %}
+              <meta itemprop="priceCurrency" content="JPY">
+            </div>
+          {% else %}
+            <!-- 非会員：通常価格 + 会員価格訴求 -->
+            <div class="product-price">
+              <span class="product-price__value" itemprop="price" content="{{ product.price | divided_by: 100.0 }}">{{ product.price | money }}</span>
+              <meta itemprop="priceCurrency" content="JPY">
+              <span class="product-price__tax">（税込）</span>
+            </div>
+            {% assign member_price = product.metafields.custom.member_price %}
+            {% if member_price != blank %}
+              {% assign saving = product.price | minus: member_price %}
+              <div class="product-price__member-appeal">
+                <p>
+                  🎁 <strong>会員なら {{ member_price | money }}</strong>
+                  <span class="product-price__saving">（▼ {{ saving | money }} お得！）</span>
+                </p>
+                <a href="/pages/membership" class="product-price__member-link">
+                  会員登録はこちら（月額500円）→
+                </a>
+              </div>
+            {% endif %}
+          {% endif %}
+        </div>
+
+        <!-- バリアント選択 -->
+        {% if product.variants.size > 1 %}
+          <div class="product-page__variants">
+            <label class="product-page__label" for="product-variant">サイズ / 種類</label>
+            <select id="product-variant" name="id" class="product-page__select">
+              {% for variant in product.variants %}
+                <option
+                  value="{{ variant.id }}"
+                  {% unless variant.available %}disabled{% endunless %}
+                >
+                  {{ variant.title }}
+                  {% unless variant.available %}（売り切れ）{% endunless %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+
+        <!-- 数量 -->
+        <div class="product-page__quantity">
+          <label class="product-page__label" for="product-quantity">数量</label>
+          <div class="quantity-selector">
+            <button type="button" class="quantity-selector__btn" id="qty-minus" aria-label="数量を減らす">−</button>
+            <input
+              type="number"
+              id="product-quantity"
+              name="quantity"
+              value="1"
+              min="1"
+              class="quantity-selector__input"
+              aria-label="数量"
+            >
+            <button type="button" class="quantity-selector__btn" id="qty-plus" aria-label="数量を増やす">＋</button>
+          </div>
+        </div>
+
+        <!-- カートに追加 -->
+        <form action="/cart/add" method="post" class="product-page__form">
+          <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" id="product-variant-id">
+          <input type="hidden" name="quantity" value="1" id="product-quantity-input">
+          <button
+            type="submit"
+            class="btn btn--primary btn--large btn--full product-page__add-btn"
+            {% unless product.available %}disabled{% endunless %}
+          >
+            {% if product.available %}
+              🛒 カートに入れる
+            {% else %}
+              売り切れ
+            {% endif %}
+          </button>
+        </form>
+
+        <!-- 配送情報 -->
+        <div class="product-page__shipping-info">
+          <ul class="product-page__shipping-list">
+            <li>❄️ 冷凍便（飛脚クール便）でお届け</li>
+            <li>🚚 注文から5〜6日後にお届け</li>
+            <li>💰 10,000円以上で送料無料（全国一律2,500円）</li>
+            <li>📦 発泡スチロール箱 / ダンボール箱でお届け</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================
+         商品テンプレート（先方合意済み3セクション構成）
+         ============================================================ -->
+    <div class="product-detail-tabs">
+
+      <!-- タブナビゲーション -->
+      <nav class="product-tabs__nav" role="tablist">
+        <button class="product-tabs__tab product-tabs__tab--active" role="tab" aria-selected="true" data-tab="features">
+          商品の特徴
+        </button>
+        <button class="product-tabs__tab" role="tab" aria-selected="false" data-tab="recipe">
+          おすすめの召し上がり方
+        </button>
+        <button class="product-tabs__tab" role="tab" aria-selected="false" data-tab="details">
+          商品詳細
+        </button>
+      </nav>
+
+      <!-- ① 商品の特徴 -->
+      <div class="product-tabs__panel product-tabs__panel--active" id="tab-features" role="tabpanel">
+        <div class="product-tabs__content">
+          {% if product.metafields.custom.features != blank %}
+            <div class="product-features">
+              {{ product.metafields.custom.features | metafield_tag }}
+            </div>
+          {% else %}
+            <!-- ダミーコンテンツ（ヒアリングシートの内容を元に生成） -->
+            <div class="product-features">
+              {{ product.description }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ② おすすめの召し上がり方 -->
+      <div class="product-tabs__panel" id="tab-recipe" role="tabpanel" hidden>
+        <div class="product-tabs__content">
+          {% if product.metafields.custom.recipe != blank %}
+            <div class="product-recipe">
+              {{ product.metafields.custom.recipe | metafield_tag }}
+            </div>
+          {% else %}
+            <div class="product-recipe">
+              <p>おすすめの召し上がり方は商品ページに記載されます。</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ③ 商品詳細 -->
+      <div class="product-tabs__panel" id="tab-details" role="tabpanel" hidden>
+        <div class="product-tabs__content">
+          <table class="product-detail-table">
+            <tbody>
+              <tr>
+                <th>商品名</th>
+                <td>{{ product.title }}</td>
+              </tr>
+              <tr>
+                <th>内容量</th>
+                <td>{{ product.metafields.custom.weight_volume | default: '—' }}</td>
+              </tr>
+              <tr>
+                <th>原材料名</th>
+                <td>{{ product.metafields.custom.ingredients | default: '—' }}</td>
+              </tr>
+              <tr>
+                <th>産地</th>
+                <td>{{ product.metafields.custom.origin | default: '—' }}</td>
+              </tr>
+              <tr>
+                <th>アレルギー表示</th>
+                <td>{{ product.metafields.custom.allergens | default: '—' }}</td>
+              </tr>
+              <tr>
+                <th>保存方法</th>
+                <td>{{ product.metafields.custom.storage | default: '要冷凍（-18℃以下で保存）' }}</td>
+              </tr>
+              <tr>
+                <th>解凍方法</th>
+                <td>{{ product.metafields.custom.thawing | default: '冷蔵庫で自然解凍（約18時間）' }}</td>
+              </tr>
+              <tr>
+                <th>消費期限</th>
+                <td>{{ product.metafields.custom.expiry | default: '—' }}</td>
+              </tr>
+              <tr>
+                <th>税率</th>
+                <td>軽減税率（8%）</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</article>
+
+<style>
+/* 商品ページスタイル */
+.product-page { padding: var(--spacing-2xl) 0; }
+.product-page__inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-2xl);
+  margin-bottom: var(--spacing-3xl);
+}
+
+/* ギャラリー */
+.product-gallery__main {
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  background: var(--color-gray-100);
+}
+.product-gallery__main-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.product-gallery__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray-400);
+}
+.product-gallery__thumbs {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+.product-gallery__thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: border-color var(--transition-base);
+  cursor: pointer;
+}
+.product-gallery__thumb--active,
+.product-gallery__thumb:hover {
+  border-color: var(--color-primary);
+}
+.product-gallery__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* パンくず */
+.breadcrumb { margin-bottom: var(--spacing-md); }
+.breadcrumb__list { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; font-size: 0.8125rem; color: var(--color-text-light); }
+.breadcrumb__item + .breadcrumb__item::before { content: '/'; margin-right: var(--spacing-sm); }
+.breadcrumb__item--current { color: var(--color-text); }
+
+/* 商品タイトル */
+.product-page__title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  color: var(--color-navy);
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.3;
+}
+
+/* 価格 */
+.product-page__price { margin-bottom: var(--spacing-lg); }
+.product-price { display: flex; align-items: baseline; gap: var(--spacing-sm); flex-wrap: wrap; margin-bottom: var(--spacing-sm); }
+.product-price__badge {
+  background-color: var(--color-member-bg);
+  color: var(--color-member);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 40px;
+}
+.product-price__value { font-size: 2rem; font-weight: 700; color: var(--color-text); }
+.product-price__value--member { color: var(--color-member); }
+.product-price__compare { font-size: 1rem; color: var(--color-gray-600); text-decoration: line-through; }
+.product-price__tax { font-size: 0.875rem; color: var(--color-text-light); }
+.product-price__member-appeal {
+  background-color: var(--color-member-bg);
+  border: 1px solid #C8E6C9;
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  font-size: 0.9375rem;
+}
+.product-price__saving { color: var(--color-primary); font-weight: 700; }
+.product-price__member-link {
+  display: inline-block;
+  margin-top: var(--spacing-sm);
+  color: var(--color-member);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* バリアント・数量 */
+.product-page__label { display: block; font-weight: 700; font-size: 0.875rem; margin-bottom: var(--spacing-sm); }
+.product-page__variants, .product-page__quantity { margin-bottom: var(--spacing-lg); }
+.product-page__select {
+  width: 100%;
+  padding: 10px 16px;
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  font-size: 1rem;
+  font-family: var(--font-sans);
+  background-color: var(--color-white);
+  cursor: pointer;
+}
+.quantity-selector { display: flex; align-items: center; gap: 0; border: 2px solid var(--color-gray-200); border-radius: var(--border-radius-md); overflow: hidden; width: fit-content; }
+.quantity-selector__btn { width: 44px; height: 44px; font-size: 1.25rem; background: var(--color-gray-100); transition: background var(--transition-base); }
+.quantity-selector__btn:hover { background: var(--color-gray-200); }
+.quantity-selector__input { width: 60px; height: 44px; text-align: center; border: none; font-size: 1rem; font-family: var(--font-sans); outline: none; }
+
+/* カートボタン */
+.product-page__form { margin-bottom: var(--spacing-lg); }
+.product-page__add-btn { font-size: 1.125rem; padding: 18px; }
+
+/* 配送情報 */
+.product-page__shipping-info {
+  background: var(--color-off-white);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+}
+.product-page__shipping-list { display: flex; flex-direction: column; gap: var(--spacing-sm); font-size: 0.875rem; color: var(--color-text-light); }
+
+/* タブ */
+.product-detail-tabs { margin-top: var(--spacing-2xl); }
+.product-tabs__nav { display: flex; border-bottom: 2px solid var(--color-gray-200); gap: 0; }
+.product-tabs__tab {
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  color: var(--color-text-light);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all var(--transition-base);
+  cursor: pointer;
+}
+.product-tabs__tab--active, .product-tabs__tab:hover {
+  color: var(--color-navy);
+  border-bottom-color: var(--color-primary);
+}
+.product-tabs__panel { padding: var(--spacing-xl) 0; }
+.product-tabs__content { max-width: 800px; font-size: 1rem; line-height: 1.8; }
+
+/* 商品詳細テーブル */
+.product-detail-table { width: 100%; border-collapse: collapse; }
+.product-detail-table th, .product-detail-table td { padding: 12px 16px; border-bottom: 1px solid var(--color-gray-200); text-align: left; font-size: 0.9375rem; }
+.product-detail-table th { width: 160px; font-weight: 700; color: var(--color-navy); background: var(--color-off-white); }
+
+@media (max-width: 768px) {
+  .product-page__inner { grid-template-columns: 1fr; }
+  .product-tabs__tab { padding: 12px 16px; font-size: 0.875rem; }
+  .product-detail-table th { width: 120px; }
+}
+</style>
+
+<script>
+// 商品ページ タブ切替
+document.querySelectorAll('.product-tabs__tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    var targetTab = this.dataset.tab;
+    document.querySelectorAll('.product-tabs__tab').forEach(function(t) {
+      t.classList.remove('product-tabs__tab--active');
+      t.setAttribute('aria-selected', 'false');
+    });
+    document.querySelectorAll('.product-tabs__panel').forEach(function(p) {
+      p.classList.remove('product-tabs__panel--active');
+      p.hidden = true;
+    });
+    this.classList.add('product-tabs__tab--active');
+    this.setAttribute('aria-selected', 'true');
+    var panel = document.getElementById('tab-' + targetTab);
+    if (panel) {
+      panel.classList.add('product-tabs__panel--active');
+      panel.hidden = false;
+    }
+  });
+});
+
+// サムネイルクリックで画像切替
+document.querySelectorAll('.product-gallery__thumb').forEach(function(thumb) {
+  thumb.addEventListener('click', function() {
+    var mainImg = document.getElementById('product-main-image');
+    if (mainImg) {
+      mainImg.src = this.dataset.imageUrl;
+      mainImg.alt = this.dataset.imageAlt;
+    }
+    document.querySelectorAll('.product-gallery__thumb').forEach(function(t) {
+      t.classList.remove('product-gallery__thumb--active');
+    });
+    this.classList.add('product-gallery__thumb--active');
+  });
+});
+
+// 数量セレクター
+var qtyInput = document.getElementById('product-quantity');
+var qtyHidden = document.getElementById('product-quantity-input');
+document.getElementById('qty-minus').addEventListener('click', function() {
+  var val = parseInt(qtyInput.value) || 1;
+  if (val > 1) { qtyInput.value = val - 1; if(qtyHidden) qtyHidden.value = val - 1; }
+});
+document.getElementById('qty-plus').addEventListener('click', function() {
+  var val = parseInt(qtyInput.value) || 1;
+  qtyInput.value = val + 1;
+  if(qtyHidden) qtyHidden.value = val + 1;
+});
+</script>
+
+{% schema %}
+{
+  "name": "商品メイン",
+  "settings": []
+}
+{% endschema %}

@@ -1,0 +1,103 @@
+{% unless customer %}
+<section class="member-appeal" id="member-appeal">
+  <div class="container">
+    <div class="member-appeal__inner">
+
+      <div class="member-appeal__content">
+        <p class="member-appeal__label">会員特典</p>
+        <h2 class="member-appeal__heading">{{ section.settings.heading }}</h2>
+        <p class="member-appeal__description">
+          月額わずか<strong>500円</strong>の会員登録で、掲載中の全商品を<strong>常に卸値（会員価格）</strong>でお買い求めいただけます。
+          1回のご購入でもとが取れるお得な制度です。
+        </p>
+
+        <!-- 価格比較例 -->
+        <div class="member-appeal__price-compare">
+          <div class="member-appeal__price-item member-appeal__price-item--regular">
+            <p class="member-appeal__price-label">{{ section.settings.regular_price_label }}</p>
+            <p class="member-appeal__price-value">¥12,000</p>
+            <p class="member-appeal__price-note">（タラバガニ ビートロ 800g）</p>
+          </div>
+          <div class="member-appeal__price-arrow">→</div>
+          <div class="member-appeal__price-item member-appeal__price-item--member">
+            <p class="member-appeal__price-label">{{ section.settings.member_price_label }}</p>
+            <p class="member-appeal__price-value">¥9,800</p>
+            <p class="member-appeal__price-saving">▼ ¥2,200 お得！</p>
+          </div>
+        </div>
+
+        <a href="/pages/membership" class="btn btn--primary btn--large member-appeal__cta">
+          会員登録はこちら（月額500円）
+        </a>
+      </div>
+
+      <div class="member-appeal__benefits">
+        <ul class="member-appeal__benefits-list">
+          <li class="member-appeal__benefits-item">
+            <span class="member-appeal__benefits-icon">🦀</span>
+            <div>
+              <strong>常に卸値で購入</strong>
+              <p>全商品が会員価格（卸値）で購入可能</p>
+            </div>
+          </li>
+          <li class="member-appeal__benefits-item">
+            <span class="member-appeal__benefits-icon">🚚</span>
+            <div>
+              <strong>10,000円以上送料無料</strong>
+              <p>北海道から全国へ冷凍便でお届け</p>
+            </div>
+          </li>
+          <li class="member-appeal__benefits-item">
+            <span class="member-appeal__benefits-icon">📱</span>
+            <div>
+              <strong>LINE通知でお得情報をお届け</strong>
+              <p>新商品・タイムセール情報をいち早くお知らせ</p>
+            </div>
+          </li>
+          <li class="member-appeal__benefits-item">
+            <span class="member-appeal__benefits-icon">🔄</span>
+            <div>
+              <strong>いつでも解約OK</strong>
+              <p>縛りなし・違約金なし・翌月から適用</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endunless %}
+
+{% schema %}
+{
+  "name": "会員訴求バナー",
+  "tag": "section",
+  "class": "section-member-appeal",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "見出し",
+      "default": "会員になるとこんなにお得！"
+    },
+    {
+      "type": "text",
+      "id": "member_price_label",
+      "label": "会員価格ラベル",
+      "default": "会員価格（月額500円）"
+    },
+    {
+      "type": "text",
+      "id": "regular_price_label",
+      "label": "通常価格ラベル",
+      "default": "通常価格"
+    }
+  ],
+  "presets": [
+    {
+      "name": "会員訴求バナー"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,120 @@
+<section class="hero-banner" id="hero-banner">
+  <div class="hero-banner__inner">
+    <!-- 背景画像（Shopify管理画面から設定） -->
+    {% if section.settings.image != blank %}
+      <div class="hero-banner__bg">
+        <img
+          src="{{ section.settings.image | img_url: '1920x' }}"
+          srcset="{{ section.settings.image | img_url: '768x' }} 768w,
+                  {{ section.settings.image | img_url: '1200x' }} 1200w,
+                  {{ section.settings.image | img_url: '1920x' }} 1920w"
+          sizes="100vw"
+          alt="{{ section.settings.image.alt | default: shop.name }}"
+          class="hero-banner__bg-img"
+          loading="eager"
+          fetchpriority="high"
+        >
+      </div>
+    {% else %}
+      <!-- ダミー背景（画像未設定時） -->
+      <div class="hero-banner__bg hero-banner__bg--dummy">
+        <div class="hero-banner__bg-placeholder">
+          <span>ヒーロー画像をここに設定してください</span>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="hero-banner__overlay"></div>
+
+    <div class="container">
+      <div class="hero-banner__content">
+        <!-- 会員向け・非会員向けで表示切替 -->
+        {% if customer %}
+          <p class="hero-banner__badge hero-banner__badge--member">✓ 会員価格適用中</p>
+        {% else %}
+          <p class="hero-banner__badge">会員登録で卸値価格に！</p>
+        {% endif %}
+
+        <h1 class="hero-banner__heading">
+          {{ section.settings.heading | newline_to_br }}
+        </h1>
+
+        <p class="hero-banner__subheading">
+          {{ section.settings.subheading }}
+        </p>
+
+        <div class="hero-banner__actions">
+          {% unless customer %}
+            <a href="{{ section.settings.cta_url }}" class="btn btn--primary btn--large">
+              {{ section.settings.cta_text }}
+            </a>
+          {% endunless %}
+          <a href="{{ section.settings.cta_url_secondary }}" class="btn btn--secondary btn--large">
+            {{ section.settings.cta_text_secondary }}
+          </a>
+        </div>
+
+        <!-- 信頼バッジ -->
+        <div class="hero-banner__trust">
+          <span class="hero-banner__trust-item">🚚 10,000円以上送料無料</span>
+          <span class="hero-banner__trust-item">❄️ 冷凍便でお届け</span>
+          <span class="hero-banner__trust-item">🦀 北海道直送</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "ヒーローバナー",
+  "tag": "section",
+  "class": "section-hero-banner",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "背景画像"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "メインキャッチコピー",
+      "default": "北海道から直送\n本物の海の幸を、卸値で。"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "サブキャッチコピー",
+      "default": "会員登録（月額500円）で、いつでも卸値価格でお買い物いただけます。"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "メインCTAボタンテキスト",
+      "default": "今すぐ会員になる"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "メインCTAボタンリンク"
+    },
+    {
+      "type": "text",
+      "id": "cta_text_secondary",
+      "label": "サブCTAボタンテキスト",
+      "default": "商品を見る"
+    },
+    {
+      "type": "url",
+      "id": "cta_url_secondary",
+      "label": "サブCTAボタンリンク"
+    }
+  ],
+  "presets": [
+    {
+      "name": "ヒーローバナー"
+    }
+  ]
+}
+{% endschema %}

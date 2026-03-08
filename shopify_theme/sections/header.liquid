@@ -1,0 +1,148 @@
+<header class="site-header" role="banner">
+  <div class="header-top">
+    <div class="container">
+      <div class="header-top__inner">
+        <!-- お知らせバー -->
+        <p class="header-top__notice">
+          🎁 会員登録で常に卸値でお買い物できます！
+          <a href="/pages/membership" class="header-top__notice-link">詳しくはこちら →</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="header-main">
+    <div class="container">
+      <div class="header-main__inner">
+
+        <!-- ロゴ -->
+        <div class="header-logo">
+          <a href="/" class="header-logo__link" aria-label="{{ shop.name }}">
+            {% if section.settings.logo != blank %}
+              <img
+                src="{{ section.settings.logo | img_url: '300x' }}"
+                alt="{{ shop.name }}"
+                class="header-logo__img"
+                width="200"
+                height="auto"
+                loading="eager"
+              >
+            {% else %}
+              <span class="header-logo__text">{{ shop.name }}</span>
+            {% endif %}
+          </a>
+        </div>
+
+        <!-- 検索バー -->
+        <div class="header-search">
+          <form action="/search" method="get" class="header-search__form" role="search">
+            <input
+              type="search"
+              name="q"
+              placeholder="商品を検索する..."
+              class="header-search__input"
+              aria-label="サイト内検索"
+            >
+            <button type="submit" class="header-search__btn" aria-label="検索">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </button>
+          </form>
+        </div>
+
+        <!-- ヘッダーアクション -->
+        <div class="header-actions">
+          <!-- 会員ログイン状態で表示切替 -->
+          {% if customer %}
+            <a href="/account" class="header-actions__account header-actions__account--logged-in">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span>マイページ</span>
+            </a>
+          {% else %}
+            <a href="/account/login" class="header-actions__account">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span>ログイン</span>
+            </a>
+          {% endif %}
+
+          <!-- カート -->
+          <a href="/cart" class="header-actions__cart" aria-label="カート">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+            <span class="header-actions__cart-count" id="cart-count">{{ cart.item_count }}</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ナビゲーション -->
+  <nav class="header-nav" role="navigation" aria-label="メインナビゲーション">
+    <div class="container">
+      <ul class="header-nav__list">
+        <li class="header-nav__item">
+          <a href="/collections/all" class="header-nav__link">すべての商品</a>
+        </li>
+        <li class="header-nav__item">
+          <a href="/collections/kani" class="header-nav__link">カニ</a>
+        </li>
+        <li class="header-nav__item">
+          <a href="/collections/hotate" class="header-nav__link">ホタテ</a>
+        </li>
+        <li class="header-nav__item">
+          <a href="/collections/sake" class="header-nav__link">鮭・サーモン</a>
+        </li>
+        <li class="header-nav__item">
+          <a href="/collections/hokke" class="header-nav__link">ホッケ・その他</a>
+        </li>
+        <li class="header-nav__item header-nav__item--highlight">
+          <a href="/pages/membership" class="header-nav__link header-nav__link--member">
+            🎁 会員になる（月額500円）
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- モバイルメニュー -->
+  <button class="header-mobile-toggle" aria-label="メニューを開く" aria-expanded="false">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</header>
+
+{% schema %}
+{
+  "name": "ヘッダー",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "ロゴ画像"
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "min": 100,
+      "max": 300,
+      "step": 10,
+      "unit": "px",
+      "label": "ロゴ幅",
+      "default": 200
+    }
+  ]
+}
+{% endschema %}

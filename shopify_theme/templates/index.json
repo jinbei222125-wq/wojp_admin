@@ -1,0 +1,68 @@
+{
+  "sections": {
+    "hero-banner": {
+      "type": "hero-banner",
+      "settings": {
+        "heading": "北海道から直送\n本物の海の幸を、卸値で。",
+        "subheading": "会員登録（月額500円）で、いつでも卸値価格でお買い物いただけます。",
+        "cta_text": "今すぐ会員になる",
+        "cta_url": "/pages/membership",
+        "cta_text_secondary": "商品を見る",
+        "cta_url_secondary": "/collections/all"
+      }
+    },
+    "member-appeal": {
+      "type": "member-appeal",
+      "settings": {
+        "heading": "会員になるとこんなにお得！",
+        "member_price_label": "会員価格（月額500円）",
+        "regular_price_label": "通常価格"
+      }
+    },
+    "popular-ranking": {
+      "type": "popular-ranking",
+      "settings": {
+        "heading": "人気ランキング",
+        "subheading": "今週よく売れている商品",
+        "collection": "popular",
+        "products_to_show": 8
+      }
+    },
+    "category-list": {
+      "type": "category-list",
+      "settings": {
+        "heading": "カテゴリから選ぶ"
+      }
+    },
+    "daily-special": {
+      "type": "daily-special",
+      "settings": {
+        "heading": "日替わり特集",
+        "subheading": "毎日更新！今日のおすすめ"
+      }
+    },
+    "sale-products": {
+      "type": "sale-products",
+      "settings": {
+        "heading": "お買い得商品",
+        "collection": "sale",
+        "products_to_show": 4
+      }
+    },
+    "features": {
+      "type": "features",
+      "settings": {
+        "heading": "kamuy-shopが選ばれる理由"
+      }
+    }
+  },
+  "order": [
+    "hero-banner",
+    "member-appeal",
+    "popular-ranking",
+    "category-list",
+    "daily-special",
+    "sale-products",
+    "features"
+  ]
+}
