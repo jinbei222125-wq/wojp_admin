@@ -1,0 +1,97 @@
+<section class="section-category" id="Category-{{ section.id }}">
+  <div class="container">
+    <div class="section-header section-header--inline">
+      <h2 class="section-title section-title--white">{{ section.settings.title }}</h2>
+      {%- if section.settings.more_url != blank -%}
+        <a href="{{ section.settings.more_url }}" class="btn-more-white">商品一覧を見る →</a>
+      {%- endif -%}
+    </div>
+
+    <div class="category-grid">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'category' -%}
+          <a href="{{ block.settings.url }}" class="category-card" {{ block.shopify_attributes }}>
+            <div class="category-card__img-wrap">
+              {%- if block.settings.image != blank -%}
+                <img
+                  src="{{ block.settings.image | img_url: '600x450', crop: 'center' }}"
+                  alt="{{ block.settings.image.alt | default: block.settings.title }}"
+                  loading="lazy"
+                  width="600" height="450"
+                >
+              {%- else -%}
+                {{ 'collection-1' | placeholder_svg_tag: 'placeholder-svg' }}
+              {%- endif -%}
+            </div>
+            <div class="category-card__info">
+              <h3 class="category-card__title">{{ block.settings.title }}</h3>
+              {%- if block.settings.description != blank -%}
+                <p class="category-card__desc">{{ block.settings.description }}</p>
+              {%- endif -%}
+            </div>
+          </a>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "カテゴリーグリッド",
+  "tag": "section",
+  "class": "section-category",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "セクションタイトル",
+      "default": "カテゴリーから選ぶ"
+    },
+    {
+      "type": "url",
+      "id": "more_url",
+      "label": "一覧ページURL"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "カテゴリー",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "カテゴリー画像"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "カテゴリー名",
+          "default": "かに"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "説明文"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "リンクURL"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "カテゴリーグリッド",
+      "blocks": [
+        { "type": "category", "settings": { "title": "かに" } },
+        { "type": "category", "settings": { "title": "魚介類" } },
+        { "type": "category", "settings": { "title": "海鮮加工品" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

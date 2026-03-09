@@ -1,0 +1,44 @@
+{%- if section.settings.show_announcement -%}
+  <div class="announcement-bar" role="region" aria-label="Announcement">
+    <div class="announcement-bar__content">
+      {%- if section.settings.announcement_link != blank -%}
+        <a href="{{ section.settings.announcement_link }}" class="announcement-bar__link link">
+          {{ section.settings.text | escape }}
+        </a>
+      {%- else -%}
+        <p class="announcement-bar__message">{{ section.settings.text | escape }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "お知らせバー",
+  "class": "section-announcement-bar",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_announcement",
+      "default": true,
+      "label": "お知らせバーを表示"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "default": "【お知らせ】一部の商品の発送時期が変更になりました。詳しくはこちら",
+      "label": "お知らせテキスト"
+    },
+    {
+      "type": "url",
+      "id": "announcement_link",
+      "label": "リンクURL（任意）"
+    }
+  ],
+  "presets": [
+    {
+      "name": "お知らせバー"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,80 @@
+<section class="section-featured" id="Featured-{{ section.id }}">
+  <div class="container">
+    <div class="featured-layout">
+      <div class="featured__img-wrap">
+        {%- if section.settings.image != blank -%}
+          <img
+            src="{{ section.settings.image | img_url: '800x600', crop: 'center' }}"
+            alt="{{ section.settings.image.alt | default: section.settings.title }}"
+            loading="lazy"
+            width="800" height="600"
+          >
+        {%- else -%}
+          {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+        {%- endif -%}
+      </div>
+      <div class="featured__content">
+        <h2 class="featured__title">{{ section.settings.title }}</h2>
+        {%- if section.settings.subtitle != blank -%}
+          <p class="featured__subtitle">{{ section.settings.subtitle }}</p>
+        {%- endif -%}
+        {%- if section.settings.text != blank -%}
+          <div class="featured__text">{{ section.settings.text }}</div>
+        {%- endif -%}
+        {%- if section.settings.button_label != blank -%}
+          <a href="{{ section.settings.button_url }}" class="btn-more-red">
+            {{ section.settings.button_label }} →
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "当店イチオシ",
+  "tag": "section",
+  "class": "section-featured",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "特集画像"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "タイトル",
+      "default": "当店イチオシ"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "サブタイトル",
+      "default": "幻の魚「〇〇」入荷しました！"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "説明文"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "ボタンテキスト",
+      "default": "商品を見る"
+    },
+    {
+      "type": "url",
+      "id": "button_url",
+      "label": "ボタンリンク"
+    }
+  ],
+  "presets": [
+    {
+      "name": "当店イチオシ"
+    }
+  ]
+}
+{% endschema %}

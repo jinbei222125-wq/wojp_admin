@@ -1,0 +1,149 @@
+{%- assign bg_class = '' -%}
+{%- if section.settings.background == 'beige' -%}
+  {%- assign bg_class = 'section--bg-beige' -%}
+{%- elsif section.settings.background == 'white' -%}
+  {%- assign bg_class = 'section--bg-white' -%}
+{%- endif -%}
+
+<section class="section-product-grid {{ bg_class }}" id="ProductGrid-{{ section.id }}">
+  <div class="container">
+    <div class="section-header">
+      {%- if section.settings.show_wave -%}
+        <div class="wave-deco" aria-hidden="true">〜〜〜</div>
+      {%- endif -%}
+      {%- if section.settings.subheading != blank -%}
+        <p class="section-subheading">{{ section.settings.subheading }}</p>
+      {%- endif -%}
+      <h2 class="section-title">{{ section.settings.title }}</h2>
+    </div>
+
+    <div class="products-grid">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'product' -%}
+          {%- assign product = block.settings.product -%}
+          <div class="product-card{% if block.settings.show_sale_badge %} sale-card{% endif %}" {{ block.shopify_attributes }}>
+            {%- if block.settings.show_sale_badge and block.settings.sale_label != blank -%}
+              <div class="sale-badge">{{ block.settings.sale_label }}</div>
+            {%- endif -%}
+            <div class="product-card__img-wrap">
+              {%- if product != blank -%}
+                <a href="{{ product.url }}">
+                  <img
+                    src="{{ product.featured_image | img_url: '400x400', crop: 'center' }}"
+                    alt="{{ product.featured_image.alt | default: product.title }}"
+                    loading="lazy"
+                    width="400" height="400"
+                  >
+                </a>
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+              {%- endif -%}
+            </div>
+            <div class="product-card__info">
+              {%- if product != blank -%}
+                <span class="product-card__label">{{ block.settings.label | default: '冷凍' }}</span>
+                <h3 class="product-card__name">
+                  <a href="{{ product.url }}">{{ product.title }}</a>
+                </h3>
+                <div class="product-card__stars" aria-label="評価5つ星">★★★★★</div>
+                <p class="product-card__price">
+                  {{ product.price | money }}
+                  <span class="product-card__tax">（税込）</span>
+                </p>
+                <a href="{{ product.url }}?variant={{ product.first_available_variant.id }}"
+                   class="btn-cart">
+                  カートに入れる
+                </a>
+              {%- else -%}
+                <span class="product-card__label">冷凍</span>
+                <h3 class="product-card__name">商品名が入ります</h3>
+                <div class="product-card__stars">★★★★★</div>
+                <p class="product-card__price">¥ 12,000<span class="product-card__tax">（税込）</span></p>
+                <a href="#" class="btn-cart">カートに入れる</a>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "商品グリッド",
+  "tag": "section",
+  "class": "section-product-grid",
+  "settings": [
+    {
+      "type": "select",
+      "id": "background",
+      "label": "背景色",
+      "options": [
+        { "value": "white", "label": "白" },
+        { "value": "beige", "label": "ベージュ" }
+      ],
+      "default": "white"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_wave",
+      "label": "波デコレーションを表示",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "サブ見出し"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "セクションタイトル",
+      "default": "商品一覧"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "商品",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "商品を選択"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "商品ラベル",
+          "default": "冷凍"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_sale_badge",
+          "label": "セールバッジを表示",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "sale_label",
+          "label": "セールラベル（例：25% OFF）",
+          "default": "25% OFF"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "商品グリッド",
+      "blocks": [
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" }
+      ]
+    }
+  ]
+}
+{% endschema %}

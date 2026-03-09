@@ -1,0 +1,18 @@
+<section class="page-content" id="PageContent">
+  <div class="container">
+    <div class="page-content__inner">
+      <h1 class="page-content__title">{{ page.title }}</h1>
+      <div class="page-content__body rte">
+        {{ page.content }}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "固定ページ",
+  "tag": "section",
+  "class": "section-main-page"
+}
+{% endschema %}

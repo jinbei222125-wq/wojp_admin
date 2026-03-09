@@ -1,0 +1,32 @@
+<div id="cart-drawer" class="cart-drawer" aria-hidden="true" role="dialog" aria-label="カート">
+  <div class="cart-drawer__overlay" id="cart-drawer-overlay"></div>
+  <div class="cart-drawer__panel">
+    <div class="cart-drawer__header">
+      <h2 class="cart-drawer__title">カート（<span id="cart-drawer-count">{{ cart.item_count }}</span>点）</h2>
+      <button class="cart-drawer__close" id="cart-drawer-close" aria-label="カートを閉じる">✕</button>
+    </div>
+    <div class="cart-drawer__body" id="cart-drawer-body">
+      {%- if cart.item_count > 0 -%}
+        {%- for item in cart.items -%}
+          <div class="cart-drawer__item">
+            <img src="{{ item.image | img_url: '80x80', crop: 'center' }}" alt="{{ item.product.title }}" width="80" height="80">
+            <div class="cart-drawer__item-info">
+              <p class="cart-drawer__item-name">{{ item.product.title }}</p>
+              <p class="cart-drawer__item-price">{{ item.final_price | money }} × {{ item.quantity }}</p>
+            </div>
+          </div>
+        {%- endfor -%}
+      {%- else -%}
+        <p class="cart-drawer__empty">カートは空です</p>
+      {%- endif -%}
+    </div>
+    <div class="cart-drawer__footer">
+      <div class="cart-drawer__total">
+        <span>合計</span>
+        <span id="cart-drawer-total">{{ cart.total_price | money }}</span>
+      </div>
+      <a href="{{ routes.checkout }}" class="btn-checkout">レジに進む</a>
+      <a href="{{ routes.cart_url }}" class="btn-continue">カートを見る</a>
+    </div>
+  </div>
+</div>

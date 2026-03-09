@@ -1,0 +1,182 @@
+<section class="section-news-sns" id="NewsSns-{{ section.id }}">
+  <div class="container">
+    <div class="news-sns-layout">
+
+      <!-- お知らせ -->
+      <div class="news-block">
+        <h2 class="block-title">{{ section.settings.news_title }}</h2>
+        {%- assign blog = blogs[section.settings.blog] -%}
+        {%- if blog != blank and blog.articles.size > 0 -%}
+          <ul class="news-list">
+            {%- for article in blog.articles limit: section.settings.news_count -%}
+              <li class="news-item">
+                <time class="news-date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+                  {{ article.published_at | date: '%Y.%m.%d' }}
+                </time>
+                <a href="{{ article.url }}" class="news-link">{{ article.title }}</a>
+              </li>
+            {%- endfor -%}
+          </ul>
+          <a href="{{ blog.url }}" class="btn-more-outline">一覧を見る →</a>
+        {%- else -%}
+          <ul class="news-list">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'news_item' -%}
+                <li class="news-item" {{ block.shopify_attributes }}>
+                  <time class="news-date">{{ block.settings.date }}</time>
+                  <a href="{{ block.settings.url }}" class="news-link">{{ block.settings.text }}</a>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+          <a href="{{ section.settings.news_more_url }}" class="btn-more-outline">一覧を見る →</a>
+        {%- endif -%}
+      </div>
+
+      <!-- 公式SNS -->
+      <div class="sns-block">
+        <h2 class="block-title">{{ section.settings.sns_title }}</h2>
+        {%- if section.settings.sns_description != blank -%}
+          <p class="sns-desc">{{ section.settings.sns_description }}</p>
+        {%- endif -%}
+        <div class="sns-links">
+          {%- if section.settings.facebook_url != blank -%}
+            <a href="{{ section.settings.facebook_url }}" class="sns-btn sns-btn--facebook" target="_blank" rel="noopener noreferrer">
+              <span class="sns-btn__icon" aria-hidden="true">f</span> Facebook
+            </a>
+          {%- endif -%}
+          {%- if section.settings.twitter_url != blank -%}
+            <a href="{{ section.settings.twitter_url }}" class="sns-btn sns-btn--twitter" target="_blank" rel="noopener noreferrer">
+              <span class="sns-btn__icon" aria-hidden="true">𝕏</span> X (Twitter)
+            </a>
+          {%- endif -%}
+          {%- if section.settings.instagram_url != blank -%}
+            <a href="{{ section.settings.instagram_url }}" class="sns-btn sns-btn--instagram" target="_blank" rel="noopener noreferrer">
+              <span class="sns-btn__icon" aria-hidden="true">📷</span> Instagram
+            </a>
+          {%- endif -%}
+          {%- if section.settings.youtube_url != blank -%}
+            <a href="{{ section.settings.youtube_url }}" class="sns-btn sns-btn--youtube" target="_blank" rel="noopener noreferrer">
+              <span class="sns-btn__icon" aria-hidden="true">▶</span> YouTube
+            </a>
+          {%- endif -%}
+          {%- if section.settings.tiktok_url != blank -%}
+            <a href="{{ section.settings.tiktok_url }}" class="sns-btn sns-btn--tiktok" target="_blank" rel="noopener noreferrer">
+              <span class="sns-btn__icon" aria-hidden="true">♪</span> TikTok
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "お知らせ・SNS",
+  "tag": "section",
+  "class": "section-news-sns",
+  "settings": [
+    {
+      "type": "header",
+      "content": "お知らせ設定"
+    },
+    {
+      "type": "text",
+      "id": "news_title",
+      "label": "お知らせタイトル",
+      "default": "お知らせ"
+    },
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "ブログを選択"
+    },
+    {
+      "type": "range",
+      "id": "news_count",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 3,
+      "label": "表示件数"
+    },
+    {
+      "type": "url",
+      "id": "news_more_url",
+      "label": "一覧ページURL"
+    },
+    {
+      "type": "header",
+      "content": "SNS設定"
+    },
+    {
+      "type": "text",
+      "id": "sns_title",
+      "label": "SNSタイトル",
+      "default": "公式SNS"
+    },
+    {
+      "type": "text",
+      "id": "sns_description",
+      "label": "SNS説明文",
+      "default": "公式の各SNSの情報を随時更新しています。"
+    },
+    {
+      "type": "url",
+      "id": "facebook_url",
+      "label": "Facebook URL"
+    },
+    {
+      "type": "url",
+      "id": "twitter_url",
+      "label": "X (Twitter) URL"
+    },
+    {
+      "type": "url",
+      "id": "instagram_url",
+      "label": "Instagram URL"
+    },
+    {
+      "type": "url",
+      "id": "youtube_url",
+      "label": "YouTube URL"
+    },
+    {
+      "type": "url",
+      "id": "tiktok_url",
+      "label": "TikTok URL"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "news_item",
+      "name": "お知らせ（手動入力）",
+      "settings": [
+        {
+          "type": "text",
+          "id": "date",
+          "label": "日付",
+          "default": "2025.01.01"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "お知らせ内容"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "リンクURL"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "お知らせ・SNS"
+    }
+  ]
+}
+{% endschema %}

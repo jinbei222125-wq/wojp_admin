@@ -1,0 +1,46 @@
+{
+  "general": {
+    "search": {
+      "search": "Search",
+      "placeholder": "Search products..."
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Add to cart",
+      "sold_out": "Sold out",
+      "unavailable": "Unavailable",
+      "quantity": "Quantity",
+      "vendor": "Vendor"
+    }
+  },
+  "sections": {
+    "cart": {
+      "cart_error": "Failed to add to cart.",
+      "cart_quantity_error_html": "You can only add [quantity] of this item to your cart."
+    }
+  },
+  "customer": {
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Login",
+      "forgot_password": "Forgot your password?"
+    },
+    "register": {
+      "title": "Register",
+      "submit": "Register"
+    },
+    "account": {
+      "title": "My Account"
+    },
+    "orders": {
+      "title": "Order History"
+    }
+  }
+}

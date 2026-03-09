@@ -1,0 +1,46 @@
+{
+  "general": {
+    "search": {
+      "search": "検索",
+      "placeholder": "商品を検索..."
+    },
+    "pagination": {
+      "previous": "前へ",
+      "next": "次へ"
+    }
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "カートに入れる",
+      "sold_out": "売り切れ",
+      "unavailable": "在庫なし",
+      "quantity": "数量",
+      "vendor": "ブランド"
+    }
+  },
+  "sections": {
+    "cart": {
+      "cart_error": "カートへの追加に失敗しました。",
+      "cart_quantity_error_html": "在庫数を超えています（最大: [quantity]点）"
+    }
+  },
+  "customer": {
+    "login": {
+      "title": "ログイン",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "submit": "ログイン",
+      "forgot_password": "パスワードをお忘れですか？"
+    },
+    "register": {
+      "title": "新規会員登録",
+      "submit": "登録する"
+    },
+    "account": {
+      "title": "マイページ"
+    },
+    "orders": {
+      "title": "注文履歴"
+    }
+  }
+}

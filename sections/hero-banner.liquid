@@ -1,0 +1,102 @@
+<section class="hero-section" id="Hero-{{ section.id }}">
+  {%- if section.settings.image != blank -%}
+    <img
+      src="{{ section.settings.image | img_url: '1600x' }}"
+      srcset="{{ section.settings.image | img_url: '800x' }} 800w, {{ section.settings.image | img_url: '1200x' }} 1200w, {{ section.settings.image | img_url: '1600x' }} 1600w"
+      sizes="100vw"
+      alt="{{ section.settings.image.alt | default: section.settings.hero_title }}"
+      class="hero__full-img"
+      loading="eager"
+      fetchpriority="high"
+    >
+  {%- else -%}
+    <div class="hero__inner container">
+      <div class="hero__badge-wrap">
+        <div class="hero__badge">
+          <p class="hero__badge-text">{{ section.settings.badge_text }}</p>
+          <p class="hero__badge-weight">{{ section.settings.badge_weight }}</p>
+        </div>
+      </div>
+      <div class="hero__content">
+        <p class="hero__origin">{{ section.settings.hero_origin }}</p>
+        <h2 class="hero__title">{{ section.settings.hero_title }}</h2>
+        {%- if section.settings.hero_date != blank -%}
+          <div class="hero__date-badge">
+            <span class="hero__date-num">{{ section.settings.hero_date }}</span>
+            <span class="hero__date-label">{{ section.settings.hero_date_label }}</span>
+          </div>
+        {%- endif -%}
+        {%- if section.settings.button_label != blank -%}
+          <a href="{{ section.settings.button_url }}" class="hero__btn">{{ section.settings.button_label }}</a>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "ヒーローバナー",
+  "tag": "section",
+  "class": "section-hero",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "バナー画像（推奨: 1600×600px）"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "バッジテキスト",
+      "default": "厚！むきホタテ"
+    },
+    {
+      "type": "text",
+      "id": "badge_weight",
+      "label": "バッジ重量",
+      "default": "500g"
+    },
+    {
+      "type": "text",
+      "id": "hero_origin",
+      "label": "産地テキスト",
+      "default": "北海道直送"
+    },
+    {
+      "type": "text",
+      "id": "hero_title",
+      "label": "メインキャッチコピー",
+      "default": "極上の味をご自宅で"
+    },
+    {
+      "type": "text",
+      "id": "hero_date",
+      "label": "日付テキスト",
+      "default": "12月1日"
+    },
+    {
+      "type": "text",
+      "id": "hero_date_label",
+      "label": "日付ラベル",
+      "default": "予約開始"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "ボタンテキスト",
+      "default": "商品を見る"
+    },
+    {
+      "type": "url",
+      "id": "button_url",
+      "label": "ボタンリンク"
+    }
+  ],
+  "presets": [
+    {
+      "name": "ヒーローバナー"
+    }
+  ]
+}
+{% endschema %}

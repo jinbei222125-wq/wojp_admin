@@ -1,0 +1,162 @@
+<header class="site-header" role="banner">
+  <div class="header__inner container">
+
+    <!-- ロゴ -->
+    <div class="header__logo">
+      <a href="{{ routes.root_url }}" class="header__logo-link">
+        {%- if section.settings.logo != blank -%}
+          <img
+            src="{{ section.settings.logo | img_url: '200x' }}"
+            alt="{{ section.settings.logo.alt | default: shop.name }}"
+            class="header__logo-img"
+            width="{{ section.settings.logo_width }}"
+            loading="eager"
+          >
+        {%- else -%}
+          <span class="header__logo-text">{{ shop.name }}</span>
+        {%- endif -%}
+      </a>
+    </div>
+
+    <!-- ナビゲーション -->
+    <nav class="header__nav" role="navigation" aria-label="メインナビゲーション">
+      <ul class="header__nav-list">
+        {%- for link in section.settings.menu.links -%}
+          <li class="header__nav-item{% if link.links.size > 0 %} header__nav-item--has-dropdown{% endif %}">
+            <a href="{{ link.url }}" class="header__nav-link{% if link.active %} header__nav-link--active{% endif %}">
+              {{ link.title }}
+              {%- if link.links.size > 0 -%}
+                <span class="header__nav-arrow" aria-hidden="true">▾</span>
+              {%- endif -%}
+            </a>
+            {%- if link.links.size > 0 -%}
+              <ul class="header__dropdown">
+                {%- for child_link in link.links -%}
+                  <li>
+                    <a href="{{ child_link.url }}" class="header__dropdown-link{% if child_link.active %} active{% endif %}">
+                      {{ child_link.title }}
+                    </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+
+    <!-- アイコン群 -->
+    <div class="header__icons">
+
+      <!-- 検索 -->
+      <button class="header__icon-btn" id="search-toggle" aria-label="検索" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+
+      <!-- アカウント -->
+      {%- if shop.customer_accounts_enabled -%}
+        <a href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
+           class="header__icon-btn"
+           aria-label="{%- if customer -%}マイページ{%- else -%}ログイン{%- endif -%}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+        </a>
+      {%- endif -%}
+
+      <!-- カート -->
+      <a href="{{ routes.cart_url }}" class="header__icon-btn header__cart-btn" id="cart-icon-bubble" aria-label="カート">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+        {%- if cart.item_count > 0 -%}
+          <span class="header__cart-count" aria-label="{{ cart.item_count }}点">{{ cart.item_count }}</span>
+        {%- endif -%}
+      </a>
+
+      <!-- ハンバーガー（モバイル） -->
+      <button class="header__menu-toggle" id="menu-toggle" aria-label="メニューを開く" aria-expanded="false">
+        <span class="header__menu-icon"></span>
+        <span class="header__menu-icon"></span>
+        <span class="header__menu-icon"></span>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- 検索フォーム（展開式） -->
+  <div class="header__search-bar" id="search-bar" aria-hidden="true">
+    <div class="container">
+      <form action="{{ routes.search_url }}" method="get" role="search" class="header__search-form">
+        <input
+          type="search"
+          name="q"
+          placeholder="商品を検索..."
+          class="header__search-input"
+          aria-label="検索キーワード"
+        >
+        <button type="submit" class="header__search-submit" aria-label="検索実行">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- モバイルメニュー -->
+  <nav class="header__mobile-nav" id="mobile-menu" aria-hidden="true">
+    <ul class="header__mobile-nav-list">
+      {%- for link in section.settings.menu.links -%}
+        <li class="header__mobile-nav-item">
+          <a href="{{ link.url }}" class="header__mobile-nav-link">{{ link.title }}</a>
+          {%- if link.links.size > 0 -%}
+            <ul class="header__mobile-subnav">
+              {%- for child_link in link.links -%}
+                <li><a href="{{ child_link.url }}">{{ child_link.title }}</a></li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </nav>
+
+</header>
+
+{% schema %}
+{
+  "name": "ヘッダー",
+  "class": "section-header",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "ロゴ画像"
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "min": 50,
+      "max": 300,
+      "step": 10,
+      "default": 150,
+      "unit": "px",
+      "label": "ロゴ幅"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "main-menu",
+      "label": "ナビゲーションメニュー"
+    }
+  ]
+}
+{% endschema %}

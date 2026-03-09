@@ -1,0 +1,223 @@
+<!-- フッターナビバー -->
+<div class="footer-nav-bar">
+  <div class="container">
+    <div class="footer-nav-grid">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'nav_item' -%}
+          <a href="{{ block.settings.url }}" class="footer-nav-item" {{ block.shopify_attributes }}>
+            <div class="footer-nav-icon">
+              {%- if block.settings.icon != blank -%}
+                <img src="{{ block.settings.icon | img_url: '60x60' }}" alt="{{ block.settings.label }}">
+              {%- else -%}
+                <span class="footer-nav-emoji">{{ block.settings.emoji }}</span>
+              {%- endif -%}
+            </div>
+            <p>{{ block.settings.label }}</p>
+          </a>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+<!-- メインフッター -->
+<footer class="site-footer" role="contentinfo">
+  <div class="container">
+    <div class="footer__top">
+
+      <!-- ロゴ -->
+      <div class="footer__logo-col">
+        {%- if section.settings.footer_logo != blank -%}
+          <img src="{{ section.settings.footer_logo | img_url: '160x' }}" alt="{{ shop.name }}" class="footer__logo-img">
+        {%- else -%}
+          <span class="footer__logo-text">{{ shop.name }}</span>
+        {%- endif -%}
+        {%- if section.settings.footer_description != blank -%}
+          <p class="footer__description">{{ section.settings.footer_description }}</p>
+        {%- endif -%}
+      </div>
+
+      <!-- リンク群 -->
+      <div class="footer__links-grid">
+        {%- for i in (1..4) -%}
+          {%- assign menu_setting = 'footer_menu_' | append: i -%}
+          {%- assign title_setting = 'footer_menu_title_' | append: i -%}
+          {%- assign menu = section.settings[menu_setting] -%}
+          {%- if menu != blank -%}
+            <div class="footer__links-col">
+              <h4 class="footer__links-title">{{ section.settings[title_setting] }}</h4>
+              <ul>
+                {%- for link in linklists[menu].links -%}
+                  <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+
+    </div>
+
+    <div class="footer__bottom">
+      <!-- 決済アイコン -->
+      <div class="footer__payment">
+        {%- for type in shop.enabled_payment_types -%}
+          {{ type | payment_type_svg_tag: class: 'footer__payment-icon' }}
+        {%- endfor -%}
+      </div>
+      <!-- コピーライト -->
+      <p class="footer__copyright">
+        &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All Rights Reserved.
+      </p>
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "フッター",
+  "class": "section-footer",
+  "settings": [
+    {
+      "type": "header",
+      "content": "フッターロゴ"
+    },
+    {
+      "type": "image_picker",
+      "id": "footer_logo",
+      "label": "フッターロゴ画像"
+    },
+    {
+      "type": "textarea",
+      "id": "footer_description",
+      "label": "フッター説明文"
+    },
+    {
+      "type": "header",
+      "content": "フッターメニュー1"
+    },
+    {
+      "type": "text",
+      "id": "footer_menu_title_1",
+      "label": "メニュータイトル1",
+      "default": "商品一覧"
+    },
+    {
+      "type": "link_list",
+      "id": "footer_menu_1",
+      "label": "メニュー1",
+      "default": "footer"
+    },
+    {
+      "type": "header",
+      "content": "フッターメニュー2"
+    },
+    {
+      "type": "text",
+      "id": "footer_menu_title_2",
+      "label": "メニュータイトル2",
+      "default": "ご利用ガイド"
+    },
+    {
+      "type": "link_list",
+      "id": "footer_menu_2",
+      "label": "メニュー2"
+    },
+    {
+      "type": "header",
+      "content": "フッターメニュー3"
+    },
+    {
+      "type": "text",
+      "id": "footer_menu_title_3",
+      "label": "メニュータイトル3",
+      "default": "運営会社情報"
+    },
+    {
+      "type": "link_list",
+      "id": "footer_menu_3",
+      "label": "メニュー3"
+    },
+    {
+      "type": "header",
+      "content": "フッターメニュー4"
+    },
+    {
+      "type": "text",
+      "id": "footer_menu_title_4",
+      "label": "メニュータイトル4",
+      "default": "お問い合わせ"
+    },
+    {
+      "type": "link_list",
+      "id": "footer_menu_4",
+      "label": "メニュー4"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "nav_item",
+      "name": "フッターナビアイテム",
+      "settings": [
+        {
+          "type": "text",
+          "id": "emoji",
+          "label": "絵文字アイコン",
+          "default": "🐟"
+        },
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "アイコン画像（任意）"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "ラベルテキスト",
+          "default": "はじめての方へ"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "リンクURL"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "フッター",
+      "blocks": [
+        {
+          "type": "nav_item",
+          "settings": {
+            "emoji": "🐟",
+            "label": "はじめての方へ"
+          }
+        },
+        {
+          "type": "nav_item",
+          "settings": {
+            "emoji": "📦",
+            "label": "在庫限定\nお得な商品"
+          }
+        },
+        {
+          "type": "nav_item",
+          "settings": {
+            "emoji": "🎁",
+            "label": "贈答用商品\nギフトセット"
+          }
+        },
+        {
+          "type": "nav_item",
+          "settings": {
+            "emoji": "❓",
+            "label": "お問い合わせ"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

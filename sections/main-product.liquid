@@ -1,0 +1,164 @@
+<section class="product-page" id="ProductPage-{{ product.id }}">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="パンくずリスト">
+      <ol class="breadcrumb__list">
+        <li><a href="{{ routes.root_url }}">ホーム</a></li>
+        {%- if collection -%}
+          <li><a href="{{ collection.url }}">{{ collection.title }}</a></li>
+        {%- endif -%}
+        <li aria-current="page">{{ product.title }}</li>
+      </ol>
+    </nav>
+
+    <div class="product-page__layout">
+      <!-- 画像ギャラリー -->
+      <div class="product-page__gallery">
+        <div class="product-gallery__main" id="product-gallery-main">
+          {%- assign featured_media = product.selected_or_first_available_variant.featured_media | default: product.featured_media -%}
+          {%- if featured_media -%}
+            <img
+              id="product-main-img"
+              src="{{ featured_media | img_url: '800x800', crop: 'center' }}"
+              alt="{{ featured_media.alt | default: product.title }}"
+              loading="eager"
+              width="800" height="800"
+              class="product-gallery__main-img"
+            >
+          {%- else -%}
+            {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg product-gallery__main-img' }}
+          {%- endif -%}
+        </div>
+        {%- if product.media.size > 1 -%}
+          <div class="product-gallery__thumbs">
+            {%- for media in product.media -%}
+              <button
+                class="product-gallery__thumb-btn{% if media == featured_media %} active{% endif %}"
+                data-src="{{ media | img_url: '800x800', crop: 'center' }}"
+                aria-label="{{ media.alt | default: product.title }}"
+              >
+                <img
+                  src="{{ media | img_url: '120x120', crop: 'center' }}"
+                  alt="{{ media.alt | default: product.title }}"
+                  loading="lazy"
+                  width="120" height="120"
+                >
+              </button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      <!-- 商品情報 -->
+      <div class="product-page__info">
+        {%- if product.vendor != blank -%}
+          <p class="product-page__vendor">{{ product.vendor }}</p>
+        {%- endif -%}
+        <h1 class="product-page__title">{{ product.title }}</h1>
+
+        <div class="product-page__stars">★★★★★</div>
+
+        <div class="product-page__price" id="product-price">
+          {%- if product.compare_at_price > product.price -%}
+            <span class="product-page__price-compare">{{ product.compare_at_price | money }}</span>
+          {%- endif -%}
+          <span class="product-page__price-current">{{ product.price | money }}</span>
+          <span class="product-page__price-tax">（税込）</span>
+          {%- if product.compare_at_price > product.price -%}
+            <span class="product-page__sale-badge">SALE</span>
+          {%- endif -%}
+        </div>
+
+        {%- unless product.has_only_default_variant -%}
+          <div class="product-page__variants">
+            {%- for option in product.options_with_values -%}
+              <div class="product-page__option">
+                <label class="product-page__option-label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
+                  {{ option.name }}
+                </label>
+                <select
+                  id="Option-{{ section.id }}-{{ forloop.index0 }}"
+                  class="product-page__option-select"
+                  name="options[{{ option.name | escape }}]"
+                >
+                  {%- for value in option.values -%}
+                    <option
+                      value="{{ value | escape }}"
+                      {% if option.selected_value == value %}selected="selected"{% endif %}
+                    >
+                      {{ value }}
+                    </option>
+                  {%- endfor -%}
+                </select>
+              </div>
+            {%- endfor -%}
+          </div>
+        {%- endunless -%}
+
+        <div class="product-page__quantity">
+          <label for="Quantity-{{ section.id }}" class="product-page__quantity-label">数量</label>
+          <div class="product-page__quantity-wrap">
+            <button class="quantity-btn quantity-btn--minus" aria-label="数量を減らす">−</button>
+            <input
+              type="number"
+              id="Quantity-{{ section.id }}"
+              name="quantity"
+              min="1"
+              value="1"
+              class="product-page__quantity-input"
+              aria-label="数量"
+            >
+            <button class="quantity-btn quantity-btn--plus" aria-label="数量を増やす">＋</button>
+          </div>
+        </div>
+
+        <div class="product-page__actions">
+          {%- form 'product', product, id: 'product-form', novalidate: 'novalidate' -%}
+            <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" id="ProductVariantId">
+            <button
+              type="submit"
+              name="add"
+              class="btn-cart-large"
+              {% if product.selected_or_first_available_variant.available == false %}disabled{% endif %}
+            >
+              {%- if product.selected_or_first_available_variant.available -%}
+                カートに入れる
+              {%- else -%}
+                売り切れ
+              {%- endif -%}
+            </button>
+          {%- endform -%}
+        </div>
+
+        {%- if product.description != blank -%}
+          <div class="product-page__description">
+            {{ product.description }}
+          </div>
+        {%- endif -%}
+
+        <!-- 配送・安心情報 -->
+        <div class="product-page__trust">
+          <div class="trust-item">
+            <span class="trust-icon">🚚</span>
+            <span>北海道直送・産地直送</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon">❄️</span>
+            <span>冷凍便でお届け</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon">🎁</span>
+            <span>ギフト包装対応</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "商品詳細",
+  "tag": "section",
+  "class": "section-main-product"
+}
+{% endschema %}

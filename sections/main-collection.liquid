@@ -1,0 +1,95 @@
+<section class="collection-page" id="CollectionPage">
+  <div class="container">
+    <!-- コレクションヘッダー -->
+    <div class="collection-page__header">
+      {%- if collection.image -%}
+        <div class="collection-page__banner">
+          <img
+            src="{{ collection.image | img_url: '1600x400', crop: 'center' }}"
+            alt="{{ collection.image.alt | default: collection.title }}"
+            loading="eager"
+            class="collection-page__banner-img"
+          >
+          <div class="collection-page__banner-overlay">
+            <h1 class="collection-page__title">{{ collection.title }}</h1>
+          </div>
+        </div>
+      {%- else -%}
+        <h1 class="collection-page__title collection-page__title--no-banner">{{ collection.title }}</h1>
+      {%- endif -%}
+      {%- if collection.description != blank -%}
+        <div class="collection-page__desc">{{ collection.description }}</div>
+      {%- endif -%}
+    </div>
+
+    <!-- フィルター・ソート -->
+    <div class="collection-page__toolbar">
+      <p class="collection-page__count">{{ collection.products_count }}件の商品</p>
+      <div class="collection-page__sort">
+        <label for="SortBy" class="visually-hidden">並び替え</label>
+        <select name="sort_by" id="SortBy" class="collection-page__sort-select">
+          {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+          {%- for option in collection.sort_options -%}
+            <option value="{{ option.value }}" {% if option.value == sort_by %}selected="selected"{% endif %}>
+              {{ option.name }}
+            </option>
+          {%- endfor -%}
+        </select>
+      </div>
+    </div>
+
+    <!-- 商品グリッド -->
+    <div class="products-grid" id="product-grid">
+      {%- for product in collection.products -%}
+        <div class="product-card">
+          <div class="product-card__img-wrap">
+            <a href="{{ product.url }}">
+              {%- if product.featured_image -%}
+                <img
+                  src="{{ product.featured_image | img_url: '400x400', crop: 'center' }}"
+                  alt="{{ product.featured_image.alt | default: product.title }}"
+                  loading="lazy"
+                  width="400" height="400"
+                >
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+              {%- endif -%}
+            </a>
+          </div>
+          <div class="product-card__info">
+            <span class="product-card__label">冷凍</span>
+            <h3 class="product-card__name">
+              <a href="{{ product.url }}">{{ product.title }}</a>
+            </h3>
+            <div class="product-card__stars">★★★★★</div>
+            <p class="product-card__price">
+              {{ product.price | money }}
+              <span class="product-card__tax">（税込）</span>
+            </p>
+            <a href="{{ product.url }}?variant={{ product.first_available_variant.id }}"
+               class="btn-cart">
+              カートに入れる
+            </a>
+          </div>
+        </div>
+      {%- else -%}
+        <p class="collection-page__empty">現在この商品カテゴリーには商品がありません。</p>
+      {%- endfor -%}
+    </div>
+
+    <!-- ページネーション -->
+    {%- if paginate.pages > 1 -%}
+      <div class="pagination">
+        {{ paginate | default_pagination }}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "商品一覧",
+  "tag": "section",
+  "class": "section-main-collection"
+}
+{% endschema %}
