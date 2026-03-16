@@ -35,11 +35,11 @@ assign heading_font = settings.type_heading_font
 <a class="skip-to-content-link button visually-hidden" href="#MainContent">
     メインコンテンツへスキップ
 </a>
-{% section 'wg-header' %}
+{% section 'header' %}
 <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
 {{ content_for_layout }}
 </main>
-{% section 'wg-footer' %}
+{% section 'footer' %}
 <script src="{{ 'wingrow.js' | asset_url }}" defer="defer"></script>
 <script>
 window.shopUrl = '{{ shop.url }}';
