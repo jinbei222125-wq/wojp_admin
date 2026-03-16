@@ -1,0 +1,125 @@
+{% comment %}
+  WinGrow ヒーロースライダーセクション
+  - 3カラムペークスタイル（アクティブ65%、左右17.5%ずつ見える）
+  - 縦書きテキストオーバーレイ
+  - ドットナビゲーション
+  - ブロックで各スライドを管理
+  - wingrow.css の読み込みと波テクスチャURLの注入もここで行う（wg-headerの代替）
+{% endcomment %}
+
+<link rel="stylesheet" href="{{ 'wingrow.css' | asset_url }}" type="text/css">
+
+{%- comment %} 波テクスチャURLをCSS変数で注入（静的CSSではasset_urlが使えないため） {%- endcomment %}
+<style>
+  :root {
+    --wg-wave-url: url('{{ "wave_texture.svg" | asset_url }}');
+    --wg-wave-icon-url: url('{{ "wave_icon.png" | asset_url }}');
+  }
+</style>
+
+<div class="wg-site">
+  <section class="wg-hero">
+    <div class="wg-hero__track-wrapper">
+      <div class="wg-hero__track" id="wgHeroTrack">
+
+        {%- for block in section.blocks -%}
+          <div class="wg-hero__slide" {{ block.shopify_attributes }}>
+            <div class="wg-hero__slide-inner">
+              {%- if block.settings.image != blank -%}
+                <img
+                  src="{{ block.settings.image | image_url: width: 1400 }}"
+                  alt="{{ block.settings.image.alt | default: block.settings.main_text | escape }}"
+                  width="1400"
+                  height="580"
+                  {% if forloop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}>
+              {%- else -%}
+                {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+              {%- endif -%}
+
+              <div class="wg-hero__slide-content">
+                <div class="wg-hero__text-wrapper">
+                  <div class="wg-hero__slide-text">{{ block.settings.main_text }}</div>
+                  {%- if block.settings.sub_text != blank -%}
+                    <div class="wg-hero__slide-sub">{{ block.settings.sub_text }}</div>
+                  {%- endif -%}
+                </div>
+              </div>
+            </div>
+          </div>
+        {%- endfor -%}
+
+      </div>
+    </div>
+
+    {%- comment %} ドットナビゲーション {%- endcomment %}
+    <div class="wg-hero__dots">
+      {%- for block in section.blocks -%}
+        <span
+          class="wg-hero__dot{% if forloop.first %} active{% endif %}"
+          data-index="{{ forloop.index0 }}"
+          aria-label="{{ forloop.index }}枚目のスライドへ"></span>
+      {%- endfor -%}
+    </div>
+  </section>
+</div>
+
+<script src="{{ 'wingrow.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "WinGrow ヒーロースライダー",
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "スライド",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "背景画像"
+        },
+        {
+          "type": "text",
+          "id": "main_text",
+          "label": "メインテキスト（縦書き）",
+          "default": "極上の味を\nご自宅で。"
+        },
+        {
+          "type": "text",
+          "id": "sub_text",
+          "label": "サブテキスト（縦書き）",
+          "default": "北海道直送"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "WinGrow ヒーロースライダー",
+      "blocks": [
+        {
+          "type": "slide",
+          "settings": {
+            "main_text": "極上の味を\nご自宅で。",
+            "sub_text": "北海道直送"
+          }
+        },
+        {
+          "type": "slide",
+          "settings": {
+            "main_text": "旬の美味しさを\nお届け",
+            "sub_text": "新鮮直送"
+          }
+        },
+        {
+          "type": "slide",
+          "settings": {
+            "main_text": "大切な方への\n贈り物に",
+            "sub_text": "ギフト対応"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

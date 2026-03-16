@@ -1,0 +1,515 @@
+{% comment %}
+  WinGrow フッターセクション
+  3層構造：
+  1. フッタートップ（ネイビー + 波テクスチャ + 4列ナビ）
+  2. フッターメイン（白 + デコ画像 + リンク + 決済アイコン）
+  3. フッターボトム（赤 + 法的リンク + コピーライト）
+
+  ★ ブロック未設定（theme.liquid 固定呼び出し等）の場合は自動で非表示
+{% endcomment %}
+
+{%- if section.blocks.size == 0 -%}
+  {%- comment %} ブロックが空 = theme.liquid の固定セクション側 → 非表示にして二重表示を防ぐ {%- endcomment -%}
+  <style>
+    #shopify-section-{{ section.id }} { display: none !important; }
+  </style>
+{%- else -%}
+
+{%- comment %}
+  WinGrowフッターセクション固有IDを使った確実な非表示制御
+  {{ section.id }} → Shopify が割り当てる一意のID（例: sections--12345678--wg-footer）
+  CSS の ~ セレクターで「このセクション以降の全兄弟セクション」を非表示にする
+{%- endcomment %}
+<style>
+  /* ★ WinGrowフッターより後ろの全セクションを非表示（最も確実な方法） */
+  #shopify-section-{{ section.id }} ~ .shopify-section,
+  #shopify-section-{{ section.id }} ~ .shopify-section-group {
+    display: none !important;
+  }
+
+  /* 既存テーマの header / footer タグを非表示 */
+  footer,
+  header {
+    display: none !important;
+  }
+  /* WinGrow の .wg-site 内の header / footer だけ表示 */
+  .wg-site footer,
+  .wg-site header {
+    display: block !important;
+  }
+</style>
+
+<div class="wg-site">
+
+  {%- comment %} ======== フッタートップ ======== {%- endcomment %}
+  <footer class="wg-footer-top">
+    <div class="wg-footer-top__wave"></div>
+    <div class="wg-container">
+      <div class="wg-footer-nav-grid">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'nav_item' -%}
+            <a href="{{ block.settings.url | default: '#' }}" class="wg-footer-nav-item" {{ block.shopify_attributes }}>
+              <div class="wg-footer-nav-icon">
+                {%- case block.settings.icon -%}
+                  {%- when 'home' -%}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                      <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg>
+                  {%- when 'user' -%}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  {%- when 'building' -%}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                    </svg>
+                  {%- when 'mail' -%}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                      <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                  {%- else -%}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <circle cx="12" cy="12" r="10" />
+                    </svg>
+                {%- endcase -%}
+              </div>
+              <h3 class="wg-footer-nav-title">
+                {{ block.settings.title }}
+                {%- if block.settings.external -%}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                {%- endif -%}
+              </h3>
+              <p class="wg-footer-nav-desc">{{ block.settings.description }}</p>
+            </a>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </footer>
+
+  {%- comment %} ======== フッターメイン ======== {%- endcomment %}
+  <div class="wg-footer-main">
+    {%- comment %} 左側装飾画像：管理画面で設定された画像 or assets のデフォルト画像 {%- endcomment %}
+    {%- if section.settings.deco_left != blank -%}
+      <img
+        src="{{ section.settings.deco_left | image_url: width: 520 }}"
+        alt=""
+        class="wg-footer-deco-left"
+        width="260"
+        height="{{ section.settings.deco_left.height }}"
+        loading="lazy">
+    {%- else -%}
+      <img
+        src="{{ 'footer_deco_left.png' | asset_url }}"
+        alt=""
+        class="wg-footer-deco-left"
+        width="350"
+        height="220"
+        loading="lazy">
+    {%- endif -%}
+    {%- comment %} 右側装飾画像：管理画面で設定された画像 or assets のデフォルト画像 {%- endcomment %}
+    {%- if section.settings.deco_right != blank -%}
+      <img
+        src="{{ section.settings.deco_right | image_url: width: 520 }}"
+        alt=""
+        class="wg-footer-deco-right"
+        width="260"
+        height="{{ section.settings.deco_right.height }}"
+        loading="lazy">
+    {%- else -%}
+      <img
+        src="{{ 'footer_deco_right.png' | asset_url }}"
+        alt=""
+        class="wg-footer-deco-right"
+        width="346"
+        height="220"
+        loading="lazy">
+    {%- endif -%}
+
+    <div class="wg-container">
+      <div class="wg-footer-logo">
+        {%- if section.settings.footer_logo != blank -%}
+          <img
+            src="{{ section.settings.footer_logo | image_url: width: 240 }}"
+            alt="{{ shop.name | escape }}"
+            width="240"
+            height="{{ section.settings.footer_logo.height }}"
+            loading="lazy">
+        {%- else -%}
+          {{ shop.name }}
+        {%- endif -%}
+      </div>
+
+      <div class="wg-footer-links">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'link_group' -%}
+            <div class="wg-footer-link-group" {{ block.shopify_attributes }}>
+              <h4>{{ block.settings.heading }}</h4>
+              <ul>
+                {%- assign links_text = block.settings.links_text | split: ',' -%}
+                {%- assign links_url = block.settings.links_url | split: ',' -%}
+                {%- for link_text in links_text -%}
+                  <li>
+                    <a href="{{ links_url[forloop.index0] | strip | default: '#' }}">
+                      {{ link_text | strip }}
+                    </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+
+      {%- comment %} 決済アイコン {%- endcomment %}
+      <div class="wg-footer-payment">
+        <div class="wg-footer-payment__icons">
+          {%- if section.settings.payment_image != blank -%}
+            <img
+              src="{{ section.settings.payment_image | image_url: width: 600 }}"
+              alt="対応クレジットカード"
+              style="height:40px; width:auto;"
+              width="{{ section.settings.payment_image.width }}"
+              height="{{ section.settings.payment_image.height }}"
+              loading="lazy">
+          {%- else -%}
+            {%- comment %}
+              shop.enabled_payment_types はShopify管理画面で設定された支払い方法しか返さないため、
+              主要カードブランドを固定リストで確実に表示する
+            {%- endcomment -%}
+            {{ 'visa' | payment_type_svg_tag: class: 'wg-payment-icon' }}
+            {{ 'master' | payment_type_svg_tag: class: 'wg-payment-icon' }}
+            {{ 'american_express' | payment_type_svg_tag: class: 'wg-payment-icon' }}
+            {{ 'jcb' | payment_type_svg_tag: class: 'wg-payment-icon' }}
+            {{ 'diners_club' | payment_type_svg_tag: class: 'wg-payment-icon' }}
+            {{ 'shop_pay' | payment_type_svg_tag: class: 'wg-payment-icon' }}
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {%- comment %} ======== フッターボトム ======== {%- endcomment %}
+  <div class="wg-footer-bottom">
+    <div class="wg-footer-bottom__inner">
+      <div class="wg-footer-legal-links">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'legal_link' -%}
+            <a href="{{ block.settings.url | default: '#' }}" {{ block.shopify_attributes }}>
+              {{ block.settings.text }}
+            </a>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+  <div class="wg-footer-copyright">
+    {{ section.settings.copyright }}
+  </div>
+
+</div>
+
+<script>
+/* ★ 既存テーマのフッターをMutationObserver付きJavaScriptで確実に非表示 */
+(function () {
+  'use strict';
+
+  /* .wg-site 外にある footer タグ・フッター関連要素を非表示にする */
+  function wgHideExistingFooter() {
+    /* footer タグ（.wg-site 外のもの） */
+    document.querySelectorAll('footer').forEach(function (el) {
+      if (!el.closest('.wg-site')) {
+        el.style.setProperty('display', 'none', 'important');
+      }
+    });
+
+    /* Shopify のセクショングループ・セクションIDによるフッター非表示 */
+    var idSelectors = [
+      '#shopify-section-group-footer-group',
+      '#shopify-section-footer'
+    ];
+    idSelectors.forEach(function (sel) {
+      var el = document.querySelector(sel);
+      if (el) el.style.setProperty('display', 'none', 'important');
+    });
+
+    /* body の直下で id / class に "footer" を含む要素（WinGrow外） */
+    var bodyChildren = document.body ? document.body.children : [];
+    Array.prototype.forEach.call(bodyChildren, function (el) {
+      var id = el.id || '';
+      var cls = (typeof el.className === 'string') ? el.className : '';
+      /* WinGrow 独自のセクション（id に "wg-" を含む）はスキップ */
+      if (id.indexOf('wg-') !== -1) return;
+      if (
+        id.toLowerCase().indexOf('footer') !== -1 ||
+        cls.toLowerCase().indexOf('footer') !== -1 ||
+        el.tagName === 'FOOTER'
+      ) {
+        el.style.setProperty('display', 'none', 'important');
+      }
+    });
+  }
+
+  /* DOMContentLoaded / load 両方で実行 */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wgHideExistingFooter);
+  } else {
+    wgHideExistingFooter();
+  }
+  window.addEventListener('load', wgHideExistingFooter);
+
+  /* MutationObserver で動的追加要素にも対応 */
+  function startObserver() {
+    if (!document.body) return;
+    new MutationObserver(function (mutations) {
+      var needsCheck = false;
+      mutations.forEach(function (m) {
+        if (m.addedNodes.length > 0) needsCheck = true;
+      });
+      if (needsCheck) wgHideExistingFooter();
+    }).observe(document.body, { childList: true, subtree: false });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startObserver);
+  } else {
+    startObserver();
+  }
+})();
+</script>
+
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "WinGrow フッター",
+  "blocks": [
+    {
+      "type": "nav_item",
+      "name": "フッターナビ項目",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "アイコン",
+          "options": [
+            { "value": "home", "label": "家（ホーム）" },
+            { "value": "user", "label": "ユーザー" },
+            { "value": "building", "label": "ビル（会社）" },
+            { "value": "mail", "label": "メール" }
+          ],
+          "default": "home"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "タイトル",
+          "default": "はじめての方へ"
+        },
+        {
+          "type": "text",
+          "id": "description",
+          "label": "説明文",
+          "default": "当オンラインショップの\nご利用ガイド"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "リンク先"
+        },
+        {
+          "type": "checkbox",
+          "id": "external",
+          "label": "外部リンクアイコンを表示",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "link_group",
+      "name": "リンクグループ",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "グループ名",
+          "default": "商品一覧"
+        },
+        {
+          "type": "text",
+          "id": "links_text",
+          "label": "リンクテキスト（カンマ区切り）",
+          "default": "かに,魚介類,海鮮加工品"
+        },
+        {
+          "type": "text",
+          "id": "links_url",
+          "label": "リンクURL（カンマ区切り）",
+          "default": "#,#,#"
+        }
+      ]
+    },
+    {
+      "type": "legal_link",
+      "name": "法的リンク",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "テキスト",
+          "default": "特定商取引法に基づく表記"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "リンク先"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "footer_logo",
+      "label": "フッターロゴ",
+      "info": "未設定の場合はショップ名を表示"
+    },
+    {
+      "type": "image_picker",
+      "id": "deco_left",
+      "label": "左装飾画像（footer_deco_left.png）"
+    },
+    {
+      "type": "image_picker",
+      "id": "deco_right",
+      "label": "右装飾画像（footer_deco_right.png）"
+    },
+    {
+      "type": "image_picker",
+      "id": "payment_image",
+      "label": "決済アイコン画像（credit_cards.png）",
+      "info": "未設定の場合はShopify標準の決済アイコンを使用"
+    },
+    {
+      "type": "text",
+      "id": "copyright",
+      "label": "コピーライト",
+      "default": "Copyright©WinGrow Allrights reserved."
+    }
+  ],
+  "presets": [
+    {
+      "name": "WinGrow フッター",
+      "blocks": [
+        {
+          "type": "nav_item",
+          "settings": {
+            "icon": "home",
+            "title": "はじめての方へ",
+            "description": "当オンラインショップの\nご利用ガイド"
+          }
+        },
+        {
+          "type": "nav_item",
+          "settings": {
+            "icon": "user",
+            "title": "会員登録",
+            "description": "当オンラインショップの\n会員登録はこちら"
+          }
+        },
+        {
+          "type": "nav_item",
+          "settings": {
+            "icon": "building",
+            "title": "運営会社",
+            "description": "当オンラインショップの\n運営会社",
+            "external": true
+          }
+        },
+        {
+          "type": "nav_item",
+          "settings": {
+            "icon": "mail",
+            "title": "お問い合わせ",
+            "description": "お問い合わせフォームは\nこちらから"
+          }
+        },
+        {
+          "type": "link_group",
+          "settings": {
+            "heading": "商品一覧",
+            "links_text": "かに,魚介類,海鮮加工品",
+            "links_url": "#,#,#"
+          }
+        },
+        {
+          "type": "link_group",
+          "settings": {
+            "heading": "ご利用ガイド",
+            "links_text": "注文方法,お支払い方法,送料について,不良品について",
+            "links_url": "#,#,#,#"
+          }
+        },
+        {
+          "type": "link_group",
+          "settings": {
+            "heading": "会員登録・ログイン",
+            "links_text": "新規会員登録,ログイン,購入履歴",
+            "links_url": "#,#,#"
+          }
+        },
+        {
+          "type": "link_group",
+          "settings": {
+            "heading": "個人情報保護方針",
+            "links_text": "",
+            "links_url": ""
+          }
+        },
+        {
+          "type": "link_group",
+          "settings": {
+            "heading": "会社概要",
+            "links_text": "",
+            "links_url": ""
+          }
+        },
+        {
+          "type": "link_group",
+          "settings": {
+            "heading": "お問い合わせ",
+            "links_text": "",
+            "links_url": ""
+          }
+        },
+        {
+          "type": "legal_link",
+          "settings": {
+            "text": "特定商取引法に基づく表記"
+          }
+        },
+        {
+          "type": "legal_link",
+          "settings": {
+            "text": "プライバシーポリシー"
+          }
+        },
+        {
+          "type": "legal_link",
+          "settings": {
+            "text": "利用規約"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

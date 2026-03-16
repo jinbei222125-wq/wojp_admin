@@ -1,0 +1,157 @@
+{% comment %}
+  WinGrow カテゴリーセクション
+  - 赤背景 + 波テクスチャ（::before）
+  - 下半分を白く塗りつぶし（::after）
+  - 3カラムカテゴリーカード
+  - ブロックで各カテゴリを管理
+{% endcomment %}
+
+<div class="wg-site">
+  <section class="wg-category">
+    <div class="wg-category__wave-bg"></div>
+    <div class="wg-container">
+
+      <div class="wg-category__header">
+        <div class="wg-section-header" style="text-align:left; margin-bottom:0;">
+          <h2 class="wg-section-title wg-section-title--white">{{ section.settings.title }}</h2>
+        </div>
+        <a href="{{ section.settings.all_url | default: routes.all_products_collection_url }}" class="wg-btn-outline-white">
+          {{ section.settings.btn_text }}
+          <span class="wg-btn-arrow-white">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </span>
+        </a>
+      </div>
+
+      <div class="wg-category-grid">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            if block.settings.collection != blank
+              assign cat_collection = collections[block.settings.collection]
+              assign cat_url = cat_collection.url
+            else
+              assign cat_url = block.settings.url | default: '#'
+            endif
+          -%}
+          <a href="{{ cat_url }}" class="wg-category-card" {{ block.shopify_attributes }}>
+            <div class="wg-category-card__image">
+              {%- if block.settings.image != blank -%}
+                <img
+                  src="{{ block.settings.image | image_url: width: 600 }}"
+                  alt="{{ block.settings.image.alt | default: block.settings.title | escape }}"
+                  width="600"
+                  height="600"
+                  loading="lazy">
+              {%- elsif block.settings.collection != blank and cat_collection.image != blank -%}
+                <img
+                  src="{{ cat_collection.image | image_url: width: 600 }}"
+                  alt="{{ cat_collection.title | escape }}"
+                  width="600"
+                  height="600"
+                  loading="lazy">
+              {%- else -%}
+                {{ 'collection-1' | placeholder_svg_tag: 'placeholder-svg' }}
+              {%- endif -%}
+            </div>
+            <h3 class="wg-category-card__title">{{ block.settings.title }}</h3>
+            <p class="wg-category-card__text">{{ block.settings.description }}</p>
+          </a>
+        {%- endfor -%}
+      </div>
+
+    </div>
+  </section>
+</div>
+
+{% schema %}
+{
+  "name": "WinGrow カテゴリー",
+  "blocks": [
+    {
+      "type": "category",
+      "name": "カテゴリー",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "カテゴリー画像",
+          "info": "未設定の場合はコレクションの画像を使用"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "コレクション",
+          "info": "リンク先コレクション"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "リンク先URL",
+          "info": "コレクション未設定時に使用"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "カテゴリー名",
+          "default": "か に"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "説明文",
+          "default": "テキストテキストテキストテキスト\nテキストテキストテキストテキスト"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "セクションタイトル",
+      "default": "カテゴリーから選ぶ"
+    },
+    {
+      "type": "text",
+      "id": "btn_text",
+      "label": "ボタンテキスト",
+      "default": "商品一覧を見る"
+    },
+    {
+      "type": "url",
+      "id": "all_url",
+      "label": "「一覧を見る」のリンク先"
+    }
+  ],
+  "presets": [
+    {
+      "name": "WinGrow カテゴリー",
+      "blocks": [
+        {
+          "type": "category",
+          "settings": {
+            "title": "か に",
+            "description": "テキストテキストテキストテキスト\nテキストテキストテキストテキスト"
+          }
+        },
+        {
+          "type": "category",
+          "settings": {
+            "title": "魚介類",
+            "description": "テキストテキストテキストテキスト\nテキストテキストテキストテキスト"
+          }
+        },
+        {
+          "type": "category",
+          "settings": {
+            "title": "海鮮加工品",
+            "description": "テキストテキストテキストテキスト\nテキストテキストテキストテキスト"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

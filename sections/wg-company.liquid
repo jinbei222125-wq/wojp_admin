@@ -1,0 +1,69 @@
+{% comment %}
+  WinGrow 運営会社セクション
+  - 白背景
+  - 2カラム（テキスト左 / 写真右）
+  - 写真はグレースケール表示
+{% endcomment %}
+
+<div class="wg-site">
+  <section class="wg-company">
+    <div class="wg-container">
+      <div class="wg-company__inner">
+
+        {%- comment %} 左側：会社情報 {%- endcomment %}
+        <div class="wg-company__left">
+          <h2 class="wg-company__title">{{ section.settings.title }}</h2>
+          <div class="wg-company__info">
+            {{ section.settings.info | newline_to_br }}
+          </div>
+        </div>
+
+        {%- comment %} 右側：会社写真 {%- endcomment %}
+        <div class="wg-company__image">
+          {%- if section.settings.image != blank -%}
+            <img
+              src="{{ section.settings.image | image_url: width: 800 }}"
+              alt="{{ section.settings.image.alt | default: section.settings.title | escape }}"
+              width="800"
+              height="300"
+              loading="lazy">
+          {%- else -%}
+            {{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg' }}
+          {%- endif -%}
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>
+
+{% schema %}
+{
+  "name": "WinGrow 運営会社",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "タイトル",
+      "default": "運営会社"
+    },
+    {
+      "type": "textarea",
+      "id": "info",
+      "label": "会社情報",
+      "default": "〒060-0002\n北海道札幌市中央区北2条西2丁目34　フージャース札幌ビル 10F\n011-596-0967"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "会社写真",
+      "info": "グレースケールで表示されます"
+    }
+  ],
+  "presets": [
+    {
+      "name": "WinGrow 運営会社"
+    }
+  ]
+}
+{% endschema %}

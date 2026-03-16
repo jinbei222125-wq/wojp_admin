@@ -1,0 +1,211 @@
+{% comment %}
+  WinGrow ヘッダーセクション
+  - スティッキーヘッダー
+  - ロゴ / ログイン / 検索 / カート / メニュー
+  - 赤ナビゲーションバー
+  - お知らせバー
+  - CSS カスタムプロパティで波テクスチャURLを注入（wingrow.css で使用）
+{% endcomment %}
+
+{%- liquid
+  assign wave_url = 'wave_texture.svg' | asset_url
+  assign wave_icon_url = 'wave_icon.png' | asset_url
+-%}
+
+{%- comment %} CSS カスタムプロパティで波テクスチャURLを設定 {%- endcomment %}
+<style>
+  :root {
+    --wg-wave-url: url('{{ wave_url }}');
+    --wg-wave-icon-url: url('{{ wave_icon_url }}');
+  }
+  /* 既存テーマの header / footer / スキップリンクを非表示 */
+  footer,
+  header {
+    display: none !important;
+  }
+  /* WinGrow の .wg-site 内の header / footer だけ表示 */
+  .wg-site footer,
+  .wg-site header {
+    display: block !important;
+  }
+  /* 既存テーマのスキップリンクを非表示 */
+  a[href="#MainContent"],
+  .skip-to-content-link,
+  .visually-hidden--skip {
+    display: none !important;
+  }
+</style>
+
+<link rel="stylesheet" href="{{ 'wingrow.css' | asset_url }}" type="text/css">
+
+<div class="wg-site">
+  <header class="wg-header">
+
+    {%- comment %} ヘッダートップ {%- endcomment %}
+    <div class="wg-header__top">
+      <a href="{{ routes.root_url }}" class="wg-header__logo">
+        {%- if section.settings.logo != blank -%}
+          <img
+            src="{{ section.settings.logo | image_url: width: 200 }}"
+            alt="{{ shop.name | escape }}"
+            width="200"
+            height="auto">
+        {%- else -%}
+          {{ shop.name }}
+        {%- endif -%}
+      </a>
+
+      <div class="wg-header__actions">
+        {%- comment %} ログイン {%- endcomment %}
+        <a href="{{ routes.account_url }}" class="wg-header__action-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+            <polyline points="10 17 15 12 10 7" />
+            <line x1="15" y1="12" x2="3" y2="12" />
+          </svg>
+          ログイン
+        </a>
+
+        {%- comment %} 商品を探す {%- endcomment %}
+        <a href="{{ routes.search_url }}" class="wg-header__action-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          商品を探す
+        </a>
+
+        {%- comment %} 買い物かご {%- endcomment %}
+        <a href="{{ routes.cart_url }}" class="wg-header__action-item wg-header__action-item--cart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          </svg>
+          <span class="wg-cart-badge">{{ cart.item_count }}</span>
+          買い物かご
+        </a>
+
+        {%- comment %} メニュー {%- endcomment %}
+        <button class="wg-header__menu-btn" aria-label="メニューを開く">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+          メニュー
+        </button>
+      </div>
+    </div>
+
+    {%- comment %} ナビゲーションバー {%- endcomment %}
+    <nav class="wg-header__nav" aria-label="メインナビゲーション">
+      <ul>
+        {%- if section.blocks.size > 0 -%}
+          {%- comment %} カスタマイザーのブロックからメニュー項目を生成 {%- endcomment %}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'nav_link' -%}
+              <li>
+                <a href="{{ block.settings.url | default: '#' }}" {{ block.shopify_attributes }}>
+                  {{ block.settings.label }}
+                </a>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        {%- else -%}
+          {%- comment %} デフォルトメニュー（ブロック未設定時） {%- endcomment %}
+          <li><a href="{{ routes.root_url }}">トップページ</a></li>
+          <li><a href="{{ routes.all_products_collection_url }}">商品一覧</a></li>
+          <li><a href="/collections/kani">かに</a></li>
+          <li><a href="/collections/gyokai">魚介類</a></li>
+          <li><a href="/collections/kaisen-kako">海鮮加工品</a></li>
+          <li><a href="/pages/guide">ご利用ガイド</a></li>
+        {%- endif -%}
+      </ul>
+    </nav>
+
+    {%- comment %} お知らせバー {%- endcomment %}
+    {%- if section.settings.notice_text != blank -%}
+      <div class="wg-header__notice">
+        {{ section.settings.notice_text }}
+      </div>
+    {%- endif -%}
+
+  </header>
+</div>
+
+{% schema %}
+{
+  "name": "WinGrow ヘッダー",
+  "blocks": [
+    {
+      "type": "nav_link",
+      "name": "メニュー項目",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "メニューラベル",
+          "default": "メニュー"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "リンク先URL"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "ロゴ画像",
+      "info": "未設定の場合はショップ名を表示"
+    },
+    {
+      "type": "link_list",
+      "id": "navigation",
+      "label": "ナビゲーションメニュー（ブロック未設定時に使用）",
+      "default": "main-menu"
+    },
+    {
+      "type": "text",
+      "id": "notice_text",
+      "label": "お知らせバーのテキスト",
+      "default": "【お知らせ】一部地域における荷物のお届け遅延について"
+    }
+  ],
+  "presets": [
+    {
+      "name": "WinGrow ヘッダー",
+      "blocks": [
+        {
+          "type": "nav_link",
+          "settings": { "label": "トップページ", "url": "/" }
+        },
+        {
+          "type": "nav_link",
+          "settings": { "label": "商品一覧", "url": "/collections/all" }
+        },
+        {
+          "type": "nav_link",
+          "settings": { "label": "かに", "url": "/collections/kani" }
+        },
+        {
+          "type": "nav_link",
+          "settings": { "label": "魚介類", "url": "/collections/gyokai" }
+        },
+        {
+          "type": "nav_link",
+          "settings": { "label": "海鮮加工品", "url": "/collections/kaisen-kako" }
+        },
+        {
+          "type": "nav_link",
+          "settings": { "label": "ご利用ガイド", "url": "/pages/guide" }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,105 @@
+{% comment %}
+  WinGrow 当店イチオシセクション
+  - 赤背景 + 波テクスチャ
+  - 左：商品画像 / 右：コンテンツ（金テキスト + 白テキスト + ボタン）
+  - 2カラムグリッド（min-height: 540px）
+{% endcomment %}
+
+<div class="wg-site">
+  <section class="wg-featured">
+    <div class="wg-featured__inner">
+
+      {%- comment %} 左側：商品画像 {%- endcomment %}
+      <div class="wg-featured__image">
+        {%- if section.settings.image != blank -%}
+          <img
+            src="{{ section.settings.image | image_url: width: 800 }}"
+            alt="{{ section.settings.image.alt | default: section.settings.title | escape }}"
+            width="800"
+            height="540"
+            loading="lazy">
+        {%- elsif section.settings.product != blank -%}
+          {%- assign featured_product = all_products[section.settings.product] -%}
+          <img
+            src="{{ featured_product.featured_image | image_url: width: 800 }}"
+            alt="{{ featured_product.title | escape }}"
+            width="800"
+            height="540"
+            loading="lazy">
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        {%- endif -%}
+      </div>
+
+      {%- comment %} 右側：コンテンツ {%- endcomment %}
+      <div class="wg-featured__content">
+        <div class="wg-featured__wave-bg"></div>
+        <p class="wg-featured__label">{{ section.settings.label }}</p>
+        <h2 class="wg-featured__title">{{ section.settings.title }}</h2>
+        <p class="wg-featured__text">{{ section.settings.text }}</p>
+        <a href="{{ section.settings.btn_url | default: '#' }}" class="wg-btn-featured">
+          {{ section.settings.btn_text }}
+          <span class="wg-btn-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </span>
+        </a>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+{% schema %}
+{
+  "name": "WinGrow 当店イチオシ",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "商品画像",
+      "info": "未設定の場合は商品の画像を使用"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "商品（画像未設定時に使用）"
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "ラベルテキスト（金色）",
+      "default": "当店イチオシ"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "タイトル",
+      "default": "幻の魚「○○」入荷しました！"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "説明文",
+      "default": "テキストテキストテキストテキストテキストテキストテキストテキスト\nテキストテキストテキストテキストテキストテキストテキストテキスト\nテキストテキストテキストテキストテキストテキストテキストテキスト"
+    },
+    {
+      "type": "text",
+      "id": "btn_text",
+      "label": "ボタンテキスト",
+      "default": "商品を見る"
+    },
+    {
+      "type": "url",
+      "id": "btn_url",
+      "label": "ボタンリンク先"
+    }
+  ],
+  "presets": [
+    {
+      "name": "WinGrow 当店イチオシ"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,103 @@
+{% comment %}
+  WinGrow 共通商品カードスニペット
+  使用方法:
+    {% render 'wg-product-card', product: product, rank: forloop.index %}
+    {% render 'wg-product-card', product: product, show_off_badge: true %}
+  パラメータ:
+    - product: Shopify product オブジェクト（必須）
+    - rank: ランキングバッジに表示する番号（省略時は表示なし）
+    - show_off_badge: true の場合、割引率バッジを表示（省略時は false）
+{% endcomment %}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign product_image = product.featured_image
+  assign show_rank_badge = false
+  assign show_off = false
+
+  if rank != blank and rank > 0
+    assign show_rank_badge = true
+  endif
+
+  if show_off_badge == true and current_variant.compare_at_price > current_variant.price
+    assign show_off = true
+    assign discount_amount = current_variant.compare_at_price | minus: current_variant.price
+    assign discount_percent = discount_amount | times: 100 | divided_by: current_variant.compare_at_price | round
+  endif
+-%}
+
+<div class="wg-product-card">
+  <a href="{{ product.url }}" class="wg-product-card__link">
+    <div class="wg-product-card__image">
+      {% if show_rank_badge %}
+        <span class="wg-rank-badge">
+          <span class="wg-rank-badge__num">{{ rank }}</span>
+          <span class="wg-rank-badge__label">位</span>
+        </span>
+      {% endif %}
+
+      {% if show_off %}
+        <span class="wg-off-badge">
+          <span class="wg-off-badge__percent">{{ discount_percent }}</span>
+          <span class="wg-off-badge__unit">%</span>
+          <span class="wg-off-badge__text">OFF</span>
+        </span>
+      {% endif %}
+
+      {% if product_image %}
+        <img
+          src="{{ product_image | image_url: width: 600 }}"
+          alt="{{ product_image.alt | escape }}"
+          width="600"
+          height="600"
+          loading="lazy">
+      {% else %}
+        {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+      {% endif %}
+    </div>
+  </a>
+
+  <div class="wg-product-card__body">
+    {%- if product.tags.size > 0 -%}
+      <div class="wg-product-tags">
+        {%- for tag in product.tags limit: 2 -%}
+          <span class="wg-product-tag">{{ tag }}</span>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    <h3 class="wg-product-name">
+      <a href="{{ product.url }}">{{ product.title | escape }}</a>
+    </h3>
+
+    <div class="wg-product-rating">
+      <div class="wg-stars">
+        <span class="wg-star">★</span>
+        <span class="wg-star">★</span>
+        <span class="wg-star">★</span>
+        <span class="wg-star">★</span>
+        <span class="wg-star">★</span>
+      </div>
+      <div class="wg-product-price">
+        ¥ <span class="wg-product-price__num">{{ current_variant.price | money_without_currency }}</span>
+        <span class="wg-product-price__tax">（税込）</span>
+      </div>
+    </div>
+
+    <button
+      class="wg-btn-cart"
+      data-variant-id="{{ current_variant.id }}"
+      {% unless current_variant.available %}disabled{% endunless %}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+      {% if current_variant.available %}
+        カートに入れる
+      {% else %}
+        売り切れ
+      {% endif %}
+    </button>
+  </div>
+</div>

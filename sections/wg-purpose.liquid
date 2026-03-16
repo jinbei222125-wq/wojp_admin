@@ -1,0 +1,190 @@
+{% comment %}
+  WinGrow 目的で選ぶセクション
+  - クリーム背景 + 波テクスチャ（::before, opacity 0.9）
+  - ヘッダーは .wg-container-title で中央揃え（コンテナ外）
+  - 左：タグフィルター / 右：2カラム画像カード
+  - 画像カードは aspect-ratio: 4/3 の .wg-purpose__image-card-image で囲む
+{% endcomment %}
+
+<div class="wg-site">
+  <section class="wg-purpose">
+
+    {%- comment %} セクションタイトル（container-title で中央揃え） {%- endcomment %}
+    <div class="wg-container-title">
+      <div class="wg-section-header wg-purpose__section-header">
+        <p class="wg-section-subtitle">{{ section.settings.subtitle }}</p>
+        <h2 class="wg-section-title wg-section-title--red">{{ section.settings.title }}</h2>
+      </div>
+    </div>
+
+    <div class="wg-container">
+      <div class="wg-purpose__inner">
+
+        {%- comment %} 左側：タグフィルター {%- endcomment %}
+        <div class="wg-purpose__left">
+
+          {%- comment %} シーンで探す {%- endcomment %}
+          <div class="wg-purpose__filter-group">
+            <p class="wg-purpose__filter-label">{{ section.settings.scene_label }}</p>
+            <div class="wg-purpose__tags">
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'scene_tag' -%}
+                  <a href="{{ block.settings.url | default: '#' }}" class="wg-purpose__tag" {{ block.shopify_attributes }}>
+                    {{ block.settings.label }}
+                  </a>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          </div>
+
+          {%- comment %} 価格で探す {%- endcomment %}
+          <div class="wg-purpose__filter-group">
+            <p class="wg-purpose__filter-label">{{ section.settings.price_label }}</p>
+            <div class="wg-purpose__tags">
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'price_tag' -%}
+                  <a href="{{ block.settings.url | default: '#' }}" class="wg-purpose__tag" {{ block.shopify_attributes }}>
+                    {{ block.settings.label }}
+                  </a>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          </div>
+
+        </div>
+
+        {%- comment %} 右側：画像カード {%- endcomment %}
+        <div class="wg-purpose__right">
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'image_card' -%}
+              <a href="{{ block.settings.url | default: '#' }}" class="wg-purpose__image-card" {{ block.shopify_attributes }}>
+                <div class="wg-purpose__image-card-image">
+                  {%- if block.settings.image != blank -%}
+                    <img
+                      src="{{ block.settings.image | image_url: width: 600 }}"
+                      alt="{{ block.settings.image.alt | default: block.settings.label | escape }}"
+                      width="600"
+                      height="450"
+                      loading="lazy">
+                  {%- else -%}
+                    {{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg' }}
+                  {%- endif -%}
+                </div>
+                <div class="wg-purpose__image-label">{{ block.settings.label }}</div>
+              </a>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>
+
+{% schema %}
+{
+  "name": "WinGrow 目的で選ぶ",
+  "blocks": [
+    {
+      "type": "scene_tag",
+      "name": "シーンタグ",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "タグ名",
+          "default": "誕生日プレゼント"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "リンク先"
+        }
+      ]
+    },
+    {
+      "type": "price_tag",
+      "name": "価格タグ",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "タグ名",
+          "default": "〜5,000円"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "リンク先"
+        }
+      ]
+    },
+    {
+      "type": "image_card",
+      "name": "画像カード",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "カード画像"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "カード名",
+          "default": "初めての方におすすめ"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "リンク先"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "サブタイトル",
+      "default": "記念日やギフトにぴったり"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "セクションタイトル",
+      "default": "目的で選ぶ"
+    },
+    {
+      "type": "text",
+      "id": "scene_label",
+      "label": "シーンフィルターのラベル",
+      "default": "シーンで探す"
+    },
+    {
+      "type": "text",
+      "id": "price_label",
+      "label": "価格フィルターのラベル",
+      "default": "価格で探す"
+    }
+  ],
+  "presets": [
+    {
+      "name": "WinGrow 目的で選ぶ",
+      "blocks": [
+        { "type": "scene_tag", "settings": { "label": "誕生日プレゼント" } },
+        { "type": "scene_tag", "settings": { "label": "内祝い" } },
+        { "type": "scene_tag", "settings": { "label": "お中元・お歳暮" } },
+        { "type": "scene_tag", "settings": { "label": "お正月・年末年始" } },
+        { "type": "price_tag", "settings": { "label": "送料無料" } },
+        { "type": "price_tag", "settings": { "label": "〜5,000円" } },
+        { "type": "price_tag", "settings": { "label": "〜10,000円" } },
+        { "type": "price_tag", "settings": { "label": "〜15,000円" } },
+        { "type": "price_tag", "settings": { "label": "〜20,000円" } },
+        { "type": "image_card", "settings": { "label": "初めての方におすすめ" } },
+        { "type": "image_card", "settings": { "label": "新商品" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
