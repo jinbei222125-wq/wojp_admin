@@ -169,13 +169,17 @@
 /* 企業理念 */
 .wg-company-page__philosophy {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 48px;
   align-items: center;
   margin-bottom: 80px;
   padding: 56px;
   background: var(--wg-color-cream);
   border-radius: 16px;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
 .wg-company-page__philosophy-catch {
   font-size: 1.5rem;
@@ -184,22 +188,17 @@
   margin-bottom: 20px;
   line-height: 1.5;
   position: relative;
-  padding-left: 20px;
+  padding-left: 0;
+  text-align: center;
 }
 .wg-company-page__philosophy-catch::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 4px;
-  bottom: 4px;
-  width: 4px;
-  background: var(--wg-color-red);
-  border-radius: 2px;
+  display: none;
 }
 .wg-company-page__philosophy-text {
   color: var(--wg-color-text);
   line-height: 2;
   font-size: 0.95rem;
+  text-align: left;
 }
 .wg-company-page__philosophy-img {
   border-radius: 12px;

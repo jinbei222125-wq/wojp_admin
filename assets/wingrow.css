@@ -3416,3 +3416,78 @@ body.wg-menu-open {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* =============================================
+   ハンバーガーメニュー アクションリンク
+   ============================================= */
+.wg-menu-drawer__actions {
+  padding: 20px;
+  border-top: 1px solid var(--wg-color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.wg-menu-drawer__action-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  color: var(--wg-color-text);
+  text-decoration: none;
+  font-size: 14px;
+  background: var(--wg-color-cream-light, #f5f5f0);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.wg-menu-drawer__action-link:hover {
+  background: var(--wg-color-cream, #ede8df);
+  color: var(--wg-color-red);
+}
+.wg-menu-drawer__action-link--cart {
+  background: var(--wg-color-red);
+  color: #fff !important;
+}
+.wg-menu-drawer__action-link--cart:hover {
+  background: var(--wg-color-red-dark, #a00e24);
+  color: #fff !important;
+}
+.wg-menu-drawer__action-link--logout {
+  background: #f0f0f0;
+  color: #666 !important;
+}
+.wg-menu-drawer__action-link--logout:hover {
+  background: #e0e0e0;
+  color: #333 !important;
+}
+
+/* =============================================
+   ご利用ガイド フッター表示修正
+   ============================================= */
+/* フッターブロック未設定時でもフッターを表示する */
+#shopify-section-wg-footer {
+  display: block !important;
+}
+
+/* =============================================
+   運営会社ページ 企業理念 中央揃え（画像なし時）
+   ============================================= */
+/* 画像なしの場合（子要素1つ）は中央揃えに */
+.wg-company-page__philosophy:has(> .wg-company-page__philosophy-inner:only-child) {
+  grid-template-columns: 1fr;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+.wg-company-page__philosophy:has(> .wg-company-page__philosophy-inner:only-child) .wg-company-page__philosophy-catch {
+  padding-left: 0;
+  text-align: center;
+}
+.wg-company-page__philosophy:has(> .wg-company-page__philosophy-inner:only-child) .wg-company-page__philosophy-catch::before {
+  display: none;
+}
+.wg-company-page__philosophy:has(> .wg-company-page__philosophy-inner:only-child) .wg-company-page__philosophy-text {
+  text-align: left;
+}

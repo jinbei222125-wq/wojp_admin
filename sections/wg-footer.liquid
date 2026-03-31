@@ -8,12 +8,7 @@
   ★ ブロック未設定（theme.liquid 固定呼び出し等）の場合は自動で非表示
 {% endcomment %}
 
-{%- if section.blocks.size == 0 -%}
-  {%- comment %} ブロックが空 = theme.liquid の固定セクション側 → 非表示にして二重表示を防ぐ {%- endcomment -%}
-  <style>
-    #shopify-section-{{ section.id }} { display: none !important; }
-  </style>
-{%- else -%}
+{%- comment %} フッターは常に表示（全ページ共通） {%- endcomment -%}
 
 {%- comment %}
   WinGrowフッターセクション固有IDを使った確実な非表示制御
@@ -285,8 +280,6 @@
   }
 })();
 </script>
-
-{%- endif -%}
 
 {% schema %}
 {
