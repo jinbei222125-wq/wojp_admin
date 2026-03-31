@@ -7,6 +7,11 @@
     - product: Shopify product オブジェクト（必須）
     - rank: ランキングバッジに表示する番号（省略時は表示なし）
     - show_off_badge: true の場合、割引率バッジを表示（省略時は false）
+  価格表示:
+    - price = 会員価格（卸値）
+    - compare_at_price = 通常価格
+    - GoldMember タグ保持顧客 → 会員価格をメイン表示、通常価格に取り消し線
+    - 非会員 → 通常価格をメイン表示、会員価格を小さく訴求
 {% endcomment %}
 
 {%- liquid
@@ -23,6 +28,18 @@
     assign show_off = true
     assign discount_amount = current_variant.compare_at_price | minus: current_variant.price
     assign discount_percent = discount_amount | times: 100 | divided_by: current_variant.compare_at_price | round
+  endif
+
+  assign is_member = false
+  if customer and customer.tags contains 'GoldMember'
+    assign is_member = true
+  endif
+
+  assign member_price = current_variant.price
+  assign regular_price = current_variant.compare_at_price | default: current_variant.price
+  assign has_member_price = false
+  if current_variant.compare_at_price > current_variant.price
+    assign has_member_price = true
   endif
 -%}
 
@@ -78,10 +95,38 @@
         <span class="wg-star">★</span>
         <span class="wg-star">★</span>
       </div>
-      <div class="wg-product-price">
-        ¥ <span class="wg-product-price__num">{{ current_variant.price | money_without_currency }}</span>
-        <span class="wg-product-price__tax">（税込）</span>
-      </div>
+    </div>
+
+    <!-- 価格表示 -->
+    <div class="wg-product-card__price-block">
+      {%- if is_member -%}
+        {%- comment %} 会員：通常価格に取り消し線 → 会員価格をメイン {%- endcomment %}
+        <div class="wg-product-card__price-member">
+          {%- if has_member_price -%}
+            <span class="wg-product-card__price-strike">{{ regular_price | money }}</span>
+          {%- endif -%}
+          <div class="wg-product-price">
+            ¥ <span class="wg-product-price__num">{{ member_price | money_without_currency }}</span>
+            <span class="wg-product-price__tax">（税込）</span>
+          </div>
+          <span class="wg-product-card__member-badge">会員価格</span>
+        </div>
+      {%- else -%}
+        {%- comment %} 非会員：通常価格をメイン → 会員価格を小さく訴求 {%- endcomment %}
+        <div class="wg-product-card__price-nonmember">
+          <div class="wg-product-price">
+            ¥ <span class="wg-product-price__num">{{ regular_price | money_without_currency }}</span>
+            <span class="wg-product-price__tax">（税込）</span>
+          </div>
+          {%- if has_member_price -%}
+            <div class="wg-product-card__price-teaser">
+              <span class="wg-product-card__price-teaser-icon">👑</span>
+              <span class="wg-product-card__price-teaser-text">会員価格</span>
+              <span class="wg-product-card__price-teaser-num">{{ member_price | money }}</span>
+            </div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
     </div>
 
     <button

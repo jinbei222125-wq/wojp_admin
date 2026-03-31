@@ -1,46 +1,130 @@
-<section class="cart-page" id="CartPage">
-  <div class="container">
-    <h1 class="cart-page__title">ショッピングカート</h1>
+{%- comment %}
+  カートページ
+  - GoldMember タグ保持顧客 → 会員価格（price）で購入中であることを表示
+  - 非会員（未ログイン / ログイン済みだがタグなし）→ 会員登録訴求バナーを表示
+  ※ price = 会員価格（卸値）、compare_at_price = 通常価格
+{%- endcomment %}
+
+{%- liquid
+  assign is_member = false
+  if customer and customer.tags contains 'GoldMember'
+    assign is_member = true
+  endif
+-%}
+
+<div class="wg-site">
+<section class="wg-cart-page" id="CartPage">
+  <div class="wg-container">
+    <h1 class="wg-cart-page__title">ショッピングカート</h1>
 
     {%- if cart.item_count > 0 -%}
-      <div class="cart-page__layout">
+
+      <!-- 非会員向け訴求バナー -->
+      {%- unless is_member -%}
+        <div class="wg-cart-member-banner">
+          <div class="wg-cart-member-banner__inner">
+            <div class="wg-cart-member-banner__icon">👑</div>
+            <div class="wg-cart-member-banner__body">
+              <p class="wg-cart-member-banner__title">ゴールド会員になるとお得な会員価格で購入できます！</p>
+              <p class="wg-cart-member-banner__desc">会員登録（無料）で、全商品が会員価格（卸値）に。今すぐ登録してお得にお買い物しましょう。</p>
+            </div>
+            <div class="wg-cart-member-banner__actions">
+              {%- if customer -%}
+                {%- comment %} ログイン済みだが非会員 → サブスク登録へ誘導 {%- endcomment %}
+                <a href="/pages/gold-member" class="wg-cart-member-banner__btn wg-cart-member-banner__btn--primary">
+                  会員プランを見る
+                </a>
+              {%- else -%}
+                {%- comment %} 未ログイン → アカウント登録へ誘導 {%- endcomment %}
+                <a href="/account/register" class="wg-cart-member-banner__btn wg-cart-member-banner__btn--primary">
+                  無料会員登録
+                </a>
+                <a href="/account/login" class="wg-cart-member-banner__btn wg-cart-member-banner__btn--secondary">
+                  ログイン
+                </a>
+              {%- endif -%}
+            </div>
+          </div>
+        </div>
+      {%- endunless -%}
+
+      <div class="wg-cart-page__layout">
         <!-- カートアイテム -->
-        <div class="cart-page__items">
+        <div class="wg-cart-page__items">
           {%- for item in cart.items -%}
-            <div class="cart-item" id="CartItem-{{ item.index | plus: 1 }}">
-              <div class="cart-item__img-wrap">
+            <div class="wg-cart-item" id="CartItem-{{ item.index | plus: 1 }}">
+              <div class="wg-cart-item__img-wrap">
                 {%- if item.image -%}
-                  <img
-                    src="{{ item.image | img_url: '150x150', crop: 'center' }}"
-                    alt="{{ item.image.alt | default: item.product.title }}"
-                    loading="lazy"
-                    width="150" height="150"
-                  >
+                  <a href="{{ item.url }}">
+                    <img
+                      src="{{ item.image | img_url: '150x150', crop: 'center' }}"
+                      alt="{{ item.image.alt | default: item.product.title }}"
+                      loading="lazy"
+                      width="150" height="150"
+                    >
+                  </a>
                 {%- endif -%}
               </div>
-              <div class="cart-item__info">
-                <a href="{{ item.url }}" class="cart-item__name">{{ item.product.title }}</a>
+              <div class="wg-cart-item__info">
+                <a href="{{ item.url }}" class="wg-cart-item__name">{{ item.product.title }}</a>
                 {%- unless item.product.has_only_default_variant -%}
-                  <p class="cart-item__variant">{{ item.variant.title }}</p>
+                  <p class="wg-cart-item__variant">{{ item.variant.title }}</p>
                 {%- endunless -%}
-                <p class="cart-item__price">{{ item.final_price | money }}</p>
-                <div class="cart-item__quantity">
-                  <button class="quantity-btn quantity-btn--minus" data-line="{{ item.index | plus: 1 }}" aria-label="数量を減らす">−</button>
+
+                <!-- カートアイテムの価格表示 -->
+                <div class="wg-cart-item__price-wrap">
+                  {%- if is_member -%}
+                    {%- comment %} 会員：会員価格（final_price）をメイン表示 {%- endcomment %}
+                    <div class="wg-cart-item__price-member">
+                      {%- if item.variant.compare_at_price > item.variant.price -%}
+                        <span class="wg-cart-item__price-regular-strike">{{ item.variant.compare_at_price | money }}</span>
+                      {%- endif -%}
+                      <span class="wg-cart-item__price-main">{{ item.final_price | money }}</span>
+                      <span class="wg-cart-item__price-badge">会員価格</span>
+                    </div>
+                  {%- else -%}
+                    {%- comment %} 非会員：通常価格（compare_at_price）をメイン表示、会員価格を訴求 {%- endcomment %}
+                    <div class="wg-cart-item__price-nonmember">
+                      {%- if item.variant.compare_at_price > item.variant.price -%}
+                        <span class="wg-cart-item__price-main">{{ item.variant.compare_at_price | money }}</span>
+                        <span class="wg-cart-item__price-member-teaser">
+                          👑 会員価格 {{ item.variant.price | money }}
+                        </span>
+                      {%- else -%}
+                        <span class="wg-cart-item__price-main">{{ item.final_price | money }}</span>
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+                </div>
+
+                <div class="wg-cart-item__quantity">
+                  <button class="wg-quantity-btn wg-quantity-btn--minus" data-line="{{ item.index | plus: 1 }}" aria-label="数量を減らす">−</button>
                   <input
                     type="number"
-                    class="cart-item__quantity-input"
+                    class="wg-cart-item__quantity-input"
                     value="{{ item.quantity }}"
                     min="0"
                     data-line="{{ item.index | plus: 1 }}"
                     aria-label="数量"
                   >
-                  <button class="quantity-btn quantity-btn--plus" data-line="{{ item.index | plus: 1 }}" aria-label="数量を増やす">＋</button>
+                  <button class="wg-quantity-btn wg-quantity-btn--plus" data-line="{{ item.index | plus: 1 }}" aria-label="数量を増やす">＋</button>
                 </div>
               </div>
-              <div class="cart-item__total">
-                <p>{{ item.final_line_price | money }}</p>
+              <div class="wg-cart-item__total">
+                {%- if is_member -%}
+                  {%- if item.variant.compare_at_price > item.variant.price -%}
+                    <p class="wg-cart-item__total-regular-strike">{{ item.variant.compare_at_price | times: item.quantity | money }}</p>
+                  {%- endif -%}
+                  <p class="wg-cart-item__total-price">{{ item.final_line_price | money }}</p>
+                {%- else -%}
+                  {%- if item.variant.compare_at_price > item.variant.price -%}
+                    <p class="wg-cart-item__total-price">{{ item.variant.compare_at_price | times: item.quantity | money }}</p>
+                  {%- else -%}
+                    <p class="wg-cart-item__total-price">{{ item.final_line_price | money }}</p>
+                  {%- endif -%}
+                {%- endif -%}
                 <a href="{{ routes.cart_change_url }}?line={{ item.index | plus: 1 }}&quantity=0"
-                   class="cart-item__remove"
+                   class="wg-cart-item__remove"
                    aria-label="{{ item.product.title }}を削除">
                   削除
                 </a>
@@ -50,18 +134,31 @@
         </div>
 
         <!-- 合計・チェックアウト -->
-        <div class="cart-page__summary">
-          <div class="cart-summary">
-            <h2 class="cart-summary__title">注文内容</h2>
-            <div class="cart-summary__row">
+        <div class="wg-cart-page__summary">
+          <div class="wg-cart-summary">
+            <h2 class="wg-cart-summary__title">注文内容</h2>
+            <div class="wg-cart-summary__row">
               <span>小計</span>
-              <span>{{ cart.total_price | money }}</span>
+              {%- if is_member -%}
+                <span>{{ cart.total_price | money }}</span>
+              {%- else -%}
+                {%- comment %} 非会員：compare_at_priceの合計を計算して表示 {%- endcomment %}
+                {%- assign nonmember_total = 0 -%}
+                {%- for item in cart.items -%}
+                  {%- if item.variant.compare_at_price > item.variant.price -%}
+                    {%- assign nonmember_total = nonmember_total | plus: item.variant.compare_at_price | times: item.quantity -%}
+                  {%- else -%}
+                    {%- assign nonmember_total = nonmember_total | plus: item.final_line_price -%}
+                  {%- endif -%}
+                {%- endfor -%}
+                <span>{{ nonmember_total | money }}</span>
+              {%- endif -%}
             </div>
-            <p class="cart-summary__note">送料・税は次のステップで計算されます</p>
-            <a href="{{ routes.checkout }}" class="btn-checkout">
+            <p class="wg-cart-summary__note">送料・税は次のステップで計算されます</p>
+            <a href="{{ routes.checkout }}" class="wg-btn-checkout">
               レジに進む
             </a>
-            <a href="{{ routes.root_url }}" class="btn-continue">
+            <a href="{{ routes.root_url }}" class="wg-btn-continue">
               ← 買い物を続ける
             </a>
           </div>
@@ -69,13 +166,14 @@
       </div>
 
     {%- else -%}
-      <div class="cart-page__empty">
+      <div class="wg-cart-page__empty">
         <p>カートに商品がありません。</p>
-        <a href="{{ routes.root_url }}" class="btn-more-red">商品を見る</a>
+        <a href="{{ routes.root_url }}" class="wg-btn-more-red">商品を見る</a>
       </div>
     {%- endif -%}
   </div>
 </section>
+</div>
 
 {% schema %}
 {

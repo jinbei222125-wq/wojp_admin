@@ -1,7 +1,25 @@
-<section class="product-page" id="ProductPage-{{ product.id }}">
-  <div class="container">
-    <nav class="breadcrumb" aria-label="パンくずリスト">
-      <ol class="breadcrumb__list">
+{%- comment %}
+  商品詳細ページ
+  - GoldMember タグ保持顧客 → 会員価格（price）をメイン表示、通常価格（compare_at_price）に取り消し線
+  - 非会員（未ログイン / ログイン済みだがタグなし）→ 通常価格（compare_at_price）をメイン表示、会員価格を訴求
+  ※ price = 会員価格（卸値）、compare_at_price = 通常価格
+{%- endcomment %}
+
+{%- liquid
+  assign is_member = false
+  if customer and customer.tags contains 'GoldMember'
+    assign is_member = true
+  endif
+  assign current_variant = product.selected_or_first_available_variant
+  assign member_price = current_variant.price
+  assign regular_price = current_variant.compare_at_price | default: current_variant.price
+-%}
+
+<div class="wg-site">
+<section class="wg-product-detail" id="ProductPage-{{ product.id }}">
+  <div class="wg-container">
+    <nav class="wg-breadcrumb" aria-label="パンくずリスト">
+      <ol class="wg-breadcrumb__list">
         <li><a href="{{ routes.root_url }}">ホーム</a></li>
         {%- if collection -%}
           <li><a href="{{ collection.url }}">{{ collection.title }}</a></li>
@@ -10,10 +28,10 @@
       </ol>
     </nav>
 
-    <div class="product-page__layout">
+    <div class="wg-product-detail__layout">
       <!-- 画像ギャラリー -->
-      <div class="product-page__gallery">
-        <div class="product-gallery__main" id="product-gallery-main">
+      <div class="wg-product-detail__gallery">
+        <div class="wg-product-gallery__main" id="product-gallery-main">
           {%- assign featured_media = product.selected_or_first_available_variant.featured_media | default: product.featured_media -%}
           {%- if featured_media -%}
             <img
@@ -22,17 +40,17 @@
               alt="{{ featured_media.alt | default: product.title }}"
               loading="eager"
               width="800" height="800"
-              class="product-gallery__main-img"
+              class="wg-product-gallery__main-img"
             >
           {%- else -%}
-            {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg product-gallery__main-img' }}
+            {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg wg-product-gallery__main-img' }}
           {%- endif -%}
         </div>
         {%- if product.media.size > 1 -%}
-          <div class="product-gallery__thumbs">
+          <div class="wg-product-gallery__thumbs">
             {%- for media in product.media -%}
               <button
-                class="product-gallery__thumb-btn{% if media == featured_media %} active{% endif %}"
+                class="wg-product-gallery__thumb-btn{% if media == featured_media %} active{% endif %}"
                 data-src="{{ media | img_url: '800x800', crop: 'center' }}"
                 aria-label="{{ media.alt | default: product.title }}"
               >
@@ -49,35 +67,58 @@
       </div>
 
       <!-- 商品情報 -->
-      <div class="product-page__info">
+      <div class="wg-product-detail__info">
         {%- if product.vendor != blank -%}
-          <p class="product-page__vendor">{{ product.vendor }}</p>
+          <p class="wg-product-detail__vendor">{{ product.vendor }}</p>
         {%- endif -%}
-        <h1 class="product-page__title">{{ product.title }}</h1>
+        <h1 class="wg-product-detail__title">{{ product.title }}</h1>
 
-        <div class="product-page__stars">★★★★★</div>
+        <div class="wg-product-detail__stars">★★★★★</div>
 
-        <div class="product-page__price" id="product-price">
-          {%- if product.compare_at_price > product.price -%}
-            <span class="product-page__price-compare">{{ product.compare_at_price | money }}</span>
-          {%- endif -%}
-          <span class="product-page__price-current">{{ product.price | money }}</span>
-          <span class="product-page__price-tax">（税込）</span>
-          {%- if product.compare_at_price > product.price -%}
-            <span class="product-page__sale-badge">SALE</span>
+        <!-- 価格表示ブロック -->
+        <div class="wg-price-block" id="product-price">
+          {%- if is_member -%}
+            {%- comment %} 会員：通常価格に取り消し線 → 会員価格をメイン表示 {%- endcomment %}
+            <div class="wg-price-block__member-view">
+              <div class="wg-price-block__regular-strike">
+                <span class="wg-price-block__label-regular">通常価格</span>
+                <span class="wg-price-block__regular-price">{{ regular_price | money }}</span>
+              </div>
+              <div class="wg-price-block__member-main">
+                <span class="wg-price-block__label-member">会員価格</span>
+                <span class="wg-price-block__member-price">{{ member_price | money }}</span>
+                <span class="wg-price-block__tax">（税込）</span>
+              </div>
+            </div>
+          {%- else -%}
+            {%- comment %} 非会員：通常価格をメイン → 会員価格を訴求 {%- endcomment %}
+            <div class="wg-price-block__nonmember-view">
+              <div class="wg-price-block__nonmember-main">
+                <span class="wg-price-block__nonmember-price">{{ regular_price | money }}</span>
+                <span class="wg-price-block__tax">（税込）</span>
+              </div>
+              {%- if current_variant.compare_at_price > current_variant.price -%}
+                <div class="wg-price-block__member-teaser">
+                  <span class="wg-price-block__member-teaser-icon">👑</span>
+                  <span class="wg-price-block__member-teaser-text">会員価格</span>
+                  <span class="wg-price-block__member-teaser-price">{{ member_price | money }}</span>
+                  <a href="/account/register" class="wg-price-block__member-teaser-link">会員登録はこちら</a>
+                </div>
+              {%- endif -%}
+            </div>
           {%- endif -%}
         </div>
 
         {%- unless product.has_only_default_variant -%}
-          <div class="product-page__variants">
+          <div class="wg-product-detail__variants">
             {%- for option in product.options_with_values -%}
-              <div class="product-page__option">
-                <label class="product-page__option-label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
+              <div class="wg-product-detail__option">
+                <label class="wg-product-detail__option-label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
                   {{ option.name }}
                 </label>
                 <select
                   id="Option-{{ section.id }}-{{ forloop.index0 }}"
-                  class="product-page__option-select"
+                  class="wg-product-detail__option-select"
                   name="options[{{ option.name | escape }}]"
                 >
                   {%- for value in option.values -%}
@@ -94,30 +135,30 @@
           </div>
         {%- endunless -%}
 
-        <div class="product-page__quantity">
-          <label for="Quantity-{{ section.id }}" class="product-page__quantity-label">数量</label>
-          <div class="product-page__quantity-wrap">
-            <button class="quantity-btn quantity-btn--minus" aria-label="数量を減らす">−</button>
+        <div class="wg-product-detail__quantity">
+          <label for="Quantity-{{ section.id }}" class="wg-product-detail__quantity-label">数量</label>
+          <div class="wg-product-detail__quantity-wrap">
+            <button class="wg-quantity-btn wg-quantity-btn--minus" aria-label="数量を減らす">−</button>
             <input
               type="number"
               id="Quantity-{{ section.id }}"
               name="quantity"
               min="1"
               value="1"
-              class="product-page__quantity-input"
+              class="wg-product-detail__quantity-input"
               aria-label="数量"
             >
-            <button class="quantity-btn quantity-btn--plus" aria-label="数量を増やす">＋</button>
+            <button class="wg-quantity-btn wg-quantity-btn--plus" aria-label="数量を増やす">＋</button>
           </div>
         </div>
 
-        <div class="product-page__actions">
+        <div class="wg-product-detail__actions">
           {%- form 'product', product, id: 'product-form', novalidate: 'novalidate' -%}
             <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" id="ProductVariantId">
             <button
               type="submit"
               name="add"
-              class="btn-cart-large"
+              class="wg-btn-cart-large"
               {% if product.selected_or_first_available_variant.available == false %}disabled{% endif %}
             >
               {%- if product.selected_or_first_available_variant.available -%}
@@ -130,23 +171,23 @@
         </div>
 
         {%- if product.description != blank -%}
-          <div class="product-page__description">
+          <div class="wg-product-detail__description">
             {{ product.description }}
           </div>
         {%- endif -%}
 
         <!-- 配送・安心情報 -->
-        <div class="product-page__trust">
-          <div class="trust-item">
-            <span class="trust-icon">🚚</span>
+        <div class="wg-product-detail__trust">
+          <div class="wg-trust-item">
+            <span class="wg-trust-icon">🚚</span>
             <span>北海道直送・産地直送</span>
           </div>
-          <div class="trust-item">
-            <span class="trust-icon">❄️</span>
+          <div class="wg-trust-item">
+            <span class="wg-trust-icon">❄️</span>
             <span>冷凍便でお届け</span>
           </div>
-          <div class="trust-item">
-            <span class="trust-icon">🎁</span>
+          <div class="wg-trust-item">
+            <span class="wg-trust-icon">🎁</span>
             <span>ギフト包装対応</span>
           </div>
         </div>
@@ -154,6 +195,7 @@
     </div>
   </div>
 </section>
+</div>
 
 {% schema %}
 {
