@@ -1,0 +1,128 @@
+{% comment %}
+  WinGrow ブログ（お知らせ）一覧ページ
+  - 記事カードグリッド / ページネーション
+{% endcomment %}
+
+<div class="wg-site">
+  <section class="wg-blog">
+    <div class="wg-container">
+
+      <nav class="wg-breadcrumb" aria-label="パンくずリスト">
+        <ol class="wg-breadcrumb__list">
+          <li class="wg-breadcrumb__item">
+            <a href="{{ routes.root_url }}" class="wg-breadcrumb__link">トップページ</a>
+          </li>
+          <li class="wg-breadcrumb__item wg-breadcrumb__item--current">{{ blog.title }}</li>
+        </ol>
+      </nav>
+
+      <div class="wg-section-header">
+        <p class="wg-section-subtitle">News &amp; Information</p>
+        <h1 class="wg-section-title">{{ blog.title }}</h1>
+      </div>
+
+      {%- paginate blog.articles by section.settings.articles_per_page -%}
+        {%- if blog.articles.size > 0 -%}
+          <div class="wg-blog-grid">
+            {%- for article in blog.articles -%}
+              <article class="wg-blog-card wg-product-card">
+                <a href="{{ article.url }}" class="wg-blog-card__image">
+                  {%- if article.image -%}
+                    <img src="{{ article.image | image_url: width: 600 }}"
+                         alt="{{ article.image.alt | escape | default: article.title }}"
+                         width="600" height="400" loading="lazy">
+                  {%- else -%}
+                    <div class="wg-blog-card__image-placeholder">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="60" height="60">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                      </svg>
+                    </div>
+                  {%- endif -%}
+                </a>
+                <div class="wg-blog-card__body">
+                  <div class="wg-blog-card__meta">
+                    <time class="wg-blog-card__date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+                      {{ article.published_at | date: '%Y.%m.%d' }}
+                    </time>
+                    {%- for tag in article.tags limit: 2 -%}
+                      <span class="wg-blog-card__tag">{{ tag }}</span>
+                    {%- endfor -%}
+                  </div>
+                  <h2 class="wg-blog-card__title">
+                    <a href="{{ article.url }}">{{ article.title }}</a>
+                  </h2>
+                  {%- if article.excerpt != blank -%}
+                    <p class="wg-blog-card__excerpt">{{ article.excerpt | strip_html | truncate: 80 }}</p>
+                  {%- endif -%}
+                  <a href="{{ article.url }}" class="wg-blog-card__more">
+                    続きを読む
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                      <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                  </a>
+                </div>
+              </article>
+            {%- endfor -%}
+          </div>
+
+          {%- if paginate.pages > 1 -%}
+            <nav class="wg-pagination" aria-label="ページネーション">
+              <ul class="wg-pagination__list">
+                {%- if paginate.previous -%}
+                  <li class="wg-pagination__item">
+                    <a href="{{ paginate.previous.url }}" class="wg-pagination__link wg-pagination__link--prev" aria-label="前のページ">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+                    </a>
+                  </li>
+                {%- endif -%}
+                {%- for part in paginate.parts -%}
+                  <li class="wg-pagination__item">
+                    {%- if part.is_link -%}
+                      <a href="{{ part.url }}" class="wg-pagination__link">{{ part.title }}</a>
+                    {%- elsif part.title == paginate.current_page -%}
+                      <span class="wg-pagination__link wg-pagination__link--current">{{ part.title }}</span>
+                    {%- else -%}
+                      <span class="wg-pagination__link wg-pagination__link--ellipsis">{{ part.title }}</span>
+                    {%- endif -%}
+                  </li>
+                {%- endfor -%}
+                {%- if paginate.next -%}
+                  <li class="wg-pagination__item">
+                    <a href="{{ paginate.next.url }}" class="wg-pagination__link wg-pagination__link--next" aria-label="次のページ">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                  </li>
+                {%- endif -%}
+              </ul>
+            </nav>
+          {%- endif -%}
+
+        {%- else -%}
+          <div class="wg-empty-state">
+            <p class="wg-empty-state__text">現在お知らせはありません。</p>
+          </div>
+        {%- endif -%}
+      {%- endpaginate -%}
+
+    </div>
+  </section>
+</div>
+
+{% schema %}
+{
+  "name": "WG お知らせ一覧",
+  "settings": [
+    {
+      "type": "range",
+      "id": "articles_per_page",
+      "label": "1ページの表示件数",
+      "min": 3,
+      "max": 18,
+      "step": 3,
+      "default": 9
+    }
+  ]
+}
+{% endschema %}
