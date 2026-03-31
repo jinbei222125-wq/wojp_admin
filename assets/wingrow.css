@@ -2568,7 +2568,8 @@ body.wg-menu-open {
   background: var(--wg-color-cream-light, #f5f5f0);
   display: none;
 }
-.wg-menu-drawer__submenu.is-open {
+.wg-menu-drawer__submenu.is-open,
+.wg-menu-drawer__item--parent.is-open > .wg-menu-drawer__submenu {
   display: block;
 }
 .wg-menu-drawer__submenu li a {

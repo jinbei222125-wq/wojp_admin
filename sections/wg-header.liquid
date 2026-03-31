@@ -1,10 +1,10 @@
 {% comment %}
   WinGrow ヘッダーセクション
   - スティッキーヘッダー
-  - ロゴ / ログイン / 検索 / カート / メニュー
+  - ロゴ / ログイン（未ログイン時）/ マイアカウント（ログイン時） / 検索 / カート / メニュー
   - 赤ナビゲーションバー
   - お知らせバー
-  - CSS カスタムプロパティで波テクスチャURLを注入（wingrow.css で使用）
+  - ハンバーガーメニュードロワー
 {% endcomment %}
 
 {%- liquid
@@ -12,7 +12,6 @@
   assign wave_icon_url = 'wave_icon.png' | asset_url
 -%}
 
-{%- comment %} CSS カスタムプロパティで波テクスチャURLを設定 {%- endcomment %}
 <style>
   :root {
     --wg-wave-url: url('{{ wave_url }}');
@@ -23,12 +22,10 @@
   header {
     display: none !important;
   }
-  /* WinGrow の .wg-site 内の header / footer だけ表示 */
   .wg-site footer,
   .wg-site header {
     display: block !important;
   }
-  /* 既存テーマのスキップリンクを非表示 */
   a[href="#MainContent"],
   .skip-to-content-link,
   .visually-hidden--skip {
@@ -41,7 +38,6 @@
 <div class="wg-site">
   <header class="wg-header">
 
-    {%- comment %} ヘッダートップ {%- endcomment %}
     <div class="wg-header__top">
       <a href="{{ routes.root_url }}" class="wg-header__logo">
         {%- if section.settings.logo != blank -%}
@@ -56,15 +52,28 @@
       </a>
 
       <div class="wg-header__actions">
-        {%- comment %} ログイン {%- endcomment %}
-        <a href="{{ routes.account_url }}" class="wg-header__action-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-            <polyline points="10 17 15 12 10 7" />
-            <line x1="15" y1="12" x2="3" y2="12" />
-          </svg>
-          ログイン
-        </a>
+
+        {%- comment %} ログイン／マイアカウント：ログイン状態で切り替え {%- endcomment %}
+        {%- if customer -%}
+          {%- comment %} ログイン済み：マイアカウントを表示 {%- endcomment %}
+          <a href="{{ routes.account_url }}" class="wg-header__action-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            マイページ
+          </a>
+        {%- else -%}
+          {%- comment %} 未ログイン：ログインボタンを表示 {%- endcomment %}
+          <a href="{{ routes.account_url }}" class="wg-header__action-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+              <polyline points="10 17 15 12 10 7" />
+              <line x1="15" y1="12" x2="3" y2="12" />
+            </svg>
+            ログイン
+          </a>
+        {%- endif -%}
 
         {%- comment %} 商品を探す {%- endcomment %}
         <a href="{{ routes.search_url }}" class="wg-header__action-item">
@@ -86,8 +95,8 @@
           買い物かご
         </a>
 
-        {%- comment %} メニュー {%- endcomment %}
-        <button class="wg-header__menu-btn" aria-label="メニューを開く">
+        {%- comment %} ハンバーガーメニュー {%- endcomment %}
+        <button class="wg-header__menu-btn" aria-label="メニューを開く" aria-expanded="false" aria-controls="wgMenuDrawer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
             <line x1="3" y1="6" x2="21" y2="6" />
             <line x1="3" y1="12" x2="21" y2="12" />
@@ -101,26 +110,23 @@
     {%- comment %} ナビゲーションバー {%- endcomment %}
     <nav class="wg-header__nav" aria-label="メインナビゲーション">
       <ul>
-        {%- if section.blocks.size > 0 -%}
-          {%- comment %} カスタマイザーのブロックからメニュー項目を生成 {%- endcomment %}
-          {%- for block in section.blocks -%}
-            {%- if block.type == 'nav_link' -%}
-              <li>
-                <a href="{{ block.settings.url | default: '#' }}" {{ block.shopify_attributes }}>
-                  {{ block.settings.label }}
-                </a>
-              </li>
-            {%- endif -%}
-          {%- endfor -%}
-        {%- else -%}
-          {%- comment %} デフォルトメニュー（ブロック未設定時） {%- endcomment %}
-          <li><a href="{{ routes.root_url }}">トップページ</a></li>
-          <li><a href="{{ routes.all_products_collection_url }}">商品一覧</a></li>
-          <li><a href="/collections/kani">かに</a></li>
-          <li><a href="/collections/gyokai">魚介類</a></li>
-          <li><a href="/collections/kaisen-kako">海鮮加工品</a></li>
-          <li><a href="/pages/guide">ご利用ガイド</a></li>
-        {%- endif -%}
+        <li class="wg-nav-has-dropdown">
+          <a href="{{ routes.all_products_collection_url }}">
+            商品一覧
+            <svg class="wg-nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </a>
+          <ul class="wg-nav-dropdown">
+            <li><a href="/search?q=かに&type=product">カニ</a></li>
+            <li><a href="/search?q=魚介類&type=product">魚介類</a></li>
+            <li><a href="/search?q=海鮮加工品&type=product">海鮮加工品</a></li>
+          </ul>
+        </li>
+        <li><a href="/#shopify-section-wg-product-ranking">人気ランキング</a></li>
+        <li><a href="/#shopify-section-wg-sale-products">お買い得品</a></li>
+        <li><a href="/#shopify-section-wg-featured">当店のイチオシ</a></li>
+        <li><a href="/pages/guide">ご利用ガイド</a></li>
       </ul>
     </nav>
 
@@ -133,6 +139,164 @@
 
   </header>
 </div>
+
+{%- comment %} ハンバーガーメニュー ドロワー + オーバーレイ {%- endcomment %}
+<div class="wg-menu-overlay" id="wgMenuOverlay" aria-hidden="true"></div>
+<nav class="wg-menu-drawer" id="wgMenuDrawer" aria-label="モバイルメニュー">
+  <div class="wg-menu-drawer__header">
+    <span class="wg-menu-drawer__title">メニュー</span>
+    <button class="wg-menu-drawer__close" id="wgMenuClose" aria-label="メニューを閉じる">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+  </div>
+
+  <ul class="wg-menu-drawer__nav">
+    <li class="wg-menu-drawer__item wg-menu-drawer__item--parent">
+      <button class="wg-menu-drawer__toggle" aria-expanded="false">
+        商品一覧
+        <svg class="wg-menu-drawer__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <ul class="wg-menu-drawer__submenu">
+        <li><a href="/search?q=かに&type=product">カニ</a></li>
+        <li><a href="/search?q=魚介類&type=product">魚介類</a></li>
+        <li><a href="/search?q=海鮮加工品&type=product">海鮮加工品</a></li>
+      </ul>
+    </li>
+    <li><a href="/#shopify-section-wg-product-ranking">人気ランキング</a></li>
+    <li><a href="/#shopify-section-wg-sale-products">お買い得品</a></li>
+    <li><a href="/#shopify-section-wg-featured">当店のイチオシ</a></li>
+    <li><a href="/pages/guide">ご利用ガイド</a></li>
+  </ul>
+
+  <div class="wg-menu-drawer__actions">
+    {%- if customer -%}
+      <a href="{{ routes.account_url }}" class="wg-menu-drawer__action-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+        マイページ（{{ customer.first_name }}さん）
+      </a>
+      <a href="{{ routes.account_logout_url }}" class="wg-menu-drawer__action-link wg-menu-drawer__action-link--logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+        ログアウト
+      </a>
+    {%- else -%}
+      <a href="{{ routes.account_url }}" class="wg-menu-drawer__action-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+          <polyline points="10 17 15 12 10 7" />
+          <line x1="15" y1="12" x2="3" y2="12" />
+        </svg>
+        ログイン
+      </a>
+      <a href="/account/register" class="wg-menu-drawer__action-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <line x1="19" y1="8" x2="19" y2="14"/>
+          <line x1="22" y1="11" x2="16" y2="11"/>
+        </svg>
+        新規会員登録
+      </a>
+    {%- endif -%}
+    <a href="{{ routes.cart_url }}" class="wg-menu-drawer__action-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+        <circle cx="9" cy="21" r="1" />
+        <circle cx="20" cy="21" r="1" />
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+      </svg>
+      買い物かご（{{ cart.item_count }}点）
+    </a>
+    <a href="{{ routes.search_url }}" class="wg-menu-drawer__action-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      商品を探す
+    </a>
+  </div>
+</nav>
+
+<script>
+(function() {
+  'use strict';
+
+  function initMenu() {
+  var menuBtn = document.querySelector('.wg-header__menu-btn');
+  var menuClose = document.getElementById('wgMenuClose');
+  var menuDrawer = document.getElementById('wgMenuDrawer');
+  var menuOverlay = document.getElementById('wgMenuOverlay');
+
+  function openMenu() {
+    if (!menuDrawer) return;
+    menuDrawer.classList.add('is-open');
+    if (menuOverlay) menuOverlay.classList.add('is-active');
+    document.body.classList.add('wg-menu-open');
+    if (menuBtn) menuBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeMenu() {
+    if (!menuDrawer) return;
+    menuDrawer.classList.remove('is-open');
+    if (menuOverlay) menuOverlay.classList.remove('is-active');
+    document.body.classList.remove('wg-menu-open');
+    if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  if (menuBtn) menuBtn.addEventListener('click', openMenu);
+  if (menuClose) menuClose.addEventListener('click', closeMenu);
+  if (menuOverlay) menuOverlay.addEventListener('click', closeMenu);
+
+  // アコーディオン（商品一覧のサブメニュー）
+  var toggleBtns = document.querySelectorAll('.wg-menu-drawer__toggle');
+  toggleBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var expanded = this.getAttribute('aria-expanded') === 'true';
+      var submenu = this.nextElementSibling;
+
+      // 他のサブメニューを閉じる
+      toggleBtns.forEach(function(otherBtn) {
+        if (otherBtn !== btn) {
+          otherBtn.setAttribute('aria-expanded', 'false');
+          var otherSubmenu = otherBtn.nextElementSibling;
+          if (otherSubmenu) otherSubmenu.classList.remove('is-open');
+        }
+      });
+
+      // 対象のサブメニューをトグル
+      if (expanded) {
+        this.setAttribute('aria-expanded', 'false');
+        if (submenu) submenu.classList.remove('is-open');
+      } else {
+        this.setAttribute('aria-expanded', 'true');
+        if (submenu) submenu.classList.add('is-open');
+      }
+    });
+  });
+
+  // ESCキーでメニューを閉じる
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeMenu();
+  });
+  } // end initMenu
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMenu);
+  } else {
+    initMenu();
+  }
+})();
+</script>
 
 {% schema %}
 {
@@ -180,30 +344,12 @@
     {
       "name": "WinGrow ヘッダー",
       "blocks": [
-        {
-          "type": "nav_link",
-          "settings": { "label": "トップページ", "url": "/" }
-        },
-        {
-          "type": "nav_link",
-          "settings": { "label": "商品一覧", "url": "/collections/all" }
-        },
-        {
-          "type": "nav_link",
-          "settings": { "label": "かに", "url": "/collections/kani" }
-        },
-        {
-          "type": "nav_link",
-          "settings": { "label": "魚介類", "url": "/collections/gyokai" }
-        },
-        {
-          "type": "nav_link",
-          "settings": { "label": "海鮮加工品", "url": "/collections/kaisen-kako" }
-        },
-        {
-          "type": "nav_link",
-          "settings": { "label": "ご利用ガイド", "url": "/pages/guide" }
-        }
+        { "type": "nav_link", "settings": { "label": "トップページ", "url": "/" } },
+        { "type": "nav_link", "settings": { "label": "商品一覧", "url": "/collections/all" } },
+        { "type": "nav_link", "settings": { "label": "かに", "url": "/search?q=かに&type=product" } },
+        { "type": "nav_link", "settings": { "label": "魚介類", "url": "/search?q=魚介類&type=product" } },
+        { "type": "nav_link", "settings": { "label": "海鮮加工品", "url": "/search?q=海鮮加工品&type=product" } },
+        { "type": "nav_link", "settings": { "label": "ご利用ガイド", "url": "/pages/guide" } }
       ]
     }
   ]
