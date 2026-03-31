@@ -1,0 +1,449 @@
+{% comment %}
+  WinGrow 運営会社ページ
+  - ブランドカラー（ネイビー / レッド / クリーム）で世界観統一
+  - 企業理念 / 会社概要テーブル / アクセス情報を掲載
+{% endcomment %}
+
+<div class="wg-site">
+  <section class="wg-company-page">
+    <div class="wg-container">
+
+      {%- comment %} パンくずリスト {%- endcomment %}
+      <nav class="wg-breadcrumb" aria-label="パンくずリスト">
+        <ol class="wg-breadcrumb__list">
+          <li class="wg-breadcrumb__item">
+            <a href="{{ routes.root_url }}" class="wg-breadcrumb__link">トップページ</a>
+          </li>
+          <li class="wg-breadcrumb__item wg-breadcrumb__item--current">運営会社</li>
+        </ol>
+      </nav>
+
+      {%- comment %} ページヘッダー {%- endcomment %}
+      <div class="wg-section-header">
+        <p class="wg-section-subtitle">Company</p>
+        <h1 class="wg-section-title">運営会社</h1>
+      </div>
+
+      {%- comment %} 企業理念 {%- endcomment %}
+      <div class="wg-company-page__philosophy">
+        <div class="wg-company-page__philosophy-inner">
+          <p class="wg-company-page__philosophy-catch">
+            {{ section.settings.philosophy_catch | default: "北の大地が育んだ、本物の美味しさを。" }}
+          </p>
+          <p class="wg-company-page__philosophy-text">
+            {{ section.settings.philosophy_text | default: "私たちWinGrowは、北海道の豊かな海が生む極上の海産物を、全国のお客様のもとへ直接お届けすることを使命としています。生産者との強い信頼関係のもと、獲れたての新鮮さと品質を妥協なく守り続けることで、食卓に本物の感動を届けてまいります。大切な方へのギフトや、日々の食事に特別な豊かさを添えたい―そんな想いにお応えするため、私たちは今日も北の海と向き合っています。" }}
+          </p>
+        </div>
+        {%- if section.settings.philosophy_image != blank -%}
+          <div class="wg-company-page__philosophy-img">
+            <img
+              src="{{ section.settings.philosophy_image | image_url: width: 800 }}"
+              alt="{{ section.settings.philosophy_image.alt | default: '企業理念' | escape }}"
+              width="800"
+              height="533"
+              loading="lazy">
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- comment %} 私たちの強み {%- endcomment %}
+      <div class="wg-company-page__strengths">
+        <h2 class="wg-company-page__section-title">私たちの強み</h2>
+        <div class="wg-company-page__strengths-grid">
+          <div class="wg-company-page__strength-item">
+            <div class="wg-company-page__strength-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <h3>品質へのこだわり</h3>
+            <p>北海道の厳格な品質基準をクリアした厳選品のみを取り扱い。産地直送ならではの鮮度と品質を保証します。</p>
+          </div>
+          <div class="wg-company-page__strength-item">
+            <div class="wg-company-page__strength-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+            </div>
+            <h3>産地直送の安心感</h3>
+            <p>中間流通を省いた産地直送システムで、新鮮さを保ったままお手頃価格でご提供。生産者の顔が見える安心をお届けします。</p>
+          </div>
+          <div class="wg-company-page__strength-item">
+            <div class="wg-company-page__strength-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40">
+                <path d="M20 12V22H4V12"/>
+                <path d="M22 7H2v5h20V7z"/>
+                <path d="M12 22V7"/>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+              </svg>
+            </div>
+            <h3>ギフト・贈り物対応</h3>
+            <p>大切な方への贈り物にぴったりな、丁寧なギフト包装・のし対応が可能。誕生日・お中元・お歳暮など各種シーンに対応します。</p>
+          </div>
+        </div>
+      </div>
+
+      {%- comment %} 会社概要テーブル {%- endcomment %}
+      <div class="wg-company-page__info">
+        <h2 class="wg-company-page__section-title">会社概要</h2>
+        <table class="wg-company-page__table">
+          <tbody>
+            <tr>
+              <th>会社名</th>
+              <td>{{ section.settings.company_name | default: "株式会社WinGrow" }}</td>
+            </tr>
+            <tr>
+              <th>設立</th>
+              <td>{{ section.settings.founded | default: "2020年4月" }}</td>
+            </tr>
+            <tr>
+              <th>代表取締役</th>
+              <td>{{ section.settings.ceo | default: "代表取締役 氏名" }}</td>
+            </tr>
+            <tr>
+              <th>所在地</th>
+              <td>
+                {%- if section.settings.address != blank -%}
+                  {{ section.settings.address | newline_to_br }}
+                {%- else -%}
+                  〒060-0002<br>
+                  北海道札幌市中央区北2条西2丁目34<br>
+                  フージャース札幌ビル 10F
+                {%- endif -%}
+              </td>
+            </tr>
+            <tr>
+              <th>電話番号</th>
+              <td>{{ section.settings.phone | default: "011-596-0967" }}</td>
+            </tr>
+            <tr>
+              <th>営業時間</th>
+              <td>{{ section.settings.business_hours | default: "平日 10:00〜18:00（土日祝定休）" }}</td>
+            </tr>
+            <tr>
+              <th>事業内容</th>
+              <td>{{ section.settings.business_desc | default: "北海道産海産物の通信販売・ギフト販売" }}</td>
+            </tr>
+            {%- if section.settings.url != blank -%}
+              <tr>
+                <th>Webサイト</th>
+                <td>
+                  <a href="{{ section.settings.url }}" target="_blank" rel="noopener noreferrer">
+                    {{ section.settings.url }}
+                  </a>
+                </td>
+              </tr>
+            {%- endif -%}
+          </tbody>
+        </table>
+      </div>
+
+      {%- comment %} お問い合わせCTA {%- endcomment %}
+      <div class="wg-company-page__cta">
+        <p>ご不明な点やご相談は、お気軽にお問い合わせください。</p>
+        <a href="/pages/contact" class="wg-btn-navy">
+          お問い合わせはこちら
+          <span class="wg-btn-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </span>
+        </a>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<style>
+/* ============================================
+   WinGrow 運営会社ページ
+   ============================================ */
+.wg-company-page {
+  padding: 48px 0 80px;
+}
+
+/* 企業理念 */
+.wg-company-page__philosophy {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+  margin-bottom: 80px;
+  padding: 56px;
+  background: var(--wg-color-cream);
+  border-radius: 16px;
+}
+.wg-company-page__philosophy-catch {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--wg-color-navy);
+  margin-bottom: 20px;
+  line-height: 1.5;
+  position: relative;
+  padding-left: 20px;
+}
+.wg-company-page__philosophy-catch::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 4px;
+  background: var(--wg-color-red);
+  border-radius: 2px;
+}
+.wg-company-page__philosophy-text {
+  color: var(--wg-color-text);
+  line-height: 2;
+  font-size: 0.95rem;
+}
+.wg-company-page__philosophy-img {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+.wg-company-page__philosophy-img img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* セクションタイトル */
+.wg-company-page__section-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--wg-color-navy);
+  margin-bottom: 32px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--wg-color-navy);
+  position: relative;
+}
+.wg-company-page__section-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 60px;
+  height: 2px;
+  background: var(--wg-color-red);
+}
+
+/* 強み */
+.wg-company-page__strengths {
+  margin-bottom: 80px;
+}
+.wg-company-page__strengths-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.wg-company-page__strength-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  border-top: 3px solid var(--wg-color-navy);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.wg-company-page__strength-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+.wg-company-page__strength-icon {
+  width: 72px;
+  height: 72px;
+  background: var(--wg-color-navy);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: #fff;
+}
+.wg-company-page__strength-item h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--wg-color-navy);
+  margin-bottom: 12px;
+}
+.wg-company-page__strength-item p {
+  font-size: 0.875rem;
+  color: #555;
+  line-height: 1.8;
+}
+
+/* 会社概要テーブル */
+.wg-company-page__info {
+  margin-bottom: 80px;
+}
+.wg-company-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+}
+.wg-company-page__table tr {
+  border-bottom: 1px solid #eee;
+}
+.wg-company-page__table tr:last-child {
+  border-bottom: none;
+}
+.wg-company-page__table th {
+  background: var(--wg-color-navy);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 18px 24px;
+  width: 200px;
+  vertical-align: top;
+  text-align: left;
+  white-space: nowrap;
+}
+.wg-company-page__table td {
+  padding: 18px 24px;
+  color: var(--wg-color-text);
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+.wg-company-page__table td a {
+  color: var(--wg-color-navy);
+  text-decoration: underline;
+}
+.wg-company-page__table td a:hover {
+  color: var(--wg-color-red);
+}
+
+/* CTAエリア */
+.wg-company-page__cta {
+  text-align: center;
+  padding: 48px;
+  background: var(--wg-color-navy);
+  border-radius: 16px;
+  color: #fff;
+}
+.wg-company-page__cta p {
+  font-size: 1rem;
+  margin-bottom: 24px;
+  opacity: 0.9;
+}
+.wg-company-page__cta .wg-btn-navy {
+  background: #fff;
+  color: var(--wg-color-navy);
+  border-color: #fff;
+}
+.wg-company-page__cta .wg-btn-navy:hover {
+  background: var(--wg-color-cream);
+  border-color: var(--wg-color-cream);
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .wg-company-page__philosophy {
+    grid-template-columns: 1fr;
+    padding: 32px 24px;
+    gap: 24px;
+  }
+  .wg-company-page__strengths-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .wg-company-page__table th {
+    width: 120px;
+    padding: 14px 16px;
+  }
+  .wg-company-page__table td {
+    padding: 14px 16px;
+  }
+  .wg-company-page__cta {
+    padding: 32px 24px;
+  }
+}
+</style>
+
+{% schema %}
+{
+  "name": "WG 運営会社ページ",
+  "settings": [
+    {
+      "type": "text",
+      "id": "philosophy_catch",
+      "label": "企業理念キャッチコピー",
+      "default": "北の大地が育んだ、本物の美味しさを。"
+    },
+    {
+      "type": "textarea",
+      "id": "philosophy_text",
+      "label": "企業理念テキスト",
+      "default": "私たちWinGrowは、北海道の豊かな海が生む極上の海産物を、全国のお客様のもとへ直接お届けすることを使命としています。生産者との強い信頼関係のもと、獲れたての新鮮さと品質を妥協なく守り続けることで、食卓に本物の感動を届けてまいります。"
+    },
+    {
+      "type": "image_picker",
+      "id": "philosophy_image",
+      "label": "企業理念画像"
+    },
+    {
+      "type": "header",
+      "content": "会社概要"
+    },
+    {
+      "type": "text",
+      "id": "company_name",
+      "label": "会社名",
+      "default": "株式会社WinGrow"
+    },
+    {
+      "type": "text",
+      "id": "founded",
+      "label": "設立",
+      "default": "2020年4月"
+    },
+    {
+      "type": "text",
+      "id": "ceo",
+      "label": "代表取締役",
+      "default": "代表取締役 氏名"
+    },
+    {
+      "type": "textarea",
+      "id": "address",
+      "label": "所在地",
+      "default": "〒060-0002\n北海道札幌市中央区北2条西2丁目34\nフージャース札幌ビル 10F"
+    },
+    {
+      "type": "text",
+      "id": "phone",
+      "label": "電話番号",
+      "default": "011-596-0967"
+    },
+    {
+      "type": "text",
+      "id": "business_hours",
+      "label": "営業時間",
+      "default": "平日 10:00〜18:00（土日祝定休）"
+    },
+    {
+      "type": "text",
+      "id": "business_desc",
+      "label": "事業内容",
+      "default": "北海道産海産物の通信販売・ギフト販売"
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": "WebサイトURL（任意）"
+    }
+  ],
+  "presets": [
+    {
+      "name": "WG 運営会社ページ"
+    }
+  ]
+}
+{% endschema %}
