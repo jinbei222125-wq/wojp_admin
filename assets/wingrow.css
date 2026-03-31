@@ -2791,3 +2791,278 @@ body.wg-menu-open {
     grid-template-columns: 1fr;
   }
 }
+
+/* =============================================
+   ご利用ガイドページ
+   ============================================= */
+
+/* ---- ご注文の流れ ---- */
+.wg-guide__section-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--wg-color-text);
+  margin: 0 0 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--wg-color-red);
+  display: inline-block;
+}
+
+.wg-guide__steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin-bottom: 3rem;
+}
+
+.wg-guide__step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem 1rem;
+  background: #fff;
+  border: 1px solid var(--wg-color-border);
+  border-radius: 12px;
+}
+
+.wg-guide__step-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.5rem;
+  color: var(--wg-color-text-light);
+  flex-shrink: 0;
+  margin-top: 2.5rem;
+}
+
+.wg-guide__step-num {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--wg-color-red);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.wg-guide__step-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--wg-color-cream-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  color: var(--wg-color-red);
+}
+
+.wg-guide__step-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--wg-color-text);
+  margin: 0 0 0.5rem;
+}
+
+.wg-guide__step-text {
+  font-size: 0.8125rem;
+  color: var(--wg-color-text-light);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ---- 情報カードグリッド ---- */
+.wg-guide__info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 3rem;
+}
+
+.wg-guide__info-card {
+  background: #fff;
+  border: 1px solid var(--wg-color-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.wg-guide__info-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--wg-color-cream-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  color: var(--wg-color-red);
+}
+
+.wg-guide__info-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--wg-color-text);
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--wg-color-border);
+}
+
+.wg-guide__info-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.wg-guide__info-list li {
+  font-size: 0.8125rem;
+  color: var(--wg-color-text-light);
+  line-height: 1.5;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.wg-guide__info-list li::before {
+  content: '・';
+  position: absolute;
+  left: 0;
+  color: var(--wg-color-red);
+}
+
+.wg-form-link {
+  color: var(--wg-color-red);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.wg-form-link:hover {
+  color: var(--wg-color-red-dark);
+  text-decoration: underline;
+}
+
+/* ---- FAQセクション ---- */
+.wg-guide__faq {
+  margin-top: 3rem;
+}
+
+.wg-faq-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.wg-faq-category__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: #1a4a3a;
+  padding: 0.6rem 1rem;
+  border-radius: 4px;
+  margin: 0 0 0.75rem;
+}
+
+.wg-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.wg-faq-item {
+  border-bottom: 1px solid var(--wg-color-border);
+}
+
+.wg-faq-item:first-child {
+  border-top: 1px solid var(--wg-color-border);
+}
+
+.wg-faq-item__question {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--wg-color-text);
+  list-style: none;
+  user-select: none;
+}
+
+.wg-faq-item__question::-webkit-details-marker {
+  display: none;
+}
+
+.wg-faq-item__q-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--wg-color-red);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.wg-faq-item__arrow {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--wg-color-text-light);
+  transition: transform 0.2s;
+}
+
+.wg-faq-item[open] .wg-faq-item__arrow {
+  transform: rotate(180deg);
+}
+
+.wg-faq-item__answer {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 0.5rem 1.25rem;
+  font-size: 0.9rem;
+  color: var(--wg-color-text-light);
+  line-height: 1.7;
+}
+
+.wg-faq-item__a-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--wg-color-cream);
+  color: var(--wg-color-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* ---- レスポンシブ ---- */
+@media (max-width: 1024px) {
+  .wg-guide__info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .wg-guide__steps {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .wg-guide__step-arrow {
+    transform: rotate(90deg);
+    margin: 0 auto;
+  }
+
+  .wg-guide__info-grid {
+    grid-template-columns: 1fr;
+  }
+}
