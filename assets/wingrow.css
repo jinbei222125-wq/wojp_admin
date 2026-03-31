@@ -3627,3 +3627,22 @@ body.wg-menu-open {
     gap: 12px;
   }
 }
+
+/* ============================================
+   EMPTY STATE (検索結果なし等)
+   ============================================ */
+.wg-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+.wg-empty-state__text {
+  font-size: 16px;
+  color: var(--wg-color-text);
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+.wg-empty-state__hint {
+  font-size: 14px;
+  color: var(--wg-color-text-light);
+  margin-bottom: 32px;
+}

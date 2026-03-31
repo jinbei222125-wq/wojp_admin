@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "wg-search-main",
+      "settings": {
+        "results_per_page": 12
+      }
+    }
+  },
+  "order": ["main"]
+}
