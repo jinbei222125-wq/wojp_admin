@@ -2522,28 +2522,35 @@ body.wg-menu-open {
   padding: 0;
   flex: 1;
 }
+.wg-menu-drawer__nav > li {
+  border-bottom: 1px solid var(--wg-color-border);
+}
 .wg-menu-drawer__item {
   border-bottom: 1px solid var(--wg-color-border);
 }
+.wg-menu-drawer__nav > li > a,
 .wg-menu-drawer__item a,
 .wg-menu-drawer__toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  color: var(--wg-color-text);
-  text-decoration: none;
+  color: var(--wg-color-text) !important;
+  text-decoration: none !important;
   font-size: 15px;
+  font-weight: 500;
   width: 100%;
   background: none;
   border: none;
   cursor: pointer;
   text-align: left;
+  transition: background 0.2s ease, color 0.2s ease;
 }
+.wg-menu-drawer__nav > li > a:hover,
 .wg-menu-drawer__item a:hover,
 .wg-menu-drawer__toggle:hover {
   background: var(--wg-color-cream-light);
-  color: var(--wg-color-red);
+  color: var(--wg-color-red) !important;
 }
 .wg-menu-drawer__chevron {
   transition: transform 0.2s ease;
@@ -2558,19 +2565,25 @@ body.wg-menu-open {
   list-style: none;
   margin: 0;
   padding: 0;
-  background: var(--wg-color-cream-light);
+  background: var(--wg-color-cream-light, #f5f5f0);
   display: none;
 }
 .wg-menu-drawer__submenu.is-open {
   display: block;
 }
 .wg-menu-drawer__submenu li a {
-  padding: 12px 20px 12px 36px;
-  font-size: 14px;
-  color: var(--wg-color-text-light);
+  display: flex !important;
+  align-items: center;
+  padding: 12px 20px 12px 36px !important;
+  font-size: 14px !important;
+  color: var(--wg-color-text-light, #666) !important;
+  text-decoration: none !important;
+  background: none;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 .wg-menu-drawer__submenu li a:hover {
-  color: var(--wg-color-red);
+  color: var(--wg-color-red) !important;
+  background: var(--wg-color-cream, #ede8df);
 }
 
 /* ドロワーフッター */
