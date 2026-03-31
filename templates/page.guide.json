@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "main": {
+      "type": "wg-page-guide",
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}
