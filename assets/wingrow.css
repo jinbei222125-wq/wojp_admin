@@ -2372,3 +2372,166 @@ header {
     text-align: center;
   }
 }
+
+/* ============================================
+   モバイルメニュードロワー
+   ============================================ */
+
+/* オーバーレイ */
+.wg-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.wg-menu-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ドロワー本体 */
+.wg-menu-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(320px, 85vw);
+  height: 100%;
+  background: #fff;
+  z-index: 9999;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+}
+.wg-menu-drawer.is-open {
+  transform: translateX(0);
+}
+
+/* スクロール禁止 */
+body.wg-menu-open {
+  overflow: hidden;
+}
+
+/* ドロワーヘッダー */
+.wg-menu-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--wg-color-border);
+  flex-shrink: 0;
+}
+.wg-menu-drawer__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--wg-color-text);
+}
+.wg-menu-drawer__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--wg-color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wg-menu-drawer__close:hover {
+  color: var(--wg-color-red);
+}
+
+/* ドロワーナビゲーション */
+.wg-menu-drawer__nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+}
+.wg-menu-drawer__item {
+  border-bottom: 1px solid var(--wg-color-border);
+}
+.wg-menu-drawer__item a,
+.wg-menu-drawer__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  color: var(--wg-color-text);
+  text-decoration: none;
+  font-size: 15px;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+.wg-menu-drawer__item a:hover,
+.wg-menu-drawer__toggle:hover {
+  background: var(--wg-color-cream-light);
+  color: var(--wg-color-red);
+}
+.wg-menu-drawer__chevron {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.wg-menu-drawer__toggle[aria-expanded="true"] .wg-menu-drawer__chevron {
+  transform: rotate(180deg);
+}
+
+/* サブメニュー */
+.wg-menu-drawer__submenu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--wg-color-cream-light);
+  display: none;
+}
+.wg-menu-drawer__submenu.is-open {
+  display: block;
+}
+.wg-menu-drawer__submenu li a {
+  padding: 12px 20px 12px 36px;
+  font-size: 14px;
+  color: var(--wg-color-text-light);
+}
+.wg-menu-drawer__submenu li a:hover {
+  color: var(--wg-color-red);
+}
+
+/* ドロワーフッター */
+.wg-menu-drawer__footer {
+  padding: 20px;
+  border-top: 1px solid var(--wg-color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.wg-menu-drawer__footer-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  color: var(--wg-color-text);
+  text-decoration: none;
+  font-size: 14px;
+  background: var(--wg-color-cream-light);
+}
+.wg-menu-drawer__footer-link:hover {
+  background: var(--wg-color-cream);
+  color: var(--wg-color-red);
+}
+.wg-menu-drawer__footer-link--cart {
+  background: var(--wg-color-red);
+  color: #fff;
+}
+.wg-menu-drawer__footer-link--cart:hover {
+  background: var(--wg-color-red-dark);
+  color: #fff;
+}
