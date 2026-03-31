@@ -1,6 +1,7 @@
 /* ============================================
    WinGrow EC Site - Shopify Theme Stylesheet
    クラス名は全て wg- プレフィックスで統一
+   v2.1.0 - 2026-03-31 OFFバッジ非表示対応
    ============================================ */
 
 /* Google Fonts */
@@ -488,13 +489,13 @@
   transform: scale(1.05);
 }
 
+/* ランキングバッジ */
 .wg-rank-badge {
   position: absolute;
-  top: -2px;
-  left: -2px;
-  width: 60px;
-  height: 60px;
-  background: var(--wg-color-red);
+  top: -4px;
+  left: -4px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   display: flex;
   flex-direction: column;
@@ -503,34 +504,50 @@
   color: #fff;
   font-weight: 900;
   z-index: 2;
+  /* デフォルト（1位）: 金 */
+  background: linear-gradient(135deg, #f7d000 0%, #e8a000 50%, #c97a00 100%);
+  box-shadow: 0 4px 12px rgba(200, 140, 0, 0.55), inset 0 1px 0 rgba(255,255,255,0.4);
+  border: 2px solid rgba(255,255,255,0.6);
+}
+
+/* 2位: 銀 */
+.wg-product-card:nth-child(2) .wg-rank-badge {
+  background: linear-gradient(135deg, #e8e8e8 0%, #c0c0c0 50%, #909090 100%);
+  box-shadow: 0 4px 12px rgba(140, 140, 140, 0.55), inset 0 1px 0 rgba(255,255,255,0.5);
+  border: 2px solid rgba(255,255,255,0.7);
+}
+
+/* 3位: 銅 */
+.wg-product-card:nth-child(3) .wg-rank-badge {
+  background: linear-gradient(135deg, #e8a060 0%, #c07030 50%, #9a5010 100%);
+  box-shadow: 0 4px 12px rgba(160, 100, 30, 0.55), inset 0 1px 0 rgba(255,255,255,0.35);
+  border: 2px solid rgba(255,255,255,0.5);
+}
+
+/* 4位: ネイビー */
+.wg-product-card:nth-child(4) .wg-rank-badge {
+  background: linear-gradient(135deg, #4a6fa5 0%, #2c4f82 50%, #1a3460 100%);
+  box-shadow: 0 4px 12px rgba(30, 60, 120, 0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+  border: 2px solid rgba(255,255,255,0.4);
 }
 
 .wg-rank-badge__num {
-  font-size: 22px;
+  font-size: 26px;
   line-height: 1;
+  letter-spacing: -1px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .wg-rank-badge__label {
   font-size: 11px;
   line-height: 1;
+  margin-top: 1px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  font-weight: 700;
 }
 
 .wg-off-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 62px;
-  height: 62px;
-  background: var(--wg-color-red);
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 900;
-  z-index: 2;
-  line-height: 1.1;
+  display: none !important;
 }
 
 .wg-off-badge__percent {
@@ -1487,43 +1504,13 @@ a.wg-footer-nav-item {
 /* ============================================
    既存テーマのヘッダー・フッターを非表示
    WinGrow独自のヘッダー・フッターセクションを使用するため
+   ※ #shopify-section-header はWinGrowのヘッダーを含むため非表示にしない
    ============================================ */
 
-/* Dawn テーマ v8+ (セクショングループ対応) */
+/* Dawn テーマ v8+ (セクショングループ対応) のみ非表示 */
 #shopify-section-group-header-group,
-#shopify-section-group-footer-group,
-/* Dawn テーマ v7以前 / その他の一般的なテーマ */
-#shopify-section-header,
-#shopify-section-footer {
+#shopify-section-group-footer-group {
   display: none !important;
-}
-
-/* 既存テーマの header / footer を全て非表示 */
-footer,
-header {
-  display: none !important;
-}
-
-/* よく使われるフッタークラス名を持つ要素を非表示 */
-.site-footer,
-.page-footer,
-.footer-wrapper,
-.footer-container,
-.theme-footer,
-[class="footer"],
-.shopify-section:has(> footer) {
-  display: none !important;
-}
-
-/* WinGrow の .wg-site 内の header / footer だけ表示 */
-.wg-site footer,
-.wg-site header {
-  display: block !important;
-}
-.wg-site .site-footer,
-.wg-site .page-footer,
-.wg-site .footer-wrapper {
-  display: block !important;
 }
 
 /* ============================================
@@ -1888,6 +1875,19 @@ header {
 .wg-product-card__price-teaser-num {
   color: var(--wg-color-red);
   font-weight: 700;
+}
+
+.wg-product-card__price-teaser-link {
+  display: inline-block;
+  font-size: 10px;
+  color: var(--wg-color-gold);
+  text-decoration: underline;
+  margin-top: 2px;
+  font-weight: 600;
+}
+
+.wg-product-card__price-teaser-link:hover {
+  opacity: 0.8;
 }
 
 /* 商品詳細ページ その他 */
@@ -3504,4 +3504,126 @@ body.wg-menu-open {
 }
 .wg-company-page__philosophy:has(> .wg-company-page__philosophy-inner:only-child) .wg-company-page__philosophy-text {
   text-align: left;
+}
+
+/* ============================================
+   COLLECTION PAGE
+   ============================================ */
+.wg-collection {
+  padding: 40px 0 60px;
+  background: #fff;
+}
+.wg-collection__banner {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+.wg-collection__banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.wg-collection__banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wg-collection__title {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--wg-color-text);
+  margin-bottom: 16px;
+  letter-spacing: 0.02em;
+}
+.wg-collection__banner-overlay .wg-collection__title {
+  color: #fff;
+  margin-bottom: 0;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.wg-collection__title--no-banner {
+  padding-top: 8px;
+}
+.wg-collection__desc {
+  font-size: 14px;
+  color: var(--wg-color-text-light);
+  margin-bottom: 24px;
+  line-height: 1.7;
+}
+.wg-collection__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--wg-color-border);
+}
+.wg-collection__count {
+  font-size: 14px;
+  color: var(--wg-color-text-light);
+}
+.wg-collection__sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wg-collection__sort-select {
+  padding: 6px 12px;
+  border: 1px solid var(--wg-color-border);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--wg-color-text);
+  background: #fff;
+  cursor: pointer;
+  font-family: var(--wg-font-sans);
+}
+.wg-collection__sort-select:focus {
+  outline: none;
+  border-color: var(--wg-color-navy);
+}
+.wg-collection__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 0;
+  color: var(--wg-color-text-light);
+  font-size: 15px;
+}
+.wg-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* レスポンシブ */
+@media (max-width: 1024px) {
+  .wg-collection__banner {
+    height: 180px;
+  }
+}
+@media (max-width: 768px) {
+  .wg-collection {
+    padding: 24px 0 40px;
+  }
+  .wg-collection__banner {
+    height: 140px;
+  }
+  .wg-collection__title {
+    font-size: 22px;
+  }
+  .wg-collection__toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 }

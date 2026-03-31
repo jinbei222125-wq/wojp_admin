@@ -1,90 +1,102 @@
-<section class="collection-page" id="CollectionPage">
-  <div class="container">
-    <!-- コレクションヘッダー -->
-    <div class="collection-page__header">
+{%- paginate collection.products by 24 -%}
+
+<div class="wg-site">
+  <section class="wg-collection">
+    <div class="wg-container">
+
+      <!-- パンくずリスト -->
+      <nav class="wg-breadcrumb" aria-label="パンくずリスト">
+        <ol class="wg-breadcrumb__list">
+          <li><a href="/">トップ</a></li>
+          <li>{{ collection.title | escape }}</li>
+        </ol>
+      </nav>
+
+      <!-- コレクションヘッダー -->
       {%- if collection.image -%}
-        <div class="collection-page__banner">
+        <div class="wg-collection__banner">
           <img
-            src="{{ collection.image | img_url: '1600x400', crop: 'center' }}"
-            alt="{{ collection.image.alt | default: collection.title }}"
+            src="{{ collection.image | image_url: width: 1600 }}"
+            alt="{{ collection.image.alt | default: collection.title | escape }}"
             loading="eager"
-            class="collection-page__banner-img"
-          >
-          <div class="collection-page__banner-overlay">
-            <h1 class="collection-page__title">{{ collection.title }}</h1>
+            class="wg-collection__banner-img"
+            width="1600"
+            height="400">
+          <div class="wg-collection__banner-overlay">
+            <h1 class="wg-collection__title">{{ collection.title | escape }}</h1>
           </div>
         </div>
       {%- else -%}
-        <h1 class="collection-page__title collection-page__title--no-banner">{{ collection.title }}</h1>
+        <h1 class="wg-collection__title wg-collection__title--no-banner">{{ collection.title | escape }}</h1>
       {%- endif -%}
+
       {%- if collection.description != blank -%}
-        <div class="collection-page__desc">{{ collection.description }}</div>
+        <div class="wg-collection__desc">{{ collection.description }}</div>
       {%- endif -%}
-    </div>
 
-    <!-- フィルター・ソート -->
-    <div class="collection-page__toolbar">
-      <p class="collection-page__count">{{ collection.products_count }}件の商品</p>
-      <div class="collection-page__sort">
-        <label for="SortBy" class="visually-hidden">並び替え</label>
-        <select name="sort_by" id="SortBy" class="collection-page__sort-select">
-          {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
-          {%- for option in collection.sort_options -%}
-            <option value="{{ option.value }}" {% if option.value == sort_by %}selected="selected"{% endif %}>
-              {{ option.name }}
-            </option>
-          {%- endfor -%}
-        </select>
-      </div>
-    </div>
-
-    <!-- 商品グリッド -->
-    <div class="products-grid" id="product-grid">
-      {%- for product in collection.products -%}
-        <div class="product-card">
-          <div class="product-card__img-wrap">
-            <a href="{{ product.url }}">
-              {%- if product.featured_image -%}
-                <img
-                  src="{{ product.featured_image | img_url: '400x400', crop: 'center' }}"
-                  alt="{{ product.featured_image.alt | default: product.title }}"
-                  loading="lazy"
-                  width="400" height="400"
-                >
-              {%- else -%}
-                {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
-              {%- endif -%}
-            </a>
-          </div>
-          <div class="product-card__info">
-            <span class="product-card__label">冷凍</span>
-            <h3 class="product-card__name">
-              <a href="{{ product.url }}">{{ product.title }}</a>
-            </h3>
-            <div class="product-card__stars">★★★★★</div>
-            <p class="product-card__price">
-              {{ product.price | money }}
-              <span class="product-card__tax">（税込）</span>
-            </p>
-            <a href="{{ product.url }}?variant={{ product.first_available_variant.id }}"
-               class="btn-cart">
-              カートに入れる
-            </a>
-          </div>
+      <!-- ツールバー（件数・ソート） -->
+      <div class="wg-collection__toolbar">
+        <p class="wg-collection__count">{{ collection.products_count }}件の商品</p>
+        <div class="wg-collection__sort">
+          <label for="SortBy" class="wg-visually-hidden">並び替え</label>
+          <select name="sort_by" id="SortBy" class="wg-collection__sort-select">
+            {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+            {%- for option in collection.sort_options -%}
+              <option value="{{ option.value }}" {% if option.value == sort_by %}selected="selected"{% endif %}>
+                {{ option.name }}
+              </option>
+            {%- endfor -%}
+          </select>
         </div>
-      {%- else -%}
-        <p class="collection-page__empty">現在この商品カテゴリーには商品がありません。</p>
-      {%- endfor -%}
-    </div>
-
-    <!-- ページネーション -->
-    {%- if paginate.pages > 1 -%}
-      <div class="pagination">
-        {{ paginate | default_pagination }}
       </div>
-    {%- endif -%}
-  </div>
-</section>
+
+      <!-- 商品グリッド -->
+      <div class="wg-product-grid" id="product-grid">
+        {%- for product in collection.products -%}
+          {% render 'wg-product-card', product: product %}
+        {%- else -%}
+          <p class="wg-collection__empty">現在この商品カテゴリーには商品がありません。</p>
+        {%- endfor -%}
+      </div>
+
+      <!-- ページネーション -->
+      {%- if paginate.pages > 1 -%}
+        <nav class="wg-pagination" aria-label="ページネーション">
+          <ul class="wg-pagination__list">
+            {%- if paginate.previous -%}
+              <li>
+                <a href="{{ paginate.previous.url }}" class="wg-pagination__link" aria-label="前のページ">&lsaquo;</a>
+              </li>
+            {%- endif -%}
+            {%- for part in paginate.parts -%}
+              {%- if part.is_link -%}
+                <li>
+                  <a href="{{ part.url }}" class="wg-pagination__link">{{ part.title }}</a>
+                </li>
+              {%- elsif part.title == paginate.current_page -%}
+                <li>
+                  <span class="wg-pagination__link wg-pagination__link--current" aria-current="page">{{ part.title }}</span>
+                </li>
+              {%- else -%}
+                <li>
+                  <span class="wg-pagination__link wg-pagination__link--ellipsis">{{ part.title }}</span>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if paginate.next -%}
+              <li>
+                <a href="{{ paginate.next.url }}" class="wg-pagination__link" aria-label="次のページ">&rsaquo;</a>
+              </li>
+            {%- endif -%}
+          </ul>
+        </nav>
+      {%- endif -%}
+
+    </div>
+  </section>
+</div>
+
+{%- endpaginate -%}
 
 {% schema %}
 {
