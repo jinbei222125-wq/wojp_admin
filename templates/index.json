@@ -1,145 +1,97 @@
 {
   "sections": {
     "hero": {
-      "type": "wg-hero-slider",
-      "blocks": {
-        "slide1": {
-          "type": "slide",
-          "settings": {
-            "main_text": "極上の味を\nご自宅で。",
-            "sub_text": "北海道直送"
-          }
-        },
-        "slide2": {
-          "type": "slide",
-          "settings": {
-            "main_text": "旬の美味しさを\nお届け",
-            "sub_text": "新鮮直送"
-          }
-        },
-        "slide3": {
-          "type": "slide",
-          "settings": {
-            "main_text": "大切な方への\n贈り物に",
-            "sub_text": "ギフト対応"
-          }
-        }
-      },
-      "block_order": ["slide1", "slide2", "slide3"]
+      "type": "hero-banner",
+      "settings": {
+        "badge_text": "厚！むきホタテ",
+        "badge_weight": "500g",
+        "hero_origin": "北海道直送",
+        "hero_title": "極上の味をご自宅で",
+        "hero_date": "12月1日",
+        "hero_date_label": "予約開始",
+        "button_label": "商品を見る"
+      }
     },
     "ranking": {
-      "type": "wg-product-ranking",
+      "type": "ranking",
+      "blocks": {
+        "rank1": { "type": "product", "settings": { "product": "タラバガニ", "label": "冷凍" } },
+        "rank2": { "type": "product", "settings": { "product": "タラバガニ-ビートロ-800g", "label": "冷凍" } },
+        "rank3": { "type": "product", "settings": { "product": "ズワイガニ-ビートロ-450g", "label": "冷凍" } },
+        "rank4": { "type": "product", "settings": { "product": "ズワイガニ-ポーション-500g", "label": "冷凍" } }
+      },
+      "block_order": ["rank1", "rank2", "rank3", "rank4"],
       "settings": {
-        "subtitle": "当店で売れ筋商品をご紹介！",
-        "title": "人気ランキング",
-        "products_count": 4
+        "subheading": "当店で売れ筋商品をご紹介！",
+        "title": "人気ランキング"
       }
     },
     "category": {
-      "type": "wg-category",
+      "type": "category-grid",
       "blocks": {
-        "cat1": {
-          "type": "category",
-          "settings": {
-            "title": "か に",
-            "description": "北海道直送の新鮮なカニを\nお届けします"
-          }
-        },
-        "cat2": {
-          "type": "category",
-          "settings": {
-            "title": "魚介類",
-            "description": "旬の魚介類を\n産地直送でお届け"
-          }
-        },
-        "cat3": {
-          "type": "category",
-          "settings": {
-            "title": "海鮮加工品",
-            "description": "こだわりの製法で\n仕上げた加工品"
-          }
-        }
+        "cat1": { "type": "category", "settings": { "title": "かに" } },
+        "cat2": { "type": "category", "settings": { "title": "魚介類" } },
+        "cat3": { "type": "category", "settings": { "title": "海鮮加工品" } }
       },
       "block_order": ["cat1", "cat2", "cat3"],
       "settings": {
-        "title": "カテゴリーから選ぶ",
-        "btn_text": "商品一覧を見る"
+        "title": "カテゴリーから選ぶ"
       }
     },
     "purpose": {
-      "type": "wg-purpose",
+      "type": "purpose-select",
       "blocks": {
-        "scene1": {
-          "type": "scene_tag",
-          "settings": { "label": "誕生日プレゼント" }
-        },
-        "scene2": {
-          "type": "scene_tag",
-          "settings": { "label": "内祝い" }
-        },
-        "scene3": {
-          "type": "scene_tag",
-          "settings": { "label": "お中元・お歳暮" }
-        },
-        "scene4": {
-          "type": "scene_tag",
-          "settings": { "label": "お正月・年末年始" }
-        },
-        "price1": {
-          "type": "price_tag",
-          "settings": { "label": "〜5,000円" }
-        },
-        "price2": {
-          "type": "price_tag",
-          "settings": { "label": "〜10,000円" }
-        },
-        "price3": {
-          "type": "price_tag",
-          "settings": { "label": "〜15,000円" }
-        },
-        "price4": {
-          "type": "price_tag",
-          "settings": { "label": "〜20,000円" }
-        },
-        "img1": {
-          "type": "image_card",
-          "settings": { "label": "贈り物におすすめ" }
-        },
-        "img2": {
-          "type": "image_card",
-          "settings": { "label": "新商品" }
-        }
+        "img1": { "type": "image_link", "settings": { "label": "贈り物におすすめ" } },
+        "img2": { "type": "image_link", "settings": { "label": "新商品" } }
       },
-      "block_order": ["scene1", "scene2", "scene3", "scene4", "price1", "price2", "price3", "price4", "img1", "img2"],
+      "block_order": ["img1", "img2"],
       "settings": {
-        "subtitle": "記念日やギフトにぴったり",
+        "subheading": "記念日やギフトにぴったり",
         "title": "目的で選ぶ",
-        "scene_label": "シーンで探す",
-        "price_label": "価格で探す"
+        "scene_tags": "誕生日プレゼント,内祝い,お中元・お歳暮,お正月・年末年始",
+        "price_ranges": "0-5000,0-10000,0-15000,0-20000",
+        "price_labels": "〜5,000円,〜10,000円,〜15,000円,〜20,000円"
       }
     },
     "sale": {
-      "type": "wg-sale-products",
+      "type": "product-grid",
+      "blocks": {
+        "sale1": { "type": "product", "settings": { "product": "タラバガニ", "label": "冷凍", "show_sale_badge": true, "sale_label": "25% OFF" } },
+        "sale2": { "type": "product", "settings": { "product": "タラバガニ-ビートロ-800g", "label": "冷凍", "show_sale_badge": true, "sale_label": "25% OFF" } },
+        "sale3": { "type": "product", "settings": { "product": "ズワイガニ-姿-800g", "label": "冷凍", "show_sale_badge": true, "sale_label": "25% OFF" } },
+        "sale4": { "type": "product", "settings": { "product": "ズワイガニ-ポーション-500g", "label": "冷凍", "show_sale_badge": true, "sale_label": "25% OFF" } }
+      },
+      "block_order": ["sale1", "sale2", "sale3", "sale4"],
       "settings": {
-        "subtitle": "早い者勝ちの大特価！",
-        "title": "お買い得品",
-        "products_count": 4
+        "background": "white",
+        "show_wave": true,
+        "subheading": "早い者勝ちの大特価！",
+        "title": "お買い得品"
       }
     },
     "seasonal": {
-      "type": "wg-seasonal",
+      "type": "product-grid",
+      "blocks": {
+        "sea1": { "type": "product", "settings": { "product": "ホタテ玉冷-250g", "label": "冷凍" } },
+        "sea2": { "type": "product", "settings": { "product": "定塩紅鮭フィーレ-7切-800g", "label": "冷凍" } },
+        "sea3": { "type": "product", "settings": { "product": "ズワイガニ-ビートロ-450g", "label": "冷凍" } },
+        "sea4": { "type": "product", "settings": { "product": "ズワイガニ-姿-800g", "label": "冷凍" } }
+      },
+      "block_order": ["sea1", "sea2", "sea3", "sea4"],
       "settings": {
-        "subtitle": "旬ならではの美味しさ！",
-        "title": "季節のおすすめ",
-        "products_count": 4
+        "background": "beige",
+        "show_wave": false,
+        "subheading": "旬ならではの美味しさ！",
+        "title": "季節のおすすめ"
       }
     },
     "featured": {
-      "type": "wg-featured",
+      "type": "featured-product",
       "settings": {
+        "product": "タラバガニ",
         "title": "当店イチオシ",
-        "text": "北海道直送！タラバガニ入荷しました！",
-        "btn_text": "商品を見る"
+        "subtitle": "北海道直送！タラバガニ入荷しました！",
+        "button_label": "商品を見る"
       }
     }
   },
