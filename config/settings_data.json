@@ -11,7 +11,230 @@
   "current": {
     "color_primary": "#c0392b",
     "color_navy": "#1a2a4a",
-    "color_secondary": "#f5f0e8"
+    "color_secondary": "#f5f0e8",
+    "sections": {
+      "wg-header": {
+        "type": "wg-header",
+        "blocks": {
+          "nav_link_jwnHg8": {
+            "type": "nav_link",
+            "settings": {
+              "label": "トップページ",
+              "url": "https://kamuy-2.myshopify.com/"
+            }
+          },
+          "nav_link_jJpRPt": {
+            "type": "nav_link",
+            "settings": {
+              "label": "商品一覧",
+              "url": "https://kamuy-2.myshopify.com/collections/all"
+            }
+          },
+          "nav_link_hda9i6": {
+            "type": "nav_link",
+            "settings": {
+              "label": "カニ",
+              "url": ""
+            }
+          },
+          "nav_link_nf9ceh": {
+            "type": "nav_link",
+            "settings": {
+              "label": "魚介類",
+              "url": ""
+            }
+          },
+          "nav_link_EEbRie": {
+            "type": "nav_link",
+            "settings": {
+              "label": "海鮮加工品",
+              "url": ""
+            }
+          },
+          "nav_link_6hXgiU": {
+            "type": "nav_link",
+            "settings": {
+              "label": "ご利用ガイド",
+              "url": ""
+            }
+          }
+        },
+        "block_order": [
+          "nav_link_jwnHg8",
+          "nav_link_jJpRPt",
+          "nav_link_hda9i6",
+          "nav_link_nf9ceh",
+          "nav_link_EEbRie",
+          "nav_link_6hXgiU"
+        ],
+        "settings": {
+          "logo": "shopify://shop_images/kamuy_logo.svg",
+          "navigation": "main-menu",
+          "notice_text": "【お知らせ】一部地域における荷物のお届け遅延について"
+        }
+      },
+      "wg-footer": {
+        "type": "wg-footer",
+        "settings": {
+          "footer_logo": "shopify://shop_images/kamuy_logo.svg",
+          "deco_left": "shopify://shop_images/Gemini_Generated_Image_1qiv771qiv771qiv.png",
+          "copyright": "Copyright©WinGrow Allrights reserved."
+        },
+        "blocks": {
+          "nav-home": {
+            "type": "nav_item",
+            "settings": {
+              "icon": "home",
+              "title": "はじめての方へ",
+              "description": "当オンラインショップの\nご利用ガイド",
+              "url": "/pages/guide"
+            }
+          },
+          "nav-user": {
+            "type": "nav_item",
+            "settings": {
+              "icon": "user",
+              "title": "会員登録",
+              "description": "当オンラインショップの\n会員登録はこちら",
+              "url": "/account/register"
+            }
+          },
+          "nav-building": {
+            "type": "nav_item",
+            "settings": {
+              "icon": "building",
+              "title": "運営会社",
+              "description": "当オンラインショップの\n運営会社",
+              "external": true
+            }
+          },
+          "nav-mail": {
+            "type": "nav_item",
+            "settings": {
+              "icon": "mail",
+              "title": "お問い合わせ",
+              "description": "お問い合わせフォームは\nこちらから"
+            }
+          },
+          "link-products": {
+            "type": "link_group",
+            "settings": {
+              "heading": "商品一覧",
+              "links_text": "かに,魚介類,海鮮加工品",
+              "links_url": "#,#,#"
+            }
+          },
+          "link-guide": {
+            "type": "link_group",
+            "settings": {
+              "heading": "ご利用ガイド",
+              "links_text": "注文方法,お支払い方法,送料について,不良品について",
+              "links_url": "#,#,#,#"
+            }
+          },
+          "link-account": {
+            "type": "link_group",
+            "settings": {
+              "heading": "会員登録・ログイン",
+              "links_text": "新規会員登録,ログイン,購入履歴",
+              "links_url": "/account/register,/account/login,/account"
+            }
+          },
+          "link-privacy": {
+            "type": "link_group",
+            "settings": {
+              "heading": "個人情報保護方針",
+              "links_text": "",
+              "links_url": ""
+            }
+          },
+          "link-company": {
+            "type": "link_group",
+            "settings": {
+              "heading": "会社概要",
+              "links_text": "",
+              "links_url": ""
+            }
+          },
+          "link-contact": {
+            "type": "link_group",
+            "settings": {
+              "heading": "お問い合わせ",
+              "links_text": "",
+              "links_url": ""
+            }
+          },
+          "legal-tokusho": {
+            "type": "legal_link",
+            "settings": {
+              "text": "特定商取引法に基づく表記"
+            }
+          },
+          "legal-privacy": {
+            "type": "legal_link",
+            "settings": {
+              "text": "プライバシーポリシー"
+            }
+          },
+          "legal-terms": {
+            "type": "legal_link",
+            "settings": {
+              "text": "利用規約"
+            }
+          }
+        },
+        "block_order": [
+          "nav-home",
+          "nav-user",
+          "nav-building",
+          "nav-mail",
+          "link-products",
+          "link-guide",
+          "link-account",
+          "link-privacy",
+          "link-company",
+          "link-contact",
+          "legal-tokusho",
+          "legal-privacy",
+          "legal-terms"
+        ]
+      }
+    },
+    "content_for_index": [],
+    "blocks": {
+      "17283525856706501396": {
+        "type": "shopify://apps/crm-plus-on-line-line-up/blocks/associate-id-banner/dfcb190e-14c5-48cb-b5be-c67ed2b16b21",
+        "disabled": false,
+        "settings": {
+          "message": "",
+          "bannerPosition": "right-bottom"
+        }
+      },
+      "5900536469075577649": {
+        "type": "shopify://apps/order-bonus/blocks/app/b982c126-f171-40a0-bcfa-84396a25dc64",
+        "disabled": false,
+        "settings": {
+          "floating_button_visibility": "visible",
+          "floating_button_position": "bottom-right",
+          "floating_button_badge_color": "#059669",
+          "widget_background_color": "#ffffff",
+          "widget_primary_text_color": "#1f2937",
+          "widget_secondary_text_color": "#6b7280",
+          "widget_header_title_text": "Offers and Bonuses",
+          "widget_header_subtitle_text": "Get exclusive offers and bonuses",
+          "widget_item_background_color": "#f9fafb",
+          "widget_item_added_background_color": "#f0fdf4",
+          "widget_item_button_background_color": "#ffffff",
+          "widget_item_button_text_color": "#374151",
+          "widget_item_button_border_color": "#d1d5db",
+          "popup_background_color": "#ffffff",
+          "popup_text_color": "#1f2937",
+          "popup_border_radius": 12,
+          "toast_background_color": "#1a1a1a",
+          "toast_text_color": "#e3e3e3"
+        }
+      }
+    }
   },
   "presets": {}
 }
