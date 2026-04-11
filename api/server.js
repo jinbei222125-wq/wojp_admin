@@ -1,103 +1,115 @@
-// server/_core/app.vercel.ts
-import "dotenv/config";
-import express from "express";
-import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import multer from "multer";
+var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
 
 // shared/const.ts
-var COOKIE_NAME = "app_session_id";
-var ONE_YEAR_MS = 1e3 * 60 * 60 * 24 * 365;
-var AXIOS_TIMEOUT_MS = 3e4;
-var UNAUTHED_ERR_MSG = "Please login (10001)";
-var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
-
-// server/db.ts
-import { eq, desc } from "drizzle-orm";
+var COOKIE_NAME, ONE_YEAR_MS, AXIOS_TIMEOUT_MS, UNAUTHED_ERR_MSG, NOT_ADMIN_ERR_MSG;
+var init_const = __esm({
+  "shared/const.ts"() {
+    "use strict";
+    COOKIE_NAME = "app_session_id";
+    ONE_YEAR_MS = 1e3 * 60 * 60 * 24 * 365;
+    AXIOS_TIMEOUT_MS = 3e4;
+    UNAUTHED_ERR_MSG = "Please login (10001)";
+    NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
+  }
+});
 
 // drizzle/schema.ts
 import { integer, text, sqliteTable } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
-var admins = sqliteTable("admins", {
-  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
-  email: text("email").notNull().unique(),
-  passwordHash: text("passwordHash").notNull(),
-  name: text("name").notNull(),
-  role: text("role", { enum: ["admin", "super_admin"] }).notNull().default("admin"),
-  isActive: integer("isActive", { mode: "boolean" }).notNull().default(true),
-  createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
-  lastSignedIn: integer("lastSignedIn", { mode: "timestamp" })
-});
-var newsCategories = sqliteTable("news_categories", {
-  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
-  name: text("name").notNull().unique(),
-  slug: text("slug").notNull().unique(),
-  color: text("color").notNull().default("#6B7280"),
-  sortOrder: integer("sortOrder").notNull().default(0),
-  createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
-});
-var news = sqliteTable("news", {
-  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
-  title: text("title").notNull(),
-  slug: text("slug").notNull().unique(),
-  content: text("content").notNull(),
-  excerpt: text("excerpt"),
-  thumbnailUrl: text("thumbnailUrl"),
-  category: text("category").default("\u304A\u77E5\u3089\u305B"),
-  isPublished: integer("isPublished", { mode: "boolean" }).notNull().default(false),
-  publishedAt: integer("publishedAt", { mode: "timestamp" }),
-  authorId: integer("authorId").notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
-});
-var jobs = sqliteTable("jobs", {
-  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
-  title: text("title").notNull(),
-  slug: text("slug").notNull().unique(),
-  description: text("description").notNull(),
-  requirements: text("requirements"),
-  location: text("location"),
-  employmentType: text("employmentType", { enum: ["full_time", "part_time", "contract", "internship"] }).notNull(),
-  salaryRange: text("salaryRange"),
-  isPublished: integer("isPublished", { mode: "boolean" }).notNull().default(false),
-  publishedAt: integer("publishedAt", { mode: "timestamp" }),
-  closingDate: integer("closingDate", { mode: "timestamp" }),
-  authorId: integer("authorId").notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
-});
-var auditLogs = sqliteTable("audit_logs", {
-  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
-  adminId: integer("adminId").notNull(),
-  adminEmail: text("adminEmail").notNull(),
-  action: text("action").notNull(),
-  // 例: "create_news", "update_job", "delete_news"
-  resourceType: text("resourceType").notNull(),
-  // 例: "news", "job", "admin"
-  resourceId: integer("resourceId"),
-  details: text("details"),
-  // JSON形式で詳細情報を保存
-  ipAddress: text("ipAddress"),
-  userAgent: text("userAgent"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
-});
-var users = sqliteTable("users", {
-  id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
-  openId: text("openId").notNull().unique(),
-  name: text("name"),
-  email: text("email"),
-  loginMethod: text("loginMethod"),
-  role: text("role", { enum: ["user", "admin"] }).notNull().default("user"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
-  lastSignedIn: integer("lastSignedIn", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
+var admins, newsCategories, news, jobs, auditLogs, users;
+var init_schema = __esm({
+  "drizzle/schema.ts"() {
+    "use strict";
+    admins = sqliteTable("admins", {
+      id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
+      email: text("email").notNull().unique(),
+      passwordHash: text("passwordHash").notNull(),
+      name: text("name").notNull(),
+      role: text("role", { enum: ["admin", "super_admin"] }).notNull().default("admin"),
+      isActive: integer("isActive", { mode: "boolean" }).notNull().default(true),
+      createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
+      updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
+      lastSignedIn: integer("lastSignedIn", { mode: "timestamp" })
+    });
+    newsCategories = sqliteTable("news_categories", {
+      id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
+      name: text("name").notNull().unique(),
+      slug: text("slug").notNull().unique(),
+      color: text("color").notNull().default("#6B7280"),
+      sortOrder: integer("sortOrder").notNull().default(0),
+      createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
+      updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
+    });
+    news = sqliteTable("news", {
+      id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
+      title: text("title").notNull(),
+      slug: text("slug").notNull().unique(),
+      content: text("content").notNull(),
+      excerpt: text("excerpt"),
+      thumbnailUrl: text("thumbnailUrl"),
+      category: text("category").default("\u304A\u77E5\u3089\u305B"),
+      isPublished: integer("isPublished", { mode: "boolean" }).notNull().default(false),
+      publishedAt: integer("publishedAt", { mode: "timestamp" }),
+      authorId: integer("authorId").notNull(),
+      createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
+      updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
+    });
+    jobs = sqliteTable("jobs", {
+      id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
+      title: text("title").notNull(),
+      slug: text("slug").notNull().unique(),
+      description: text("description").notNull(),
+      requirements: text("requirements"),
+      location: text("location"),
+      employmentType: text("employmentType", { enum: ["full_time", "part_time", "contract", "internship"] }).notNull(),
+      salaryRange: text("salaryRange"),
+      isPublished: integer("isPublished", { mode: "boolean" }).notNull().default(false),
+      publishedAt: integer("publishedAt", { mode: "timestamp" }),
+      closingDate: integer("closingDate", { mode: "timestamp" }),
+      authorId: integer("authorId").notNull(),
+      createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
+      updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
+    });
+    auditLogs = sqliteTable("audit_logs", {
+      id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
+      adminId: integer("adminId").notNull(),
+      adminEmail: text("adminEmail").notNull(),
+      action: text("action").notNull(),
+      // 例: "create_news", "update_job", "delete_news"
+      resourceType: text("resourceType").notNull(),
+      // 例: "news", "job", "admin"
+      resourceId: integer("resourceId"),
+      details: text("details"),
+      // JSON形式で詳細情報を保存
+      ipAddress: text("ipAddress"),
+      userAgent: text("userAgent"),
+      createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
+    });
+    users = sqliteTable("users", {
+      id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
+      openId: text("openId").notNull().unique(),
+      name: text("name"),
+      email: text("email"),
+      loginMethod: text("loginMethod"),
+      role: text("role", { enum: ["user", "admin"] }).notNull().default("user"),
+      createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
+      updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
+      lastSignedIn: integer("lastSignedIn", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
+    });
+  }
 });
 
 // server/lib/db.ts
 import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client/web";
-var _db = null;
 async function getDb() {
   if (!_db) {
     const databaseUrl = process.env.DATABASE_URL;
@@ -125,8 +137,16 @@ async function getDb() {
   }
   return _db;
 }
+var _db;
+var init_db = __esm({
+  "server/lib/db.ts"() {
+    "use strict";
+    _db = null;
+  }
+});
 
 // server/db.ts
+import { eq, desc } from "drizzle-orm";
 async function getAdminByEmail(email) {
   const db = await getDb();
   if (!db) return void 0;
@@ -332,6 +352,13 @@ async function deleteNewsCategory(id) {
   if (!db) throw new Error("Database not available");
   await db.delete(newsCategories).where(eq(newsCategories.id, id));
 }
+var init_db2 = __esm({
+  "server/db.ts"() {
+    "use strict";
+    init_schema();
+    init_db();
+  }
+});
 
 // server/_core/cookies.ts
 function isSecureRequest(req) {
@@ -349,251 +376,276 @@ function getSessionCookieOptions(req) {
     secure: isSecureRequest(req)
   };
 }
+var init_cookies = __esm({
+  "server/_core/cookies.ts"() {
+    "use strict";
+  }
+});
 
 // shared/_core/errors.ts
-var HttpError = class extends Error {
-  constructor(statusCode, message) {
-    super(message);
-    this.statusCode = statusCode;
-    this.name = "HttpError";
+var HttpError, ForbiddenError;
+var init_errors = __esm({
+  "shared/_core/errors.ts"() {
+    "use strict";
+    HttpError = class extends Error {
+      constructor(statusCode, message) {
+        super(message);
+        this.statusCode = statusCode;
+        this.name = "HttpError";
+      }
+    };
+    ForbiddenError = (msg) => new HttpError(403, msg);
   }
-};
-var ForbiddenError = (msg) => new HttpError(403, msg);
+});
+
+// server/_core/env.ts
+var ENV;
+var init_env = __esm({
+  "server/_core/env.ts"() {
+    "use strict";
+    ENV = {
+      appId: process.env.VITE_APP_ID ?? "",
+      cookieSecret: process.env.JWT_SECRET ?? "",
+      jwtSecret: process.env.JWT_SECRET ?? "",
+      databaseUrl: process.env.DATABASE_URL ?? "",
+      oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
+      ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
+      isProduction: process.env.NODE_ENV === "production",
+      forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
+      forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+      cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "",
+      cloudinaryApiKey: process.env.CLOUDINARY_API_KEY ?? "",
+      cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET ?? ""
+    };
+  }
+});
 
 // server/_core/sdk.ts
 import axios from "axios";
 import { parse as parseCookieHeader } from "cookie";
 import { SignJWT, jwtVerify } from "jose";
-
-// server/_core/env.ts
-var ENV = {
-  appId: process.env.VITE_APP_ID ?? "",
-  cookieSecret: process.env.JWT_SECRET ?? "",
-  jwtSecret: process.env.JWT_SECRET ?? "",
-  databaseUrl: process.env.DATABASE_URL ?? "",
-  oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
-  ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
-  isProduction: process.env.NODE_ENV === "production",
-  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
-  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
-  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "",
-  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY ?? "",
-  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET ?? ""
-};
-
-// server/_core/sdk.ts
-var isNonEmptyString = (value) => typeof value === "string" && value.length > 0;
-var EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
-var GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
-var GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt`;
-var OAuthService = class {
-  constructor(client) {
-    this.client = client;
-    console.log("[OAuth] Initialized with baseURL:", ENV.oAuthServerUrl);
-    if (!ENV.oAuthServerUrl) {
-      console.error(
-        "[OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable."
-      );
-    }
-  }
-  decodeState(state) {
-    const redirectUri = atob(state);
-    return redirectUri;
-  }
-  async getTokenByCode(code, state) {
-    const payload = {
-      clientId: ENV.appId,
-      grantType: "authorization_code",
-      code,
-      redirectUri: this.decodeState(state)
-    };
-    const { data } = await this.client.post(
-      EXCHANGE_TOKEN_PATH,
-      payload
-    );
-    return data;
-  }
-  async getUserInfoByToken(token) {
-    const { data } = await this.client.post(
-      GET_USER_INFO_PATH,
-      {
-        accessToken: token.accessToken
+var isNonEmptyString, EXCHANGE_TOKEN_PATH, GET_USER_INFO_PATH, GET_USER_INFO_WITH_JWT_PATH, OAuthService, createOAuthHttpClient, SDKServer, sdk;
+var init_sdk = __esm({
+  "server/_core/sdk.ts"() {
+    "use strict";
+    init_const();
+    init_errors();
+    init_db2();
+    init_env();
+    isNonEmptyString = (value) => typeof value === "string" && value.length > 0;
+    EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
+    GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
+    GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt`;
+    OAuthService = class {
+      constructor(client) {
+        this.client = client;
+        console.log("[OAuth] Initialized with baseURL:", ENV.oAuthServerUrl);
+        if (!ENV.oAuthServerUrl) {
+          console.error(
+            "[OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable."
+          );
+        }
       }
-    );
-    return data;
-  }
-};
-var createOAuthHttpClient = () => axios.create({
-  baseURL: ENV.oAuthServerUrl,
-  timeout: AXIOS_TIMEOUT_MS
-});
-var SDKServer = class {
-  client;
-  oauthService;
-  constructor(client = createOAuthHttpClient()) {
-    this.client = client;
-    this.oauthService = new OAuthService(this.client);
-  }
-  deriveLoginMethod(platforms, fallback) {
-    if (fallback && fallback.length > 0) return fallback;
-    if (!Array.isArray(platforms) || platforms.length === 0) return null;
-    const set = new Set(
-      platforms.filter((p) => typeof p === "string")
-    );
-    if (set.has("REGISTERED_PLATFORM_EMAIL")) return "email";
-    if (set.has("REGISTERED_PLATFORM_GOOGLE")) return "google";
-    if (set.has("REGISTERED_PLATFORM_APPLE")) return "apple";
-    if (set.has("REGISTERED_PLATFORM_MICROSOFT") || set.has("REGISTERED_PLATFORM_AZURE"))
-      return "microsoft";
-    if (set.has("REGISTERED_PLATFORM_GITHUB")) return "github";
-    const first = Array.from(set)[0];
-    return first ? first.toLowerCase() : null;
-  }
-  /**
-   * Exchange OAuth authorization code for access token
-   * @example
-   * const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-   */
-  async exchangeCodeForToken(code, state) {
-    return this.oauthService.getTokenByCode(code, state);
-  }
-  /**
-   * Get user information using access token
-   * @example
-   * const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-   */
-  async getUserInfo(accessToken) {
-    const data = await this.oauthService.getUserInfoByToken({
-      accessToken
+      decodeState(state) {
+        const redirectUri = atob(state);
+        return redirectUri;
+      }
+      async getTokenByCode(code, state) {
+        const payload = {
+          clientId: ENV.appId,
+          grantType: "authorization_code",
+          code,
+          redirectUri: this.decodeState(state)
+        };
+        const { data } = await this.client.post(
+          EXCHANGE_TOKEN_PATH,
+          payload
+        );
+        return data;
+      }
+      async getUserInfoByToken(token) {
+        const { data } = await this.client.post(
+          GET_USER_INFO_PATH,
+          {
+            accessToken: token.accessToken
+          }
+        );
+        return data;
+      }
+    };
+    createOAuthHttpClient = () => axios.create({
+      baseURL: ENV.oAuthServerUrl,
+      timeout: AXIOS_TIMEOUT_MS
     });
-    const loginMethod = this.deriveLoginMethod(
-      data?.platforms,
-      data?.platform ?? data.platform ?? null
-    );
-    return {
-      ...data,
-      platform: loginMethod,
-      loginMethod
-    };
-  }
-  parseCookies(cookieHeader) {
-    if (!cookieHeader) {
-      return /* @__PURE__ */ new Map();
-    }
-    const parsed = parseCookieHeader(cookieHeader);
-    return new Map(Object.entries(parsed));
-  }
-  getSessionSecret() {
-    const secret = ENV.cookieSecret;
-    return new TextEncoder().encode(secret);
-  }
-  /**
-   * Create a session token for a Manus user openId
-   * @example
-   * const sessionToken = await sdk.createSessionToken(userInfo.openId);
-   */
-  async createSessionToken(openId, options = {}) {
-    return this.signSession(
-      {
-        openId,
-        appId: ENV.appId,
-        name: options.name || ""
-      },
-      options
-    );
-  }
-  async signSession(payload, options = {}) {
-    const issuedAt = Date.now();
-    const expiresInMs = options.expiresInMs ?? ONE_YEAR_MS;
-    const expirationSeconds = Math.floor((issuedAt + expiresInMs) / 1e3);
-    const secretKey = this.getSessionSecret();
-    return new SignJWT({
-      openId: payload.openId,
-      appId: payload.appId,
-      name: payload.name
-    }).setProtectedHeader({ alg: "HS256", typ: "JWT" }).setExpirationTime(expirationSeconds).sign(secretKey);
-  }
-  async verifySession(cookieValue) {
-    if (!cookieValue) {
-      console.warn("[Auth] Missing session cookie");
-      return null;
-    }
-    try {
-      const secretKey = this.getSessionSecret();
-      const { payload } = await jwtVerify(cookieValue, secretKey, {
-        algorithms: ["HS256"]
-      });
-      const { openId, appId, name } = payload;
-      if (!isNonEmptyString(openId) || !isNonEmptyString(appId) || !isNonEmptyString(name)) {
-        console.warn("[Auth] Session payload missing required fields");
-        return null;
+    SDKServer = class {
+      client;
+      oauthService;
+      constructor(client = createOAuthHttpClient()) {
+        this.client = client;
+        this.oauthService = new OAuthService(this.client);
       }
-      return {
-        openId,
-        appId,
-        name
-      };
-    } catch (error) {
-      console.warn("[Auth] Session verification failed", String(error));
-      return null;
-    }
-  }
-  async getUserInfoWithJwt(jwtToken) {
-    const payload = {
-      jwtToken,
-      projectId: ENV.appId
-    };
-    const { data } = await this.client.post(
-      GET_USER_INFO_WITH_JWT_PATH,
-      payload
-    );
-    const loginMethod = this.deriveLoginMethod(
-      data?.platforms,
-      data?.platform ?? data.platform ?? null
-    );
-    return {
-      ...data,
-      platform: loginMethod,
-      loginMethod
-    };
-  }
-  async authenticateRequest(req) {
-    const cookies = this.parseCookies(req.headers.cookie);
-    const sessionCookie = cookies.get(COOKIE_NAME);
-    const session = await this.verifySession(sessionCookie);
-    if (!session) {
-      throw ForbiddenError("Invalid session cookie");
-    }
-    const sessionUserId = session.openId;
-    const signedInAt = /* @__PURE__ */ new Date();
-    let user = await getUserByOpenId(sessionUserId);
-    if (!user) {
-      try {
-        const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");
+      deriveLoginMethod(platforms, fallback) {
+        if (fallback && fallback.length > 0) return fallback;
+        if (!Array.isArray(platforms) || platforms.length === 0) return null;
+        const set = new Set(
+          platforms.filter((p) => typeof p === "string")
+        );
+        if (set.has("REGISTERED_PLATFORM_EMAIL")) return "email";
+        if (set.has("REGISTERED_PLATFORM_GOOGLE")) return "google";
+        if (set.has("REGISTERED_PLATFORM_APPLE")) return "apple";
+        if (set.has("REGISTERED_PLATFORM_MICROSOFT") || set.has("REGISTERED_PLATFORM_AZURE"))
+          return "microsoft";
+        if (set.has("REGISTERED_PLATFORM_GITHUB")) return "github";
+        const first = Array.from(set)[0];
+        return first ? first.toLowerCase() : null;
+      }
+      /**
+       * Exchange OAuth authorization code for access token
+       * @example
+       * const tokenResponse = await sdk.exchangeCodeForToken(code, state);
+       */
+      async exchangeCodeForToken(code, state) {
+        return this.oauthService.getTokenByCode(code, state);
+      }
+      /**
+       * Get user information using access token
+       * @example
+       * const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
+       */
+      async getUserInfo(accessToken) {
+        const data = await this.oauthService.getUserInfoByToken({
+          accessToken
+        });
+        const loginMethod = this.deriveLoginMethod(
+          data?.platforms,
+          data?.platform ?? data.platform ?? null
+        );
+        return {
+          ...data,
+          platform: loginMethod,
+          loginMethod
+        };
+      }
+      parseCookies(cookieHeader) {
+        if (!cookieHeader) {
+          return /* @__PURE__ */ new Map();
+        }
+        const parsed = parseCookieHeader(cookieHeader);
+        return new Map(Object.entries(parsed));
+      }
+      getSessionSecret() {
+        const secret = ENV.cookieSecret;
+        return new TextEncoder().encode(secret);
+      }
+      /**
+       * Create a session token for a Manus user openId
+       * @example
+       * const sessionToken = await sdk.createSessionToken(userInfo.openId);
+       */
+      async createSessionToken(openId, options = {}) {
+        return this.signSession(
+          {
+            openId,
+            appId: ENV.appId,
+            name: options.name || ""
+          },
+          options
+        );
+      }
+      async signSession(payload, options = {}) {
+        const issuedAt = Date.now();
+        const expiresInMs = options.expiresInMs ?? ONE_YEAR_MS;
+        const expirationSeconds = Math.floor((issuedAt + expiresInMs) / 1e3);
+        const secretKey = this.getSessionSecret();
+        return new SignJWT({
+          openId: payload.openId,
+          appId: payload.appId,
+          name: payload.name
+        }).setProtectedHeader({ alg: "HS256", typ: "JWT" }).setExpirationTime(expirationSeconds).sign(secretKey);
+      }
+      async verifySession(cookieValue) {
+        if (!cookieValue) {
+          console.warn("[Auth] Missing session cookie");
+          return null;
+        }
+        try {
+          const secretKey = this.getSessionSecret();
+          const { payload } = await jwtVerify(cookieValue, secretKey, {
+            algorithms: ["HS256"]
+          });
+          const { openId, appId, name } = payload;
+          if (!isNonEmptyString(openId) || !isNonEmptyString(appId) || !isNonEmptyString(name)) {
+            console.warn("[Auth] Session payload missing required fields");
+            return null;
+          }
+          return {
+            openId,
+            appId,
+            name
+          };
+        } catch (error) {
+          console.warn("[Auth] Session verification failed", String(error));
+          return null;
+        }
+      }
+      async getUserInfoWithJwt(jwtToken) {
+        const payload = {
+          jwtToken,
+          projectId: ENV.appId
+        };
+        const { data } = await this.client.post(
+          GET_USER_INFO_WITH_JWT_PATH,
+          payload
+        );
+        const loginMethod = this.deriveLoginMethod(
+          data?.platforms,
+          data?.platform ?? data.platform ?? null
+        );
+        return {
+          ...data,
+          platform: loginMethod,
+          loginMethod
+        };
+      }
+      async authenticateRequest(req) {
+        const cookies = this.parseCookies(req.headers.cookie);
+        const sessionCookie = cookies.get(COOKIE_NAME);
+        const session = await this.verifySession(sessionCookie);
+        if (!session) {
+          throw ForbiddenError("Invalid session cookie");
+        }
+        const sessionUserId = session.openId;
+        const signedInAt = /* @__PURE__ */ new Date();
+        let user = await getUserByOpenId(sessionUserId);
+        if (!user) {
+          try {
+            const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");
+            await upsertUser({
+              openId: userInfo.openId,
+              name: userInfo.name || null,
+              email: userInfo.email ?? null,
+              loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
+              lastSignedIn: signedInAt
+            });
+            user = await getUserByOpenId(userInfo.openId);
+          } catch (error) {
+            console.error("[Auth] Failed to sync user from OAuth:", error);
+            throw ForbiddenError("Failed to sync user info");
+          }
+        }
+        if (!user) {
+          throw ForbiddenError("User not found");
+        }
         await upsertUser({
-          openId: userInfo.openId,
-          name: userInfo.name || null,
-          email: userInfo.email ?? null,
-          loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
+          openId: user.openId,
           lastSignedIn: signedInAt
         });
-        user = await getUserByOpenId(userInfo.openId);
-      } catch (error) {
-        console.error("[Auth] Failed to sync user from OAuth:", error);
-        throw ForbiddenError("Failed to sync user info");
+        return user;
       }
-    }
-    if (!user) {
-      throw ForbiddenError("User not found");
-    }
-    await upsertUser({
-      openId: user.openId,
-      lastSignedIn: signedInAt
-    });
-    return user;
+    };
+    sdk = new SDKServer();
   }
-};
-var sdk = new SDKServer();
+});
 
 // server/_core/oauth.ts
 function getQueryParam(req, key) {
@@ -635,52 +687,18 @@ function registerOAuthRoutes(app2) {
     }
   });
 }
-
-// server/_core/systemRouter.ts
-import { z } from "zod";
+var init_oauth = __esm({
+  "server/_core/oauth.ts"() {
+    "use strict";
+    init_const();
+    init_db2();
+    init_cookies();
+    init_sdk();
+  }
+});
 
 // server/_core/notification.ts
 import { TRPCError } from "@trpc/server";
-var TITLE_MAX_LENGTH = 1200;
-var CONTENT_MAX_LENGTH = 2e4;
-var trimValue = (value) => value.trim();
-var isNonEmptyString2 = (value) => typeof value === "string" && value.trim().length > 0;
-var buildEndpointUrl = (baseUrl) => {
-  const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-  return new URL(
-    "webdevtoken.v1.WebDevService/SendNotification",
-    normalizedBase
-  ).toString();
-};
-var validatePayload = (input) => {
-  if (!isNonEmptyString2(input.title)) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Notification title is required."
-    });
-  }
-  if (!isNonEmptyString2(input.content)) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Notification content is required."
-    });
-  }
-  const title = trimValue(input.title);
-  const content = trimValue(input.content);
-  if (title.length > TITLE_MAX_LENGTH) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: `Notification title must be at most ${TITLE_MAX_LENGTH} characters.`
-    });
-  }
-  if (content.length > CONTENT_MAX_LENGTH) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: `Notification content must be at most ${CONTENT_MAX_LENGTH} characters.`
-    });
-  }
-  return { title, content };
-};
 async function notifyOwner(payload) {
   const { title, content } = validatePayload(payload);
   if (!ENV.forgeApiUrl) {
@@ -720,79 +738,152 @@ async function notifyOwner(payload) {
     return false;
   }
 }
+var TITLE_MAX_LENGTH, CONTENT_MAX_LENGTH, trimValue, isNonEmptyString2, buildEndpointUrl, validatePayload;
+var init_notification = __esm({
+  "server/_core/notification.ts"() {
+    "use strict";
+    init_env();
+    TITLE_MAX_LENGTH = 1200;
+    CONTENT_MAX_LENGTH = 2e4;
+    trimValue = (value) => value.trim();
+    isNonEmptyString2 = (value) => typeof value === "string" && value.trim().length > 0;
+    buildEndpointUrl = (baseUrl) => {
+      const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+      return new URL(
+        "webdevtoken.v1.WebDevService/SendNotification",
+        normalizedBase
+      ).toString();
+    };
+    validatePayload = (input) => {
+      if (!isNonEmptyString2(input.title)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Notification title is required."
+        });
+      }
+      if (!isNonEmptyString2(input.content)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Notification content is required."
+        });
+      }
+      const title = trimValue(input.title);
+      const content = trimValue(input.content);
+      if (title.length > TITLE_MAX_LENGTH) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Notification title must be at most ${TITLE_MAX_LENGTH} characters.`
+        });
+      }
+      if (content.length > CONTENT_MAX_LENGTH) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Notification content must be at most ${CONTENT_MAX_LENGTH} characters.`
+        });
+      }
+      return { title, content };
+    };
+  }
+});
 
 // server/_core/trpc.ts
 import { initTRPC, TRPCError as TRPCError2 } from "@trpc/server";
 import superjson from "superjson";
-var t = initTRPC.context().create({
-  transformer: superjson
-});
-var router = t.router;
-var publicProcedure = t.procedure;
-var requireUser = t.middleware(async (opts) => {
-  const { ctx, next } = opts;
-  if (!ctx.user) {
-    throw new TRPCError2({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
-  }
-  return next({
-    ctx: {
-      ...ctx,
-      user: ctx.user
-    }
-  });
-});
-var protectedProcedure = t.procedure.use(requireUser);
-var adminProcedure = t.procedure.use(
-  t.middleware(async (opts) => {
-    const { ctx, next } = opts;
-    if (!ctx.user || ctx.user.role !== "admin") {
-      throw new TRPCError2({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
-    }
-    return next({
-      ctx: {
-        ...ctx,
-        user: ctx.user
-      }
+var t, router, publicProcedure, requireUser, protectedProcedure, adminProcedure;
+var init_trpc = __esm({
+  "server/_core/trpc.ts"() {
+    "use strict";
+    init_const();
+    t = initTRPC.context().create({
+      transformer: superjson
     });
-  })
-);
+    router = t.router;
+    publicProcedure = t.procedure;
+    requireUser = t.middleware(async (opts) => {
+      const { ctx, next } = opts;
+      if (!ctx.user) {
+        throw new TRPCError2({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
+      }
+      return next({
+        ctx: {
+          ...ctx,
+          user: ctx.user
+        }
+      });
+    });
+    protectedProcedure = t.procedure.use(requireUser);
+    adminProcedure = t.procedure.use(
+      t.middleware(async (opts) => {
+        const { ctx, next } = opts;
+        if (!ctx.user || ctx.user.role !== "admin") {
+          throw new TRPCError2({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
+        }
+        return next({
+          ctx: {
+            ...ctx,
+            user: ctx.user
+          }
+        });
+      })
+    );
+  }
+});
 
 // server/_core/systemRouter.ts
-var systemRouter = router({
-  health: publicProcedure.input(
-    z.object({
-      timestamp: z.number().min(0, "timestamp cannot be negative")
-    })
-  ).query(() => ({
-    ok: true
-  })),
-  notifyOwner: adminProcedure.input(
-    z.object({
-      title: z.string().min(1, "title is required"),
-      content: z.string().min(1, "content is required")
-    })
-  ).mutation(async ({ input }) => {
-    const delivered = await notifyOwner(input);
-    return {
-      success: delivered
-    };
-  })
+import { z } from "zod";
+var systemRouter;
+var init_systemRouter = __esm({
+  "server/_core/systemRouter.ts"() {
+    "use strict";
+    init_notification();
+    init_trpc();
+    systemRouter = router({
+      health: publicProcedure.input(
+        z.object({
+          timestamp: z.number().min(0, "timestamp cannot be negative")
+        })
+      ).query(() => ({
+        ok: true
+      })),
+      notifyOwner: adminProcedure.input(
+        z.object({
+          title: z.string().min(1, "title is required"),
+          content: z.string().min(1, "content is required")
+        })
+      ).mutation(async ({ input }) => {
+        const delivered = await notifyOwner(input);
+        return {
+          success: delivered
+        };
+      })
+    });
+  }
 });
 
 // server/routers.ts
-var appRouter = router({
-  // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
-  system: systemRouter,
-  auth: router({
-    me: publicProcedure.query((opts) => opts.ctx.user),
-    logout: publicProcedure.mutation(({ ctx }) => {
-      const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return {
-        success: true
-      };
-    })
-  })
+var appRouter;
+var init_routers = __esm({
+  "server/routers.ts"() {
+    "use strict";
+    init_const();
+    init_cookies();
+    init_systemRouter();
+    init_trpc();
+    appRouter = router({
+      // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
+      system: systemRouter,
+      auth: router({
+        me: publicProcedure.query((opts) => opts.ctx.user),
+        logout: publicProcedure.mutation(({ ctx }) => {
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+          return {
+            success: true
+          };
+        })
+      })
+    });
+  }
 });
 
 // server/_core/context.ts
@@ -809,21 +900,16 @@ async function createContext(opts) {
     user
   };
 }
-
-// server/adminAppRouter.ts
-import { initTRPC as initTRPC5 } from "@trpc/server";
-import superjson5 from "superjson";
-
-// server/adminRouter.ts
-import { TRPCError as TRPCError3, initTRPC as initTRPC2 } from "@trpc/server";
-import { z as z2 } from "zod";
-import superjson2 from "superjson";
+var init_context = __esm({
+  "server/_core/context.ts"() {
+    "use strict";
+    init_sdk();
+  }
+});
 
 // server/auth.ts
 import bcrypt from "bcryptjs";
 import { SignJWT as SignJWT2, jwtVerify as jwtVerify2 } from "jose";
-var JWT_SECRET = new TextEncoder().encode(ENV.jwtSecret);
-var SALT_ROUNDS = 10;
 async function hashPassword(password) {
   return bcrypt.hash(password, SALT_ROUNDS);
 }
@@ -847,10 +933,18 @@ async function verifyAdminToken(token) {
     return null;
   }
 }
+var JWT_SECRET, SALT_ROUNDS;
+var init_auth = __esm({
+  "server/auth.ts"() {
+    "use strict";
+    init_env();
+    JWT_SECRET = new TextEncoder().encode(ENV.jwtSecret);
+    SALT_ROUNDS = 10;
+  }
+});
 
 // server/adminContext.ts
 import cookie from "cookie";
-var ADMIN_COOKIE_NAME = "wojp_admin_session";
 async function createAdminContext(req, res) {
   const cookies = cookie.parse(req.headers.cookie || "");
   const token = cookies[ADMIN_COOKIE_NAME];
@@ -867,224 +961,232 @@ async function createAdminContext(req, res) {
   }
   return { admin, req, res };
 }
+var ADMIN_COOKIE_NAME;
+var init_adminContext = __esm({
+  "server/adminContext.ts"() {
+    "use strict";
+    init_auth();
+    init_db2();
+    ADMIN_COOKIE_NAME = "wojp_admin_session";
+  }
+});
 
 // server/adminRouter.ts
-var t2 = initTRPC2.context().create({
-  transformer: superjson2
-});
-var publicProcedure2 = t2.procedure;
-var protectedProcedure2 = t2.procedure.use(({ ctx, next }) => {
-  if (!ctx.admin) {
-    throw new TRPCError3({ code: "UNAUTHORIZED", message: "\u8A8D\u8A3C\u304C\u5FC5\u8981\u3067\u3059" });
-  }
-  return next({
-    ctx: {
-      ...ctx,
-      admin: ctx.admin
-    }
-  });
-});
-var adminAuthRouter = t2.router({
-  /**
-   * ログイン
-   */
-  login: publicProcedure2.input(
-    z2.object({
-      email: z2.string().email(),
-      password: z2.string().min(1, "\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044")
-    })
-  ).mutation(async ({ input, ctx }) => {
-    let admin;
-    try {
-      admin = await getAdminByEmail(input.email);
-    } catch (error) {
-      console.error("[Auth] Database error:", error);
-      if (error?.message?.includes("Invalid URL") || error?.message?.includes("DATABASE_URL")) {
-        throw new TRPCError3({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u63A5\u7D9A\u30A8\u30E9\u30FC: DATABASE_URL\u304C\u6B63\u3057\u304F\u8A2D\u5B9A\u3055\u308C\u3066\u3044\u307E\u305B\u3093\u3002.env\u30D5\u30A1\u30A4\u30EB\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        });
-      }
-      throw new TRPCError3({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u63A5\u7D9A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F"
-      });
-    }
-    if (!admin) {
-      throw new TRPCError3({
-        code: "UNAUTHORIZED",
-        message: "\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u307E\u305F\u306F\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093\u3002\u7BA1\u7406\u8005\u30A2\u30AB\u30A6\u30F3\u30C8\u304C\u5B58\u5728\u3057\u306A\u3044\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059\u3002"
-      });
-    }
-    if (!admin.isActive) {
-      throw new TRPCError3({
-        code: "UNAUTHORIZED",
-        message: "\u3053\u306E\u30A2\u30AB\u30A6\u30F3\u30C8\u306F\u7121\u52B9\u5316\u3055\u308C\u3066\u3044\u307E\u3059"
-      });
-    }
-    const isValid = await verifyPassword(input.password, admin.passwordHash);
-    if (!isValid) {
-      throw new TRPCError3({
-        code: "UNAUTHORIZED",
-        message: "\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u307E\u305F\u306F\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093"
-      });
-    }
-    await updateAdminLastSignedIn(admin.id);
-    const token = await generateAdminToken(admin.id, admin.email);
-    const isSecure = ENV.isProduction;
-    const cookieString = [
-      `${ADMIN_COOKIE_NAME}=${token}`,
-      "HttpOnly",
-      isSecure ? "Secure" : "",
-      "SameSite=Lax",
-      `Max-Age=${7 * 24 * 60 * 60}`,
-      "Path=/"
-    ].filter(Boolean).join("; ");
-    ctx.res.setHeader("Set-Cookie", cookieString);
-    return {
-      success: true,
-      admin: {
-        id: admin.id,
-        email: admin.email,
-        name: admin.name,
-        role: admin.role
-      }
-    };
-  }),
-  /**
-   * ログアウト
-   */
-  logout: publicProcedure2.mutation(({ ctx }) => {
-    const isSecure = ENV.isProduction;
-    const cookieString = [
-      `${ADMIN_COOKIE_NAME}=`,
-      "HttpOnly",
-      isSecure ? "Secure" : "",
-      "SameSite=Lax",
-      "Max-Age=-1",
-      "Path=/"
-    ].filter(Boolean).join("; ");
-    ctx.res.setHeader("Set-Cookie", cookieString);
-    return { success: true };
-  }),
-  /**
-   * 現在の管理者情報を取得
-   */
-  me: publicProcedure2.query(({ ctx }) => {
-    if (!ctx.admin) {
-      return null;
-    }
-    return {
-      id: ctx.admin.id,
-      email: ctx.admin.email,
-      name: ctx.admin.name,
-      role: ctx.admin.role
-    };
-  }),
-  /**
-   * メールアドレス変更
-   */
-  updateEmail: protectedProcedure2.input(
-    z2.object({
-      newEmail: z2.string().email("\u6709\u52B9\u306A\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
-      currentPassword: z2.string().min(1, "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044")
-    })
-  ).mutation(async ({ input, ctx }) => {
-    const admin = ctx.admin;
-    const isValid = await verifyPassword(input.currentPassword, admin.passwordHash);
-    if (!isValid) {
-      throw new TRPCError3({
-        code: "UNAUTHORIZED",
-        message: "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093"
-      });
-    }
-    const existing = await getAdminByEmail(input.newEmail);
-    if (existing && existing.id !== admin.id) {
-      throw new TRPCError3({
-        code: "BAD_REQUEST",
-        message: "\u305D\u306E\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u306F\u65E2\u306B\u4F7F\u7528\u3055\u308C\u3066\u3044\u307E\u3059"
-      });
-    }
-    await updateAdminEmail(admin.id, input.newEmail);
-    return { success: true };
-  }),
-  /**
-   * パスワード変更
-   */
-  updatePassword: protectedProcedure2.input(
-    z2.object({
-      currentPassword: z2.string().min(1, "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
-      newPassword: z2.string().min(8, "\u65B0\u3057\u3044\u30D1\u30B9\u30EF\u30FC\u30C9\u306F8\u6587\u5B57\u4EE5\u4E0A\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
-      confirmPassword: z2.string().min(1)
-    })
-  ).mutation(async ({ input, ctx }) => {
-    if (input.newPassword !== input.confirmPassword) {
-      throw new TRPCError3({
-        code: "BAD_REQUEST",
-        message: "\u65B0\u3057\u3044\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u4E00\u81F4\u3057\u307E\u305B\u3093"
-      });
-    }
-    const admin = ctx.admin;
-    const isValid = await verifyPassword(input.currentPassword, admin.passwordHash);
-    if (!isValid) {
-      throw new TRPCError3({
-        code: "UNAUTHORIZED",
-        message: "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093"
-      });
-    }
-    const newHash = await hashPassword(input.newPassword);
-    await updateAdminPassword(admin.id, newHash);
-    return { success: true };
-  }),
-  /**
-   * 管理者を作成（開発用）
-   * 本番環境では別の方法で管理者を作成することを推奨
-   */
-  createAdmin: publicProcedure2.input(
-    z2.object({
-      email: z2.string().email(),
-      password: z2.string().min(1, "\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
-      name: z2.string().min(1),
-      role: z2.enum(["admin", "super_admin"]).default("admin")
-    })
-  ).mutation(async ({ input }) => {
-    const existing = await getAdminByEmail(input.email);
-    if (existing) {
-      throw new TRPCError3({
-        code: "BAD_REQUEST",
-        message: "\u3053\u306E\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u306F\u65E2\u306B\u4F7F\u7528\u3055\u308C\u3066\u3044\u307E\u3059"
-      });
-    }
-    const passwordHash = await hashPassword(input.password);
-    await createAdmin({
-      email: input.email,
-      passwordHash,
-      name: input.name,
-      role: input.role,
-      isActive: true
+import { TRPCError as TRPCError3, initTRPC as initTRPC2 } from "@trpc/server";
+import { z as z2 } from "zod";
+import superjson2 from "superjson";
+var t2, publicProcedure2, protectedProcedure2, adminAuthRouter;
+var init_adminRouter = __esm({
+  "server/adminRouter.ts"() {
+    "use strict";
+    init_auth();
+    init_db2();
+    init_adminContext();
+    init_env();
+    t2 = initTRPC2.context().create({
+      transformer: superjson2
     });
-    return { success: true };
-  })
+    publicProcedure2 = t2.procedure;
+    protectedProcedure2 = t2.procedure.use(({ ctx, next }) => {
+      if (!ctx.admin) {
+        throw new TRPCError3({ code: "UNAUTHORIZED", message: "\u8A8D\u8A3C\u304C\u5FC5\u8981\u3067\u3059" });
+      }
+      return next({
+        ctx: {
+          ...ctx,
+          admin: ctx.admin
+        }
+      });
+    });
+    adminAuthRouter = t2.router({
+      /**
+       * ログイン
+       */
+      login: publicProcedure2.input(
+        z2.object({
+          email: z2.string().email(),
+          password: z2.string().min(1, "\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044")
+        })
+      ).mutation(async ({ input, ctx }) => {
+        let admin;
+        try {
+          admin = await getAdminByEmail(input.email);
+        } catch (error) {
+          console.error("[Auth] Database error:", error);
+          if (error?.message?.includes("Invalid URL") || error?.message?.includes("DATABASE_URL")) {
+            throw new TRPCError3({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u63A5\u7D9A\u30A8\u30E9\u30FC: DATABASE_URL\u304C\u6B63\u3057\u304F\u8A2D\u5B9A\u3055\u308C\u3066\u3044\u307E\u305B\u3093\u3002.env\u30D5\u30A1\u30A4\u30EB\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+            });
+          }
+          throw new TRPCError3({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u63A5\u7D9A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F"
+          });
+        }
+        if (!admin) {
+          throw new TRPCError3({
+            code: "UNAUTHORIZED",
+            message: "\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u307E\u305F\u306F\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093\u3002\u7BA1\u7406\u8005\u30A2\u30AB\u30A6\u30F3\u30C8\u304C\u5B58\u5728\u3057\u306A\u3044\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059\u3002"
+          });
+        }
+        if (!admin.isActive) {
+          throw new TRPCError3({
+            code: "UNAUTHORIZED",
+            message: "\u3053\u306E\u30A2\u30AB\u30A6\u30F3\u30C8\u306F\u7121\u52B9\u5316\u3055\u308C\u3066\u3044\u307E\u3059"
+          });
+        }
+        const isValid = await verifyPassword(input.password, admin.passwordHash);
+        if (!isValid) {
+          throw new TRPCError3({
+            code: "UNAUTHORIZED",
+            message: "\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u307E\u305F\u306F\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093"
+          });
+        }
+        await updateAdminLastSignedIn(admin.id);
+        const token = await generateAdminToken(admin.id, admin.email);
+        const isSecure = ENV.isProduction;
+        const cookieString = [
+          `${ADMIN_COOKIE_NAME}=${token}`,
+          "HttpOnly",
+          isSecure ? "Secure" : "",
+          "SameSite=Lax",
+          `Max-Age=${7 * 24 * 60 * 60}`,
+          "Path=/"
+        ].filter(Boolean).join("; ");
+        ctx.res.setHeader("Set-Cookie", cookieString);
+        return {
+          success: true,
+          admin: {
+            id: admin.id,
+            email: admin.email,
+            name: admin.name,
+            role: admin.role
+          }
+        };
+      }),
+      /**
+       * ログアウト
+       */
+      logout: publicProcedure2.mutation(({ ctx }) => {
+        const isSecure = ENV.isProduction;
+        const cookieString = [
+          `${ADMIN_COOKIE_NAME}=`,
+          "HttpOnly",
+          isSecure ? "Secure" : "",
+          "SameSite=Lax",
+          "Max-Age=-1",
+          "Path=/"
+        ].filter(Boolean).join("; ");
+        ctx.res.setHeader("Set-Cookie", cookieString);
+        return { success: true };
+      }),
+      /**
+       * 現在の管理者情報を取得
+       */
+      me: publicProcedure2.query(({ ctx }) => {
+        if (!ctx.admin) {
+          return null;
+        }
+        return {
+          id: ctx.admin.id,
+          email: ctx.admin.email,
+          name: ctx.admin.name,
+          role: ctx.admin.role
+        };
+      }),
+      /**
+       * メールアドレス変更
+       */
+      updateEmail: protectedProcedure2.input(
+        z2.object({
+          newEmail: z2.string().email("\u6709\u52B9\u306A\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
+          currentPassword: z2.string().min(1, "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044")
+        })
+      ).mutation(async ({ input, ctx }) => {
+        const admin = ctx.admin;
+        const isValid = await verifyPassword(input.currentPassword, admin.passwordHash);
+        if (!isValid) {
+          throw new TRPCError3({
+            code: "UNAUTHORIZED",
+            message: "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093"
+          });
+        }
+        const existing = await getAdminByEmail(input.newEmail);
+        if (existing && existing.id !== admin.id) {
+          throw new TRPCError3({
+            code: "BAD_REQUEST",
+            message: "\u305D\u306E\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u306F\u65E2\u306B\u4F7F\u7528\u3055\u308C\u3066\u3044\u307E\u3059"
+          });
+        }
+        await updateAdminEmail(admin.id, input.newEmail);
+        return { success: true };
+      }),
+      /**
+       * パスワード変更
+       */
+      updatePassword: protectedProcedure2.input(
+        z2.object({
+          currentPassword: z2.string().min(1, "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
+          newPassword: z2.string().min(8, "\u65B0\u3057\u3044\u30D1\u30B9\u30EF\u30FC\u30C9\u306F8\u6587\u5B57\u4EE5\u4E0A\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
+          confirmPassword: z2.string().min(1)
+        })
+      ).mutation(async ({ input, ctx }) => {
+        if (input.newPassword !== input.confirmPassword) {
+          throw new TRPCError3({
+            code: "BAD_REQUEST",
+            message: "\u65B0\u3057\u3044\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u4E00\u81F4\u3057\u307E\u305B\u3093"
+          });
+        }
+        const admin = ctx.admin;
+        const isValid = await verifyPassword(input.currentPassword, admin.passwordHash);
+        if (!isValid) {
+          throw new TRPCError3({
+            code: "UNAUTHORIZED",
+            message: "\u73FE\u5728\u306E\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093"
+          });
+        }
+        const newHash = await hashPassword(input.newPassword);
+        await updateAdminPassword(admin.id, newHash);
+        return { success: true };
+      }),
+      /**
+       * 管理者を作成（開発用）
+       * 本番環境では別の方法で管理者を作成することを推奨
+       */
+      createAdmin: publicProcedure2.input(
+        z2.object({
+          email: z2.string().email(),
+          password: z2.string().min(1, "\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
+          name: z2.string().min(1),
+          role: z2.enum(["admin", "super_admin"]).default("admin")
+        })
+      ).mutation(async ({ input }) => {
+        const existing = await getAdminByEmail(input.email);
+        if (existing) {
+          throw new TRPCError3({
+            code: "BAD_REQUEST",
+            message: "\u3053\u306E\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u306F\u65E2\u306B\u4F7F\u7528\u3055\u308C\u3066\u3044\u307E\u3059"
+          });
+        }
+        const passwordHash = await hashPassword(input.password);
+        await createAdmin({
+          email: input.email,
+          passwordHash,
+          name: input.name,
+          role: input.role,
+          isActive: true
+        });
+        return { success: true };
+      })
+    });
+  }
 });
 
 // server/contentRouter.ts
 import { TRPCError as TRPCError4, initTRPC as initTRPC3 } from "@trpc/server";
 import { z as z3 } from "zod";
 import superjson3 from "superjson";
-var t3 = initTRPC3.context().create({
-  transformer: superjson3
-});
-var protectedProcedure3 = t3.procedure.use(({ ctx, next }) => {
-  if (!ctx.admin) {
-    throw new TRPCError4({ code: "UNAUTHORIZED", message: "\u8A8D\u8A3C\u304C\u5FC5\u8981\u3067\u3059" });
-  }
-  return next({
-    ctx: {
-      ...ctx,
-      admin: ctx.admin
-    }
-  });
-});
 async function logAudit(ctx, action, resourceType, resourceId, details) {
   if (!ctx.admin) return;
   await createAuditLog({
@@ -1098,389 +1200,437 @@ async function logAudit(ctx, action, resourceType, resourceId, details) {
     userAgent: ctx.req.headers["user-agent"] || null
   });
 }
-var newsRouter = t3.router({
-  /**
-   * NEWS記事一覧を取得
-   */
-  list: protectedProcedure3.query(async () => {
-    return getAllNews();
-  }),
-  /**
-   * NEWS記事詳細を取得
-   */
-  getById: protectedProcedure3.input(z3.number()).query(async ({ input }) => {
-    const article = await getNewsById(input);
-    if (!article) {
-      throw new TRPCError4({ code: "NOT_FOUND", message: "\u8A18\u4E8B\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
-    }
-    return article;
-  }),
-  /**
-   * NEWS記事を作成
-   */
-  create: protectedProcedure3.input(
-    z3.object({
-      title: z3.string().min(1, "\u30BF\u30A4\u30C8\u30EB\u306F\u5FC5\u9808\u3067\u3059").max(200, "\u30BF\u30A4\u30C8\u30EB\u306F200\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
-      slug: z3.string().min(1, "\u30B9\u30E9\u30C3\u30B0\u306F\u5FC5\u9808\u3067\u3059").max(100, "\u30B9\u30E9\u30C3\u30B0\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").regex(/^[a-z0-9-]+$/, "\u30B9\u30E9\u30C3\u30B0\u306F\u534A\u89D2\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\u30CF\u30A4\u30D5\u30F3\u306E\u307F\u4F7F\u7528\u3067\u304D\u307E\u3059"),
-      content: z3.string().min(1, "\u672C\u6587\u306F\u5FC5\u9808\u3067\u3059"),
-      excerpt: z3.string().max(500, "\u62BD\u51FA\u306F500\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
-      thumbnailUrl: z3.string().url("\u6709\u52B9\u306AURL\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional().or(z3.literal("")),
-      category: z3.string().optional().default("\u304A\u77E5\u3089\u305B"),
-      isPublished: z3.boolean().default(false)
-    })
-  ).mutation(async ({ input, ctx }) => {
-    const result = await createNews({
-      ...input,
-      authorId: ctx.admin.id,
-      publishedAt: input.isPublished ? /* @__PURE__ */ new Date() : null
+var t3, protectedProcedure3, newsRouter, jobsRouter, categoryRouter;
+var init_contentRouter = __esm({
+  "server/contentRouter.ts"() {
+    "use strict";
+    init_db2();
+    init_db2();
+    t3 = initTRPC3.context().create({
+      transformer: superjson3
     });
-    const insertId = Number(result[0].id);
-    await logAudit(
-      ctx,
-      "create_news",
-      "news",
-      insertId,
-      JSON.stringify({ title: input.title })
-    );
-    return { success: true, id: insertId };
-  }),
-  /**
-   * NEWS記事を更新
-   */
-  update: protectedProcedure3.input(
-    z3.object({
-      id: z3.number(),
-      title: z3.string().min(1, "\u30BF\u30A4\u30C8\u30EB\u306F\u5FC5\u9808\u3067\u3059").max(200, "\u30BF\u30A4\u30C8\u30EB\u306F200\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
-      slug: z3.string().min(1, "\u30B9\u30E9\u30C3\u30B0\u306F\u5FC5\u9808\u3067\u3059").max(100, "\u30B9\u30E9\u30C3\u30B0\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").regex(/^[a-z0-9-]+$/, "\u30B9\u30E9\u30C3\u30B0\u306F\u534A\u89D2\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\u30CF\u30A4\u30D5\u30F3\u306E\u307F\u4F7F\u7528\u3067\u304D\u307E\u3059").optional(),
-      content: z3.string().min(1, "\u672C\u6587\u306F\u5FC5\u9808\u3067\u3059").optional(),
-      excerpt: z3.string().max(500, "\u62BD\u51FA\u306F500\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
-      thumbnailUrl: z3.string().url("\u6709\u52B9\u306AURL\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional().or(z3.literal("")),
-      category: z3.string().optional(),
-      isPublished: z3.boolean().optional()
-    })
-  ).mutation(async ({ input, ctx }) => {
-    const { id, ...data } = input;
-    const existing = await getNewsById(id);
-    if (!existing) {
-      throw new TRPCError4({ code: "NOT_FOUND", message: "\u8A18\u4E8B\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
-    }
-    const updateData = { ...data };
-    if (data.isPublished !== void 0 && data.isPublished !== existing.isPublished) {
-      updateData.publishedAt = data.isPublished ? /* @__PURE__ */ new Date() : null;
-    }
-    await updateNews(id, updateData);
-    await logAudit(
-      ctx,
-      "update_news",
-      "news",
-      id,
-      JSON.stringify({ title: existing.title, changes: data })
-    );
-    return { success: true };
-  }),
-  /**
-   * NEWS記事を削除
-   */
-  delete: protectedProcedure3.input(z3.number()).mutation(async ({ input, ctx }) => {
-    const existing = await getNewsById(input);
-    if (!existing) {
-      throw new TRPCError4({ code: "NOT_FOUND", message: "\u8A18\u4E8B\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
-    }
-    await deleteNews(input);
-    await logAudit(
-      ctx,
-      "delete_news",
-      "news",
-      input,
-      JSON.stringify({ title: existing.title })
-    );
-    return { success: true };
-  }),
-  /**
-   * NEWS記事のslug重複チェック
-   */
-  checkSlug: protectedProcedure3.input(
-    z3.object({
-      slug: z3.string(),
-      excludeId: z3.number().optional()
-    })
-  ).query(async ({ input }) => {
-    if (!input.slug || !/^[a-z0-9-]+$/.test(input.slug)) {
-      return { available: false, reason: "invalid" };
-    }
-    const existing = await getNewsBySlug(input.slug, input.excludeId);
-    return { available: !existing, reason: existing ? "duplicate" : null };
-  }),
-  /**
-   * NEWS記事の公開/非公開を切り替え
-   */
-  togglePublish: protectedProcedure3.input(z3.number()).mutation(async ({ input, ctx }) => {
-    const existing = await getNewsById(input);
-    if (!existing) {
-      throw new TRPCError4({ code: "NOT_FOUND", message: "\u8A18\u4E8B\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
-    }
-    const newStatus = !existing.isPublished;
-    await updateNews(input, {
-      isPublished: newStatus,
-      publishedAt: newStatus ? /* @__PURE__ */ new Date() : null
+    protectedProcedure3 = t3.procedure.use(({ ctx, next }) => {
+      if (!ctx.admin) {
+        throw new TRPCError4({ code: "UNAUTHORIZED", message: "\u8A8D\u8A3C\u304C\u5FC5\u8981\u3067\u3059" });
+      }
+      return next({
+        ctx: {
+          ...ctx,
+          admin: ctx.admin
+        }
+      });
     });
-    await logAudit(
-      ctx,
-      newStatus ? "publish_news" : "unpublish_news",
-      "news",
-      input,
-      JSON.stringify({ title: existing.title })
-    );
-    return { success: true, isPublished: newStatus };
-  })
-});
-var jobsRouter = t3.router({
-  /**
-   * 求人情報一覧を取得
-   */
-  list: protectedProcedure3.query(async () => {
-    return getAllJobs();
-  }),
-  /**
-   * 求人情報詳細を取得
-   */
-  getById: protectedProcedure3.input(z3.number()).query(async ({ input }) => {
-    const job = await getJobById(input);
-    if (!job) {
-      throw new TRPCError4({ code: "NOT_FOUND", message: "\u6C42\u4EBA\u60C5\u5831\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
-    }
-    return job;
-  }),
-  /**
-   * 求人情報を作成
-   */
-  create: protectedProcedure3.input(
-    z3.object({
-      title: z3.string().min(1, "\u30BF\u30A4\u30C8\u30EB\u306F\u5FC5\u9808\u3067\u3059").max(200, "\u30BF\u30A4\u30C8\u30EB\u306F200\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
-      slug: z3.string().min(1, "\u30B9\u30E9\u30C3\u30B0\u306F\u5FC5\u9808\u3067\u3059").max(100, "\u30B9\u30E9\u30C3\u30B0\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").regex(/^[a-z0-9-]+$/, "\u30B9\u30E9\u30C3\u30B0\u306F\u534A\u89D2\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\u30CF\u30A4\u30D5\u30F3\u306E\u307F\u4F7F\u7528\u3067\u304D\u307E\u3059"),
-      description: z3.string().min(1, "\u8AAC\u660E\u306F\u5FC5\u9808\u3067\u3059"),
-      requirements: z3.string().optional(),
-      location: z3.string().max(100, "\u52E4\u52D9\u5730\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
-      employmentType: z3.enum(["full_time", "part_time", "contract", "internship"]),
-      salaryRange: z3.string().max(100, "\u7D66\u4E0E\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
-      isPublished: z3.boolean().default(false),
-      closingDate: z3.date().optional()
-    })
-  ).mutation(async ({ input, ctx }) => {
-    const result = await createJob({
-      ...input,
-      authorId: ctx.admin.id,
-      publishedAt: input.isPublished ? /* @__PURE__ */ new Date() : null
+    newsRouter = t3.router({
+      /**
+       * NEWS記事一覧を取得
+       */
+      list: protectedProcedure3.query(async () => {
+        return getAllNews();
+      }),
+      /**
+       * NEWS記事詳細を取得
+       */
+      getById: protectedProcedure3.input(z3.number()).query(async ({ input }) => {
+        const article = await getNewsById(input);
+        if (!article) {
+          throw new TRPCError4({ code: "NOT_FOUND", message: "\u8A18\u4E8B\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+        }
+        return article;
+      }),
+      /**
+       * NEWS記事を作成
+       */
+      create: protectedProcedure3.input(
+        z3.object({
+          title: z3.string().min(1, "\u30BF\u30A4\u30C8\u30EB\u306F\u5FC5\u9808\u3067\u3059").max(200, "\u30BF\u30A4\u30C8\u30EB\u306F200\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
+          slug: z3.string().min(1, "\u30B9\u30E9\u30C3\u30B0\u306F\u5FC5\u9808\u3067\u3059").max(100, "\u30B9\u30E9\u30C3\u30B0\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").regex(/^[a-z0-9-]+$/, "\u30B9\u30E9\u30C3\u30B0\u306F\u534A\u89D2\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\u30CF\u30A4\u30D5\u30F3\u306E\u307F\u4F7F\u7528\u3067\u304D\u307E\u3059"),
+          content: z3.string().min(1, "\u672C\u6587\u306F\u5FC5\u9808\u3067\u3059"),
+          excerpt: z3.string().max(500, "\u62BD\u51FA\u306F500\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
+          thumbnailUrl: z3.string().url("\u6709\u52B9\u306AURL\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional().or(z3.literal("")),
+          category: z3.string().optional().default("\u304A\u77E5\u3089\u305B"),
+          isPublished: z3.boolean().default(false)
+        })
+      ).mutation(async ({ input, ctx }) => {
+        const result = await createNews({
+          ...input,
+          authorId: ctx.admin.id,
+          publishedAt: input.isPublished ? /* @__PURE__ */ new Date() : null
+        });
+        const insertId = Number(result[0].id);
+        await logAudit(
+          ctx,
+          "create_news",
+          "news",
+          insertId,
+          JSON.stringify({ title: input.title })
+        );
+        return { success: true, id: insertId };
+      }),
+      /**
+       * NEWS記事を更新
+       */
+      update: protectedProcedure3.input(
+        z3.object({
+          id: z3.number(),
+          title: z3.string().min(1, "\u30BF\u30A4\u30C8\u30EB\u306F\u5FC5\u9808\u3067\u3059").max(200, "\u30BF\u30A4\u30C8\u30EB\u306F200\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
+          slug: z3.string().min(1, "\u30B9\u30E9\u30C3\u30B0\u306F\u5FC5\u9808\u3067\u3059").max(100, "\u30B9\u30E9\u30C3\u30B0\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").regex(/^[a-z0-9-]+$/, "\u30B9\u30E9\u30C3\u30B0\u306F\u534A\u89D2\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\u30CF\u30A4\u30D5\u30F3\u306E\u307F\u4F7F\u7528\u3067\u304D\u307E\u3059").optional(),
+          content: z3.string().min(1, "\u672C\u6587\u306F\u5FC5\u9808\u3067\u3059").optional(),
+          excerpt: z3.string().max(500, "\u62BD\u51FA\u306F500\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
+          thumbnailUrl: z3.string().url("\u6709\u52B9\u306AURL\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional().or(z3.literal("")),
+          category: z3.string().optional(),
+          isPublished: z3.boolean().optional()
+        })
+      ).mutation(async ({ input, ctx }) => {
+        const { id, ...data } = input;
+        const existing = await getNewsById(id);
+        if (!existing) {
+          throw new TRPCError4({ code: "NOT_FOUND", message: "\u8A18\u4E8B\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+        }
+        const updateData = { ...data };
+        if (data.isPublished !== void 0 && data.isPublished !== existing.isPublished) {
+          updateData.publishedAt = data.isPublished ? /* @__PURE__ */ new Date() : null;
+        }
+        await updateNews(id, updateData);
+        await logAudit(
+          ctx,
+          "update_news",
+          "news",
+          id,
+          JSON.stringify({ title: existing.title, changes: data })
+        );
+        return { success: true };
+      }),
+      /**
+       * NEWS記事を削除
+       */
+      delete: protectedProcedure3.input(z3.number()).mutation(async ({ input, ctx }) => {
+        const existing = await getNewsById(input);
+        if (!existing) {
+          throw new TRPCError4({ code: "NOT_FOUND", message: "\u8A18\u4E8B\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+        }
+        await deleteNews(input);
+        await logAudit(
+          ctx,
+          "delete_news",
+          "news",
+          input,
+          JSON.stringify({ title: existing.title })
+        );
+        return { success: true };
+      }),
+      /**
+       * NEWS記事のslug重複チェック
+       */
+      checkSlug: protectedProcedure3.input(
+        z3.object({
+          slug: z3.string(),
+          excludeId: z3.number().optional()
+        })
+      ).query(async ({ input }) => {
+        if (!input.slug || !/^[a-z0-9-]+$/.test(input.slug)) {
+          return { available: false, reason: "invalid" };
+        }
+        const existing = await getNewsBySlug(input.slug, input.excludeId);
+        return { available: !existing, reason: existing ? "duplicate" : null };
+      }),
+      /**
+       * NEWS記事の公開/非公開を切り替え
+       */
+      togglePublish: protectedProcedure3.input(z3.number()).mutation(async ({ input, ctx }) => {
+        const existing = await getNewsById(input);
+        if (!existing) {
+          throw new TRPCError4({ code: "NOT_FOUND", message: "\u8A18\u4E8B\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+        }
+        const newStatus = !existing.isPublished;
+        await updateNews(input, {
+          isPublished: newStatus,
+          publishedAt: newStatus ? /* @__PURE__ */ new Date() : null
+        });
+        await logAudit(
+          ctx,
+          newStatus ? "publish_news" : "unpublish_news",
+          "news",
+          input,
+          JSON.stringify({ title: existing.title })
+        );
+        return { success: true, isPublished: newStatus };
+      })
     });
-    const insertId = Number(result[0].id);
-    await logAudit(
-      ctx,
-      "create_job",
-      "job",
-      insertId,
-      JSON.stringify({ title: input.title })
-    );
-    return { success: true, id: insertId };
-  }),
-  /**
-   * 求人情報を更新
-   */
-  update: protectedProcedure3.input(
-    z3.object({
-      id: z3.number(),
-      title: z3.string().min(1, "\u30BF\u30A4\u30C8\u30EB\u306F\u5FC5\u9808\u3067\u3059").max(200, "\u30BF\u30A4\u30C8\u30EB\u306F200\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
-      slug: z3.string().min(1, "\u30B9\u30E9\u30C3\u30B0\u306F\u5FC5\u9808\u3067\u3059").max(100, "\u30B9\u30E9\u30C3\u30B0\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").regex(/^[a-z0-9-]+$/, "\u30B9\u30E9\u30C3\u30B0\u306F\u534A\u89D2\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\u30CF\u30A4\u30D5\u30F3\u306E\u307F\u4F7F\u7528\u3067\u304D\u307E\u3059").optional(),
-      description: z3.string().min(1, "\u8AAC\u660E\u306F\u5FC5\u9808\u3067\u3059").optional(),
-      requirements: z3.string().optional(),
-      location: z3.string().max(100, "\u52E4\u52D9\u5730\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
-      employmentType: z3.enum(["full_time", "part_time", "contract", "internship"]).optional(),
-      salaryRange: z3.string().max(100, "\u7D66\u4E0E\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
-      isPublished: z3.boolean().optional(),
-      closingDate: z3.date().optional()
-    })
-  ).mutation(async ({ input, ctx }) => {
-    const { id, ...data } = input;
-    const existing = await getJobById(id);
-    if (!existing) {
-      throw new TRPCError4({ code: "NOT_FOUND", message: "\u6C42\u4EBA\u60C5\u5831\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
-    }
-    const updateData = { ...data };
-    if (data.isPublished !== void 0 && data.isPublished !== existing.isPublished) {
-      updateData.publishedAt = data.isPublished ? /* @__PURE__ */ new Date() : null;
-    }
-    await updateJob(id, updateData);
-    await logAudit(
-      ctx,
-      "update_job",
-      "job",
-      id,
-      JSON.stringify({ title: existing.title, changes: data })
-    );
-    return { success: true };
-  }),
-  /**
-   * 求人情報を削除
-   */
-  delete: protectedProcedure3.input(z3.number()).mutation(async ({ input, ctx }) => {
-    const existing = await getJobById(input);
-    if (!existing) {
-      throw new TRPCError4({ code: "NOT_FOUND", message: "\u6C42\u4EBA\u60C5\u5831\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
-    }
-    await deleteJob(input);
-    await logAudit(
-      ctx,
-      "delete_job",
-      "job",
-      input,
-      JSON.stringify({ title: existing.title })
-    );
-    return { success: true };
-  }),
-  /**
-   * 求人情報のslug重複チェック
-   */
-  checkSlug: protectedProcedure3.input(
-    z3.object({
-      slug: z3.string(),
-      excludeId: z3.number().optional()
-    })
-  ).query(async ({ input }) => {
-    if (!input.slug || !/^[a-z0-9-]+$/.test(input.slug)) {
-      return { available: false, reason: "invalid" };
-    }
-    const existing = await getJobBySlug(input.slug, input.excludeId);
-    return { available: !existing, reason: existing ? "duplicate" : null };
-  }),
-  /**
-   * 求人情報の公開/非公開を切り替え
-   */
-  togglePublish: protectedProcedure3.input(z3.number()).mutation(async ({ input, ctx }) => {
-    const existing = await getJobById(input);
-    if (!existing) {
-      throw new TRPCError4({ code: "NOT_FOUND", message: "\u6C42\u4EBA\u60C5\u5831\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
-    }
-    const newStatus = !existing.isPublished;
-    await updateJob(input, {
-      isPublished: newStatus,
-      publishedAt: newStatus ? /* @__PURE__ */ new Date() : null
+    jobsRouter = t3.router({
+      /**
+       * 求人情報一覧を取得
+       */
+      list: protectedProcedure3.query(async () => {
+        return getAllJobs();
+      }),
+      /**
+       * 求人情報詳細を取得
+       */
+      getById: protectedProcedure3.input(z3.number()).query(async ({ input }) => {
+        const job = await getJobById(input);
+        if (!job) {
+          throw new TRPCError4({ code: "NOT_FOUND", message: "\u6C42\u4EBA\u60C5\u5831\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+        }
+        return job;
+      }),
+      /**
+       * 求人情報を作成
+       */
+      create: protectedProcedure3.input(
+        z3.object({
+          title: z3.string().min(1, "\u30BF\u30A4\u30C8\u30EB\u306F\u5FC5\u9808\u3067\u3059").max(200, "\u30BF\u30A4\u30C8\u30EB\u306F200\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044"),
+          slug: z3.string().min(1, "\u30B9\u30E9\u30C3\u30B0\u306F\u5FC5\u9808\u3067\u3059").max(100, "\u30B9\u30E9\u30C3\u30B0\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").regex(/^[a-z0-9-]+$/, "\u30B9\u30E9\u30C3\u30B0\u306F\u534A\u89D2\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\u30CF\u30A4\u30D5\u30F3\u306E\u307F\u4F7F\u7528\u3067\u304D\u307E\u3059"),
+          description: z3.string().min(1, "\u8AAC\u660E\u306F\u5FC5\u9808\u3067\u3059"),
+          requirements: z3.string().optional(),
+          location: z3.string().max(100, "\u52E4\u52D9\u5730\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
+          employmentType: z3.enum(["full_time", "part_time", "contract", "internship"]),
+          salaryRange: z3.string().max(100, "\u7D66\u4E0E\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
+          isPublished: z3.boolean().default(false),
+          closingDate: z3.date().optional()
+        })
+      ).mutation(async ({ input, ctx }) => {
+        const result = await createJob({
+          ...input,
+          authorId: ctx.admin.id,
+          publishedAt: input.isPublished ? /* @__PURE__ */ new Date() : null
+        });
+        const insertId = Number(result[0].id);
+        await logAudit(
+          ctx,
+          "create_job",
+          "job",
+          insertId,
+          JSON.stringify({ title: input.title })
+        );
+        return { success: true, id: insertId };
+      }),
+      /**
+       * 求人情報を更新
+       */
+      update: protectedProcedure3.input(
+        z3.object({
+          id: z3.number(),
+          title: z3.string().min(1, "\u30BF\u30A4\u30C8\u30EB\u306F\u5FC5\u9808\u3067\u3059").max(200, "\u30BF\u30A4\u30C8\u30EB\u306F200\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
+          slug: z3.string().min(1, "\u30B9\u30E9\u30C3\u30B0\u306F\u5FC5\u9808\u3067\u3059").max(100, "\u30B9\u30E9\u30C3\u30B0\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").regex(/^[a-z0-9-]+$/, "\u30B9\u30E9\u30C3\u30B0\u306F\u534A\u89D2\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\u30CF\u30A4\u30D5\u30F3\u306E\u307F\u4F7F\u7528\u3067\u304D\u307E\u3059").optional(),
+          description: z3.string().min(1, "\u8AAC\u660E\u306F\u5FC5\u9808\u3067\u3059").optional(),
+          requirements: z3.string().optional(),
+          location: z3.string().max(100, "\u52E4\u52D9\u5730\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
+          employmentType: z3.enum(["full_time", "part_time", "contract", "internship"]).optional(),
+          salaryRange: z3.string().max(100, "\u7D66\u4E0E\u306F100\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").optional(),
+          isPublished: z3.boolean().optional(),
+          closingDate: z3.date().optional()
+        })
+      ).mutation(async ({ input, ctx }) => {
+        const { id, ...data } = input;
+        const existing = await getJobById(id);
+        if (!existing) {
+          throw new TRPCError4({ code: "NOT_FOUND", message: "\u6C42\u4EBA\u60C5\u5831\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+        }
+        const updateData = { ...data };
+        if (data.isPublished !== void 0 && data.isPublished !== existing.isPublished) {
+          updateData.publishedAt = data.isPublished ? /* @__PURE__ */ new Date() : null;
+        }
+        await updateJob(id, updateData);
+        await logAudit(
+          ctx,
+          "update_job",
+          "job",
+          id,
+          JSON.stringify({ title: existing.title, changes: data })
+        );
+        return { success: true };
+      }),
+      /**
+       * 求人情報を削除
+       */
+      delete: protectedProcedure3.input(z3.number()).mutation(async ({ input, ctx }) => {
+        const existing = await getJobById(input);
+        if (!existing) {
+          throw new TRPCError4({ code: "NOT_FOUND", message: "\u6C42\u4EBA\u60C5\u5831\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+        }
+        await deleteJob(input);
+        await logAudit(
+          ctx,
+          "delete_job",
+          "job",
+          input,
+          JSON.stringify({ title: existing.title })
+        );
+        return { success: true };
+      }),
+      /**
+       * 求人情報のslug重複チェック
+       */
+      checkSlug: protectedProcedure3.input(
+        z3.object({
+          slug: z3.string(),
+          excludeId: z3.number().optional()
+        })
+      ).query(async ({ input }) => {
+        if (!input.slug || !/^[a-z0-9-]+$/.test(input.slug)) {
+          return { available: false, reason: "invalid" };
+        }
+        const existing = await getJobBySlug(input.slug, input.excludeId);
+        return { available: !existing, reason: existing ? "duplicate" : null };
+      }),
+      /**
+       * 求人情報の公開/非公開を切り替え
+       */
+      togglePublish: protectedProcedure3.input(z3.number()).mutation(async ({ input, ctx }) => {
+        const existing = await getJobById(input);
+        if (!existing) {
+          throw new TRPCError4({ code: "NOT_FOUND", message: "\u6C42\u4EBA\u60C5\u5831\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+        }
+        const newStatus = !existing.isPublished;
+        await updateJob(input, {
+          isPublished: newStatus,
+          publishedAt: newStatus ? /* @__PURE__ */ new Date() : null
+        });
+        await logAudit(
+          ctx,
+          newStatus ? "publish_job" : "unpublish_job",
+          "job",
+          input,
+          JSON.stringify({ title: existing.title })
+        );
+        return { success: true, isPublished: newStatus };
+      })
     });
-    await logAudit(
-      ctx,
-      newStatus ? "publish_job" : "unpublish_job",
-      "job",
-      input,
-      JSON.stringify({ title: existing.title })
-    );
-    return { success: true, isPublished: newStatus };
-  })
-});
-var categoryRouter = t3.router({
-  // カテゴリ一覧取得（認証不要 - NEWS作成フォームでも使用）
-  list: t3.procedure.query(async () => {
-    return getAllNewsCategories();
-  }),
-  // カテゴリ作成
-  create: protectedProcedure3.input(
-    z3.object({
-      name: z3.string().min(1, "\u30AB\u30C6\u30B4\u30EA\u540D\u306F\u5FC5\u9808\u3067\u3059").max(50),
-      slug: z3.string().min(1, "\u30B9\u30E9\u30C3\u30B0\u306F\u5FC5\u9808\u3067\u3059").max(50).regex(/^[a-z0-9-]+$/, "\u30B9\u30E9\u30C3\u30B0\u306F\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\u30CF\u30A4\u30D5\u30F3\u306E\u307F\u4F7F\u7528\u3067\u304D\u307E\u3059"),
-      color: z3.string().regex(/^#[0-9A-Fa-f]{6}$/, "\u6709\u52B9\u306A\u30AB\u30E9\u30FC\u30B3\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").default("#6B7280"),
-      sortOrder: z3.number().int().default(0)
-    })
-  ).mutation(async ({ input }) => {
-    await createNewsCategory({
-      name: input.name,
-      slug: input.slug,
-      color: input.color,
-      sortOrder: input.sortOrder
+    categoryRouter = t3.router({
+      // カテゴリ一覧取得（認証不要 - NEWS作成フォームでも使用）
+      list: t3.procedure.query(async () => {
+        return getAllNewsCategories();
+      }),
+      // カテゴリ作成
+      create: protectedProcedure3.input(
+        z3.object({
+          name: z3.string().min(1, "\u30AB\u30C6\u30B4\u30EA\u540D\u306F\u5FC5\u9808\u3067\u3059").max(50),
+          slug: z3.string().min(1, "\u30B9\u30E9\u30C3\u30B0\u306F\u5FC5\u9808\u3067\u3059").max(50).regex(/^[a-z0-9-]+$/, "\u30B9\u30E9\u30C3\u30B0\u306F\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\u30CF\u30A4\u30D5\u30F3\u306E\u307F\u4F7F\u7528\u3067\u304D\u307E\u3059"),
+          color: z3.string().regex(/^#[0-9A-Fa-f]{6}$/, "\u6709\u52B9\u306A\u30AB\u30E9\u30FC\u30B3\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").default("#6B7280"),
+          sortOrder: z3.number().int().default(0)
+        })
+      ).mutation(async ({ input }) => {
+        await createNewsCategory({
+          name: input.name,
+          slug: input.slug,
+          color: input.color,
+          sortOrder: input.sortOrder
+        });
+        return { success: true };
+      }),
+      // カテゴリ更新
+      update: protectedProcedure3.input(
+        z3.object({
+          id: z3.number().int(),
+          name: z3.string().min(1).max(50).optional(),
+          slug: z3.string().min(1).max(50).regex(/^[a-z0-9-]+$/).optional(),
+          color: z3.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+          sortOrder: z3.number().int().optional()
+        })
+      ).mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        const existing = await getNewsCategoryById(id);
+        if (!existing) {
+          throw new TRPCError4({ code: "NOT_FOUND", message: "\u30AB\u30C6\u30B4\u30EA\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+        }
+        await updateNewsCategory(id, data);
+        return { success: true };
+      }),
+      // カテゴリ削除
+      delete: protectedProcedure3.input(z3.number().int()).mutation(async ({ input: id }) => {
+        const existing = await getNewsCategoryById(id);
+        if (!existing) {
+          throw new TRPCError4({ code: "NOT_FOUND", message: "\u30AB\u30C6\u30B4\u30EA\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
+        }
+        await deleteNewsCategory(id);
+        return { success: true };
+      })
     });
-    return { success: true };
-  }),
-  // カテゴリ更新
-  update: protectedProcedure3.input(
-    z3.object({
-      id: z3.number().int(),
-      name: z3.string().min(1).max(50).optional(),
-      slug: z3.string().min(1).max(50).regex(/^[a-z0-9-]+$/).optional(),
-      color: z3.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-      sortOrder: z3.number().int().optional()
-    })
-  ).mutation(async ({ input }) => {
-    const { id, ...data } = input;
-    const existing = await getNewsCategoryById(id);
-    if (!existing) {
-      throw new TRPCError4({ code: "NOT_FOUND", message: "\u30AB\u30C6\u30B4\u30EA\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
-    }
-    await updateNewsCategory(id, data);
-    return { success: true };
-  }),
-  // カテゴリ削除
-  delete: protectedProcedure3.input(z3.number().int()).mutation(async ({ input: id }) => {
-    const existing = await getNewsCategoryById(id);
-    if (!existing) {
-      throw new TRPCError4({ code: "NOT_FOUND", message: "\u30AB\u30C6\u30B4\u30EA\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093" });
-    }
-    await deleteNewsCategory(id);
-    return { success: true };
-  })
+  }
 });
 
 // server/auditRouter.ts
 import { TRPCError as TRPCError5, initTRPC as initTRPC4 } from "@trpc/server";
 import { z as z4 } from "zod";
 import superjson4 from "superjson";
-var t4 = initTRPC4.context().create({
-  transformer: superjson4
-});
-var protectedProcedure4 = t4.procedure.use(({ ctx, next }) => {
-  if (!ctx.admin) {
-    throw new TRPCError5({ code: "UNAUTHORIZED", message: "\u8A8D\u8A3C\u304C\u5FC5\u8981\u3067\u3059" });
+var t4, protectedProcedure4, auditRouter;
+var init_auditRouter = __esm({
+  "server/auditRouter.ts"() {
+    "use strict";
+    init_db2();
+    t4 = initTRPC4.context().create({
+      transformer: superjson4
+    });
+    protectedProcedure4 = t4.procedure.use(({ ctx, next }) => {
+      if (!ctx.admin) {
+        throw new TRPCError5({ code: "UNAUTHORIZED", message: "\u8A8D\u8A3C\u304C\u5FC5\u8981\u3067\u3059" });
+      }
+      return next({
+        ctx: {
+          ...ctx,
+          admin: ctx.admin
+        }
+      });
+    });
+    auditRouter = t4.router({
+      /**
+       * 監査ログ一覧を取得
+       */
+      list: protectedProcedure4.input(
+        z4.object({
+          limit: z4.number().min(1).max(500).default(100)
+        }).optional()
+      ).query(async ({ input }) => {
+        const limit = input?.limit ?? 100;
+        return getAllAuditLogs(limit);
+      }),
+      /**
+       * 特定の管理者の監査ログを取得
+       */
+      getByAdmin: protectedProcedure4.input(
+        z4.object({
+          adminId: z4.number(),
+          limit: z4.number().min(1).max(200).default(50)
+        })
+      ).query(async ({ input }) => {
+        return getAuditLogsByAdmin(input.adminId, input.limit);
+      })
+    });
   }
-  return next({
-    ctx: {
-      ...ctx,
-      admin: ctx.admin
-    }
-  });
-});
-var auditRouter = t4.router({
-  /**
-   * 監査ログ一覧を取得
-   */
-  list: protectedProcedure4.input(
-    z4.object({
-      limit: z4.number().min(1).max(500).default(100)
-    }).optional()
-  ).query(async ({ input }) => {
-    const limit = input?.limit ?? 100;
-    return getAllAuditLogs(limit);
-  }),
-  /**
-   * 特定の管理者の監査ログを取得
-   */
-  getByAdmin: protectedProcedure4.input(
-    z4.object({
-      adminId: z4.number(),
-      limit: z4.number().min(1).max(200).default(50)
-    })
-  ).query(async ({ input }) => {
-    return getAuditLogsByAdmin(input.adminId, input.limit);
-  })
 });
 
 // server/adminAppRouter.ts
-var t5 = initTRPC5.context().create({
-  transformer: superjson5
-});
-var adminAppRouter = t5.router({
-  auth: adminAuthRouter,
-  news: newsRouter,
-  jobs: jobsRouter,
-  audit: auditRouter,
-  category: categoryRouter
+import { initTRPC as initTRPC5 } from "@trpc/server";
+import superjson5 from "superjson";
+var t5, adminAppRouter;
+var init_adminAppRouter = __esm({
+  "server/adminAppRouter.ts"() {
+    "use strict";
+    init_adminRouter();
+    init_contentRouter();
+    init_auditRouter();
+    t5 = initTRPC5.context().create({
+      transformer: superjson5
+    });
+    adminAppRouter = t5.router({
+      auth: adminAuthRouter,
+      news: newsRouter,
+      jobs: jobsRouter,
+      audit: auditRouter,
+      category: categoryRouter
+    });
+  }
 });
 
 // server/_core/app.vercel.ts
+var app_vercel_exports = {};
+__export(app_vercel_exports, {
+  createApp: () => createApp
+});
+import "dotenv/config";
+import express from "express";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 function createApp() {
   const app2 = express();
@@ -1565,9 +1715,28 @@ function createApp() {
   });
   return app2;
 }
+var init_app_vercel = __esm({
+  "server/_core/app.vercel.ts"() {
+    "use strict";
+    init_oauth();
+    init_routers();
+    init_context();
+    init_adminAppRouter();
+    init_adminContext();
+    init_db();
+  }
+});
 
 // src/api-entry/server.ts
-var app = createApp();
+var app;
+var initError;
+try {
+  const { createApp: createApp2 } = await Promise.resolve().then(() => (init_app_vercel(), app_vercel_exports));
+  app = createApp2();
+} catch (e) {
+  initError = e;
+  console.error("[Startup] Failed to initialize app:", e);
+}
 function handler(req, res) {
   const pathSegments = req.query?.path;
   const pathStr = Array.isArray(pathSegments) ? pathSegments.join("/") : typeof pathSegments === "string" ? pathSegments : "";
@@ -1580,6 +1749,15 @@ function handler(req, res) {
     req.url = `/api/${pathStr}${remaining ? "?" + remaining : ""}`;
   } else {
     req.url = `/api/${pathStr}`;
+  }
+  if (!app) {
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({
+      error: "Server initialization failed",
+      detail: String(initError)
+    }));
+    return;
   }
   app(req, res);
 }

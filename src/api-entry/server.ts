@@ -9,10 +9,18 @@
  * Vercel injects the matched path as req.query.path (string | string[]).
  * We reconstruct req.url so Express can route to /api/admin/*, /api/trpc/*, etc.
  */
-import { createApp } from "../../server/_core/app.vercel";
 import type { IncomingMessage, ServerResponse } from "http";
 
-const app = createApp();
+let app: any;
+let initError: unknown;
+
+try {
+  const { createApp } = await import("../../server/_core/app.vercel");
+  app = createApp();
+} catch (e) {
+  initError = e;
+  console.error("[Startup] Failed to initialize app:", e);
+}
 
 export default function handler(
   req: IncomingMessage & { query?: Record<string, string | string[]> },
@@ -38,6 +46,16 @@ export default function handler(
     req.url = `/api/${pathStr}${remaining ? "?" + remaining : ""}`;
   } else {
     req.url = `/api/${pathStr}`;
+  }
+
+  if (!app) {
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({
+      error: "Server initialization failed",
+      detail: String(initError),
+    }));
+    return;
   }
 
   // Let Express handle the request
