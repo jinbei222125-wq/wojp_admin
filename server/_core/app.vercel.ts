@@ -97,7 +97,7 @@ export function createApp() {
         return res.json({ status: "DB null - getDb() returned null", url, token: maskedToken });
       }
       // 直接 libsql で admins を取得
-      const { createClient } = await import("@libsql/client");
+      const { createClient } = await import("@libsql/client/web");
       const client = createClient({ url, authToken: token });
       const result = await client.execute(
         "SELECT id, email, name, isActive FROM admins;"

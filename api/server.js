@@ -96,7 +96,7 @@ var users = sqliteTable("users", {
 
 // server/lib/db.ts
 import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client";
+import { createClient } from "@libsql/client/web";
 var _db = null;
 async function getDb() {
   if (!_db) {
@@ -357,7 +357,6 @@ var HttpError = class extends Error {
     this.statusCode = statusCode;
     this.name = "HttpError";
   }
-  statusCode;
 };
 var ForbiddenError = (msg) => new HttpError(403, msg);
 
@@ -397,7 +396,6 @@ var OAuthService = class {
       );
     }
   }
-  client;
   decodeState(state) {
     const redirectUri = atob(state);
     return redirectUri;
@@ -1547,7 +1545,7 @@ function createApp() {
       if (!db) {
         return res.json({ status: "DB null - getDb() returned null", url, token: maskedToken });
       }
-      const { createClient: createClient2 } = await import("@libsql/client");
+      const { createClient: createClient2 } = await import("@libsql/client/web");
       const client = createClient2({ url, authToken: token });
       const result = await client.execute(
         "SELECT id, email, name, isActive FROM admins;"

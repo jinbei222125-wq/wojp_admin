@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client";
+import { createClient } from "@libsql/client/web";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 
 let _db: LibSQLDatabase | null = null;
