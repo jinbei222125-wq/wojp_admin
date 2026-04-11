@@ -1,63 +1,54 @@
-/**
- * Vercel serverless entry: all /api/* requests are routed here via rewrites.
- * Built to api/server.js by build:api so api/ contains only build output (no .ts).
- *
- * Uses app.vercel.ts (NOT app.ts) to avoid bundling vite and its plugins
- * into the serverless function.
- *
- * vercel.json rewrites /api/:path* → /api/server?path=:path*
- * Vercel injects the matched path as req.query.path (string | string[]).
- * We reconstruct req.url so Express can route to /api/admin/*, /api/trpc/*, etc.
- */
 import type { IncomingMessage, ServerResponse } from "http";
 
-let app: any;
-let initError: unknown;
+const errors: string[] = [];
+const loaded: string[] = [];
 
-try {
-  const { createApp } = await import("../../server/_core/app.vercel");
-  app = createApp();
-} catch (e) {
-  initError = e;
-  console.error("[Startup] Failed to initialize app:", e);
+// どのimportが失敗するか特定するため段階的にテスト
+async function initApp() {
+  try {
+    await import("express");
+    loaded.push("express");
+  } catch (e) { errors.push(`express: ${e}`); }
+
+  try {
+    await import("@libsql/client/web");
+    loaded.push("@libsql/client/web");
+  } catch (e) { errors.push(`@libsql/client/web: ${e}`); }
+
+  try {
+    await import("drizzle-orm/libsql");
+    loaded.push("drizzle-orm/libsql");
+  } catch (e) { errors.push(`drizzle-orm/libsql: ${e}`); }
+
+  try {
+    await import("cloudinary");
+    loaded.push("cloudinary");
+  } catch (e) { errors.push(`cloudinary: ${e}`); }
+
+  try {
+    await import("bcryptjs");
+    loaded.push("bcryptjs");
+  } catch (e) { errors.push(`bcryptjs: ${e}`); }
+
+  try {
+    await import("multer");
+    loaded.push("multer");
+  } catch (e) { errors.push(`multer: ${e}`); }
+
+  try {
+    await import("superjson");
+    loaded.push("superjson");
+  } catch (e) { errors.push(`superjson: ${e}`); }
 }
 
-export default function handler(
-  req: IncomingMessage & { query?: Record<string, string | string[]> },
+const initPromise = initApp();
+
+export default async function handler(
+  _req: IncomingMessage,
   res: ServerResponse
 ) {
-  // Vercel injects path segments from the rewrite rule "/api/:path*" → "?path=:path*"
-  // e.g. /api/admin/auth.me  →  req.query.path = "admin/auth.me"
-  const pathSegments = req.query?.path;
-  const pathStr = Array.isArray(pathSegments)
-    ? pathSegments.join("/")
-    : typeof pathSegments === "string"
-    ? pathSegments
-    : "";
-
-  // req.url looks like: /api/server?path=admin%2Fauth.me&batch=1&input=...
-  // Strip the injected "path" param and rebuild as: /api/admin/auth.me?batch=1&input=...
-  const rawUrl = req.url ?? "";
-  const qIdx = rawUrl.indexOf("?");
-  if (qIdx !== -1) {
-    const params = new URLSearchParams(rawUrl.slice(qIdx + 1));
-    params.delete("path");
-    const remaining = params.toString();
-    req.url = `/api/${pathStr}${remaining ? "?" + remaining : ""}`;
-  } else {
-    req.url = `/api/${pathStr}`;
-  }
-
-  if (!app) {
-    res.statusCode = 500;
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({
-      error: "Server initialization failed",
-      detail: String(initError),
-    }));
-    return;
-  }
-
-  // Let Express handle the request
-  (app as any)(req, res);
+  await initPromise;
+  res.statusCode = 200;
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify({ loaded, errors }, null, 2));
 }
