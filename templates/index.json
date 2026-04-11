@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "hero": {
@@ -6,32 +15,41 @@
         "slide1": {
           "type": "slide",
           "settings": {
-            "main_text": "極上の味を\nご自宅で。",
+            "image": "shopify://shop_images/fv_right.png",
+            "main_text": "極上の味をご自宅で。",
             "sub_text": "北海道直送"
           }
         },
         "slide2": {
           "type": "slide",
           "settings": {
-            "main_text": "旬の美味しさを\nお届け",
+            "image": "shopify://shop_images/fv_main_01.png",
+            "main_text": "旬の美味しさをお届け",
             "sub_text": "新鮮直送"
           }
         },
         "slide3": {
           "type": "slide",
           "settings": {
-            "main_text": "大切な方への\n贈り物に",
+            "image": "shopify://shop_images/fv_left.png",
+            "main_text": "大切な方への贈り物に",
             "sub_text": "ギフト対応"
           }
         }
       },
-      "block_order": ["slide1", "slide2", "slide3"]
+      "block_order": [
+        "slide1",
+        "slide2",
+        "slide3"
+      ],
+      "settings": {}
     },
     "ranking": {
       "type": "wg-product-ranking",
       "settings": {
         "subtitle": "当店で売れ筋商品をご紹介！",
         "title": "人気ランキング",
+        "collection": "人気ランキング",
         "products_count": 4
       }
     },
@@ -41,6 +59,9 @@
         "cat1": {
           "type": "category",
           "settings": {
+            "image": "shopify://shop_images/category_crab.png",
+            "collection": "",
+            "url": "",
             "title": "か に",
             "description": "北海道直送の新鮮なカニを\nお届けします"
           }
@@ -48,6 +69,9 @@
         "cat2": {
           "type": "category",
           "settings": {
+            "image": "shopify://shop_images/category_seafood.png",
+            "collection": "",
+            "url": "",
             "title": "魚介類",
             "description": "旬の魚介類を\n産地直送でお届け"
           }
@@ -55,15 +79,23 @@
         "cat3": {
           "type": "category",
           "settings": {
+            "image": "shopify://shop_images/category_processed.png",
+            "collection": "",
+            "url": "",
             "title": "海鮮加工品",
             "description": "こだわりの製法で\n仕上げた加工品"
           }
         }
       },
-      "block_order": ["cat1", "cat2", "cat3"],
+      "block_order": [
+        "cat1",
+        "cat2",
+        "cat3"
+      ],
       "settings": {
         "title": "カテゴリーから選ぶ",
-        "btn_text": "商品一覧を見る"
+        "btn_text": "商品一覧を見る",
+        "all_url": ""
       }
     },
     "purpose": {
@@ -71,46 +103,111 @@
       "blocks": {
         "scene1": {
           "type": "scene_tag",
-          "settings": { "label": "誕生日プレゼント" }
+          "settings": {
+            "label": "誕生日プレゼント",
+            "url": ""
+          }
         },
         "scene2": {
           "type": "scene_tag",
-          "settings": { "label": "内祝い" }
+          "settings": {
+            "label": "内祝い",
+            "url": ""
+          }
         },
         "scene3": {
           "type": "scene_tag",
-          "settings": { "label": "お中元・お歳暮" }
+          "settings": {
+            "label": "お中元・お歳暮",
+            "url": ""
+          }
         },
         "scene4": {
           "type": "scene_tag",
-          "settings": { "label": "お正月・年末年始" }
+          "settings": {
+            "label": "お正月・年末年始",
+            "url": ""
+          }
         },
         "price1": {
           "type": "price_tag",
-          "settings": { "label": "〜5,000円" }
+          "settings": {
+            "label": "〜5,000円",
+            "url": ""
+          }
         },
         "price2": {
           "type": "price_tag",
-          "settings": { "label": "〜10,000円" }
+          "settings": {
+            "label": "〜10,000円",
+            "url": ""
+          }
         },
         "price3": {
           "type": "price_tag",
-          "settings": { "label": "〜15,000円" }
+          "settings": {
+            "label": "〜15,000円",
+            "url": ""
+          }
         },
         "price4": {
           "type": "price_tag",
-          "settings": { "label": "〜20,000円" }
+          "settings": {
+            "label": "〜20,000円",
+            "url": ""
+          }
+        },
+        "serving1": {
+          "type": "serving_tag",
+          "settings": {
+            "label": "1人前",
+            "url": ""
+          }
+        },
+        "serving2": {
+          "type": "serving_tag",
+          "settings": {
+            "label": "2人前",
+            "url": ""
+          }
+        },
+        "serving3": {
+          "type": "serving_tag",
+          "settings": {
+            "label": "3人前",
+            "url": ""
+          }
         },
         "img1": {
           "type": "image_card",
-          "settings": { "label": "贈り物におすすめ" }
+          "settings": {
+            "label": "贈り物におすすめ",
+            "url": ""
+          }
         },
         "img2": {
           "type": "image_card",
-          "settings": { "label": "新商品" }
+          "settings": {
+            "label": "新商品",
+            "url": ""
+          }
         }
       },
-      "block_order": ["scene1", "scene2", "scene3", "scene4", "price1", "price2", "price3", "price4", "img1", "img2"],
+      "block_order": [
+        "scene1",
+        "scene2",
+        "scene3",
+        "scene4",
+        "price1",
+        "price2",
+        "price3",
+        "price4",
+        "serving1",
+        "serving2",
+        "serving3",
+        "img1",
+        "img2"
+      ],
       "settings": {
         "subtitle": "記念日やギフトにぴったり",
         "title": "目的で選ぶ",
@@ -123,6 +220,7 @@
       "settings": {
         "subtitle": "早い者勝ちの大特価！",
         "title": "お買い得品",
+        "collection": "お買い得品",
         "products_count": 4
       }
     },
@@ -131,17 +229,30 @@
       "settings": {
         "subtitle": "旬ならではの美味しさ！",
         "title": "季節のおすすめ",
+        "collection": "季節のおすすめ",
         "products_count": 4
       }
     },
     "featured": {
       "type": "wg-featured",
       "settings": {
+        "image": "shopify://shop_images/03_king-crab-legs-1.2kg_product_01_c53c79ed-96d5-45c5-a3bb-975624a1f26b.jpg",
+        "product": "",
+        "label": "当店イチオシ",
         "title": "当店イチオシ",
         "text": "北海道直送！タラバガニ入荷しました！",
-        "btn_text": "商品を見る"
+        "btn_text": "商品を見る",
+        "btn_url": ""
       }
     }
   },
-  "order": ["hero", "ranking", "category", "purpose", "sale", "seasonal", "featured"]
+  "order": [
+    "hero",
+    "ranking",
+    "category",
+    "purpose",
+    "sale",
+    "seasonal",
+    "featured"
+  ]
 }

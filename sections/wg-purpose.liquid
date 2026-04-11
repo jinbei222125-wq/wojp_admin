@@ -51,6 +51,20 @@
             </div>
           </div>
 
+          {%- comment %} 人数で探す {%- endcomment %}
+          <div class="wg-purpose__filter-group">
+            <p class="wg-purpose__filter-label">{{ section.settings.serving_label }}</p>
+            <div class="wg-purpose__tags">
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'serving_tag' -%}
+                  <a href="{{ block.settings.url | default: '#' }}" class="wg-purpose__tag" {{ block.shopify_attributes }}>
+                    {{ block.settings.label }}
+                  </a>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          </div>
+
         </div>
 
         {%- comment %} 右側：画像カード {%- endcomment %}
@@ -120,6 +134,23 @@
       ]
     },
     {
+      "type": "serving_tag",
+      "name": "人数タグ",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "タグ名",
+          "default": "1人前"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "リンク先"
+        }
+      ]
+    },
+    {
       "type": "image_card",
       "name": "画像カード",
       "settings": [
@@ -166,6 +197,12 @@
       "id": "price_label",
       "label": "価格フィルターのラベル",
       "default": "価格で探す"
+    },
+    {
+      "type": "text",
+      "id": "serving_label",
+      "label": "人数フィルターのラベル",
+      "default": "人数で探す"
     }
   ],
   "presets": [
@@ -181,6 +218,9 @@
         { "type": "price_tag", "settings": { "label": "〜10,000円" } },
         { "type": "price_tag", "settings": { "label": "〜15,000円" } },
         { "type": "price_tag", "settings": { "label": "〜20,000円" } },
+        { "type": "serving_tag", "settings": { "label": "1人前" } },
+        { "type": "serving_tag", "settings": { "label": "2人前" } },
+        { "type": "serving_tag", "settings": { "label": "3人前" } },
         { "type": "image_card", "settings": { "label": "初めての方におすすめ" } },
         { "type": "image_card", "settings": { "label": "新商品" } }
       ]

@@ -193,4 +193,27 @@ document.addEventListener('DOMContentLoaded', function () {
     observer.observe(el);
   });
 
+  // ============================================
+  // Product Gallery Thumbnail Switcher
+  // ============================================
+  const productMainImg = document.getElementById('product-main-img');
+  const thumbBtns = document.querySelectorAll('.wg-product-gallery__thumb-btn');
+
+  if (productMainImg && thumbBtns.length > 0) {
+    thumbBtns.forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        const newSrc = this.dataset.src;
+        if (!newSrc) return;
+
+        // メイン画像を切り替え
+        productMainImg.src = newSrc;
+
+        // アクティブ状態を更新
+        thumbBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  }
+
 });

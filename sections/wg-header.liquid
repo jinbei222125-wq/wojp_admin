@@ -36,15 +36,11 @@
 
     <div class="wg-header__top">
       <a href="{{ routes.root_url }}" class="wg-header__logo">
-        {%- if section.settings.logo != blank -%}
-          <img
-            src="{{ section.settings.logo | image_url: width: 200 }}"
-            alt="{{ shop.name | escape }}"
-            width="200"
-            height="auto">
-        {%- else -%}
-          {{ shop.name }}
-        {%- endif -%}
+        <img
+          src="{{ 'kamuy_logo_PC.png' | asset_url }}"
+          alt="{{ shop.name | escape }}"
+          width="200"
+          height="auto">
       </a>
 
       <div class="wg-header__actions">

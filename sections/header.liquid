@@ -4,17 +4,13 @@
     <!-- ロゴ -->
     <div class="header__logo">
       <a href="{{ routes.root_url }}" class="header__logo-link">
-        {%- if section.settings.logo != blank -%}
-          <img
-            src="{{ section.settings.logo | img_url: '200x' }}"
-            alt="{{ section.settings.logo.alt | default: shop.name }}"
-            class="header__logo-img"
-            width="{{ section.settings.logo_width }}"
-            loading="eager"
-          >
-        {%- else -%}
-          <span class="header__logo-text">{{ shop.name }}</span>
-        {%- endif -%}
+        <img
+          src="{{ 'kamuy_logo_PC.png' | asset_url }}"
+          alt="{{ shop.name }}"
+          class="header__logo-img"
+          width="{{ section.settings.logo_width | default: 200 }}"
+          loading="eager"
+        >
       </a>
     </div>
 
