@@ -32,6 +32,7 @@ var newsCategories = sqliteTable("news_categories", {
   id: integer("id").generatedAlwaysAs(sql`rowid`).notNull(),
   name: text("name").notNull().unique(),
   slug: text("slug").notNull().unique(),
+  color: text("color").notNull().default("#6B7280"),
   sortOrder: integer("sortOrder").notNull().default(0),
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date()),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => /* @__PURE__ */ new Date())
@@ -356,6 +357,7 @@ var HttpError = class extends Error {
     this.statusCode = statusCode;
     this.name = "HttpError";
   }
+  statusCode;
 };
 var ForbiddenError = (msg) => new HttpError(403, msg);
 
@@ -395,6 +397,7 @@ var OAuthService = class {
       );
     }
   }
+  client;
   decodeState(state) {
     const redirectUri = atob(state);
     return redirectUri;
@@ -1383,12 +1386,14 @@ var categoryRouter = t3.router({
     z3.object({
       name: z3.string().min(1, "\u30AB\u30C6\u30B4\u30EA\u540D\u306F\u5FC5\u9808\u3067\u3059").max(50),
       slug: z3.string().min(1, "\u30B9\u30E9\u30C3\u30B0\u306F\u5FC5\u9808\u3067\u3059").max(50).regex(/^[a-z0-9-]+$/, "\u30B9\u30E9\u30C3\u30B0\u306F\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\u30CF\u30A4\u30D5\u30F3\u306E\u307F\u4F7F\u7528\u3067\u304D\u307E\u3059"),
+      color: z3.string().regex(/^#[0-9A-Fa-f]{6}$/, "\u6709\u52B9\u306A\u30AB\u30E9\u30FC\u30B3\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044").default("#6B7280"),
       sortOrder: z3.number().int().default(0)
     })
   ).mutation(async ({ input }) => {
     await createNewsCategory({
       name: input.name,
       slug: input.slug,
+      color: input.color,
       sortOrder: input.sortOrder
     });
     return { success: true };
@@ -1399,6 +1404,7 @@ var categoryRouter = t3.router({
       id: z3.number().int(),
       name: z3.string().min(1).max(50).optional(),
       slug: z3.string().min(1).max(50).regex(/^[a-z0-9-]+$/).optional(),
+      color: z3.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
       sortOrder: z3.number().int().optional()
     })
   ).mutation(async ({ input }) => {
