@@ -1,0 +1,141 @@
+{% comment %}
+  WinGrow 検索ページ
+  - 検索フォーム / よく検索されるキーワード / 検索結果（商品・記事）
+{% endcomment %}
+
+<div class="wg-site">
+  <section class="wg-search">
+    <div class="wg-container">
+
+      <nav class="wg-breadcrumb" aria-label="パンくずリスト">
+        <ol class="wg-breadcrumb__list">
+          <li class="wg-breadcrumb__item">
+            <a href="{{ routes.root_url }}" class="wg-breadcrumb__link">トップページ</a>
+          </li>
+          <li class="wg-breadcrumb__item wg-breadcrumb__item--current">商品を探す</li>
+        </ol>
+      </nav>
+
+      <div class="wg-search__hero">
+        <div class="wg-section-header">
+          <p class="wg-section-subtitle">Search</p>
+          <h1 class="wg-section-title">商品を探す</h1>
+        </div>
+        <form action="{{ routes.search_url }}" method="get" role="search" class="wg-search__form">
+          <div class="wg-search__input-wrap">
+            <input type="search" name="q" value="{{ search.terms | escape }}"
+                   placeholder="キーワードを入力（例：ズワイガニ、海鮮丼）"
+                   class="wg-search__input" aria-label="検索キーワード" autofocus>
+            <input type="hidden" name="type" value="product,article">
+            <button type="submit" class="wg-search__submit" aria-label="検索">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              検索
+            </button>
+          </div>
+        </form>
+        <div class="wg-search__popular">
+          <span class="wg-search__popular-label">よく検索されるキーワード：</span>
+          <a href="{{ routes.search_url }}?q=ズワイガニ&type=product" class="wg-search__popular-tag">ズワイガニ</a>
+          <a href="{{ routes.search_url }}?q=毛ガニ&type=product" class="wg-search__popular-tag">毛ガニ</a>
+          <a href="{{ routes.search_url }}?q=いくら&type=product" class="wg-search__popular-tag">いくら</a>
+          <a href="{{ routes.search_url }}?q=海鮮丼&type=product" class="wg-search__popular-tag">海鮮丼</a>
+          <a href="{{ routes.search_url }}?q=ギフト&type=product" class="wg-search__popular-tag">ギフト</a>
+        </div>
+      </div>
+
+      {%- if search.performed -%}
+        <div class="wg-search__results">
+          {%- if search.results_count > 0 -%}
+            <p class="wg-search__results-count">
+              「{{ search.terms }}」の検索結果：{{ search.results_count }}件
+            </p>
+
+            {%- paginate search.results by section.settings.results_per_page -%}
+              <div class="wg-product-grid">
+                {%- for item in search.results -%}
+                  {%- if item.object_type == 'product' -%}
+                    {% render 'wg-product-card', product: item, show_off_badge: true %}
+                  {%- elsif item.object_type == 'article' -%}
+                    <div class="wg-search__article-card">
+                      <a href="{{ item.url }}" class="wg-search__article-link">
+                        <span class="wg-search__article-badge">お知らせ</span>
+                        <span class="wg-search__article-date">{{ item.published_at | date: '%Y.%m.%d' }}</span>
+                        <span class="wg-search__article-title">{{ item.title }}</span>
+                      </a>
+                    </div>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+
+              {%- if paginate.pages > 1 -%}
+                <nav class="wg-pagination" aria-label="ページネーション">
+                  <ul class="wg-pagination__list">
+                    {%- if paginate.previous -%}
+                      <li class="wg-pagination__item">
+                        <a href="{{ paginate.previous.url }}" class="wg-pagination__link wg-pagination__link--prev" aria-label="前のページ">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+                        </a>
+                      </li>
+                    {%- endif -%}
+                    {%- for part in paginate.parts -%}
+                      <li class="wg-pagination__item">
+                        {%- if part.is_link -%}
+                          <a href="{{ part.url }}" class="wg-pagination__link">{{ part.title }}</a>
+                        {%- elsif part.title == paginate.current_page -%}
+                          <span class="wg-pagination__link wg-pagination__link--current">{{ part.title }}</span>
+                        {%- else -%}
+                          <span class="wg-pagination__link wg-pagination__link--ellipsis">{{ part.title }}</span>
+                        {%- endif -%}
+                      </li>
+                    {%- endfor -%}
+                    {%- if paginate.next -%}
+                      <li class="wg-pagination__item">
+                        <a href="{{ paginate.next.url }}" class="wg-pagination__link wg-pagination__link--next" aria-label="次のページ">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+                        </a>
+                      </li>
+                    {%- endif -%}
+                  </ul>
+                </nav>
+              {%- endif -%}
+            {%- endpaginate -%}
+
+          {%- else -%}
+            <div class="wg-empty-state">
+              <p class="wg-empty-state__text">「{{ search.terms }}」に一致する商品・記事が見つかりませんでした。</p>
+              <p class="wg-empty-state__hint">別のキーワードで検索するか、商品一覧をご覧ください。</p>
+              <a href="{{ routes.all_products_collection_url }}" class="wg-btn-navy">
+                全商品を見る
+                <span class="wg-btn-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </span>
+              </a>
+            </div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+    </div>
+  </section>
+</div>
+
+{% schema %}
+{
+  "name": "WG 検索ページ",
+  "settings": [
+    {
+      "type": "range",
+      "id": "results_per_page",
+      "label": "1ページの表示件数",
+      "min": 4,
+      "max": 24,
+      "step": 4,
+      "default": 12
+    }
+  ]
+}
+{% endschema %}

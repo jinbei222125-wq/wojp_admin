@@ -1,0 +1,707 @@
+{% comment %}
+  ゴールド会員プランページ
+  - 月額500円のゴールド会員プランの説明
+  - 会員特典（会員価格・卸値での購入）
+  - サブスク申し込みボタン（Mikawaya Subscription連携）
+  - ログイン済み会員向けの状態表示
+{% endcomment %}
+
+<style>
+  /* ゴールド会員プランページ スタイル */
+  .wg-member-plan {
+    padding: 3rem 0 5rem;
+  }
+  .wg-member-plan__hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    text-align: center;
+    padding: 4rem 1.5rem;
+    margin-bottom: 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .wg-member-plan__hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .wg-member-plan__hero-emblem {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1.25rem;
+    display: block;
+  }
+  .wg-member-plan__hero-title {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900;
+    color: #d4af37;
+    margin: 0 0 0.75rem;
+    letter-spacing: 0.05em;
+  }
+  .wg-member-plan__hero-subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: rgba(255,255,255,0.85);
+    margin: 0;
+  }
+
+  /* プランカード */
+  .wg-member-plan__cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+  @media (max-width: 768px) {
+    .wg-member-plan__cards {
+      grid-template-columns: 1fr;
+    }
+  }
+  .wg-plan-card {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  }
+  .wg-plan-card--free {
+    border: 2px solid #e0e0dc;
+  }
+  .wg-plan-card--gold {
+    border: 2px solid #d4af37;
+    position: relative;
+  }
+  .wg-plan-card--gold::before {
+    content: 'おすすめ';
+    position: absolute;
+    top: 0;
+    right: 1.5rem;
+    background: #d4af37;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0 0 8px 8px;
+  }
+  .wg-plan-card__header {
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .wg-plan-card--free .wg-plan-card__header {
+    background: #f5f5f0;
+  }
+  .wg-plan-card--gold .wg-plan-card__header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+    color: #fff;
+  }
+  .wg-plan-card__name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .wg-plan-card--gold .wg-plan-card__name {
+    color: #d4af37;
+  }
+  .wg-plan-card__name-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  .wg-plan-card__price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.25rem;
+  }
+  .wg-plan-card__price-num {
+    font-size: 2.5rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .wg-plan-card--gold .wg-plan-card__price-num {
+    color: #d4af37;
+  }
+  .wg-plan-card__price-unit {
+    font-size: 0.9rem;
+    opacity: 0.7;
+  }
+  .wg-plan-card__body {
+    padding: 1.5rem;
+    background: #fff;
+  }
+  .wg-plan-card__features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+  }
+  .wg-plan-card__features li {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #f0f0ec;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .wg-plan-card__features li:last-child {
+    border-bottom: none;
+  }
+  .wg-plan-card__features .check {
+    color: #2ecc71;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .wg-plan-card__features .cross {
+    color: #ccc;
+    flex-shrink: 0;
+  }
+  .wg-plan-card__cta {
+    display: block;
+    width: 100%;
+    padding: 0.875rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s;
+  }
+  .wg-plan-card__cta:hover {
+    opacity: 0.85;
+  }
+  .wg-plan-card--free .wg-plan-card__cta {
+    background: #f0f0ec;
+    color: #666;
+    border: 2px solid #e0e0dc;
+  }
+  .wg-plan-card--gold .wg-plan-card__cta {
+    background: linear-gradient(135deg, #d4af37 0%, #f0c040 100%);
+    color: #1a1a2e;
+  }
+  .wg-plan-card__cta--current {
+    background: #e8f5e9 !important;
+    color: #2e7d32 !important;
+    border: 2px solid #a5d6a7 !important;
+    cursor: default;
+  }
+
+  /* 特典詳細セクション */
+  .wg-member-plan__benefits {
+    background: #fdf9f0;
+    border: 1px solid #e8d98a;
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+  }
+  .wg-member-plan__benefits-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1a1a2e;
+    text-align: center;
+    margin: 0 0 2rem;
+  }
+  .wg-member-plan__benefits-title span {
+    color: #d4af37;
+  }
+  .wg-member-plan__benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  @media (max-width: 768px) {
+    .wg-member-plan__benefits-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .wg-benefit-item {
+    text-align: center;
+  }
+  .wg-benefit-item__icon-wrap {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d4af37 0%, #f0c040 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+  }
+  .wg-benefit-item__icon-wrap svg {
+    width: 32px;
+    height: 32px;
+    fill: #1a1a2e;
+  }
+  .wg-benefit-item__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 0.5rem;
+  }
+  .wg-benefit-item__desc {
+    font-size: 0.875rem;
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* 価格比較テーブル */
+  .wg-member-plan__compare {
+    margin-bottom: 3rem;
+  }
+  .wg-member-plan__compare-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1a1a2e;
+    text-align: center;
+    margin: 0 0 1.5rem;
+  }
+  .wg-compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .wg-compare-table th {
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+  .wg-compare-table th:first-child {
+    background: #f5f5f0;
+    color: #666;
+    text-align: left;
+  }
+  .wg-compare-table th:nth-child(2) {
+    background: #f5f5f0;
+    color: #333;
+  }
+  .wg-compare-table th:nth-child(3) {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+    color: #d4af37;
+  }
+  .wg-compare-table td {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid #f0f0ec;
+    font-size: 0.9rem;
+  }
+  .wg-compare-table td:first-child {
+    font-weight: 600;
+    color: #333;
+  }
+  .wg-compare-table td:nth-child(2),
+  .wg-compare-table td:nth-child(3) {
+    text-align: center;
+  }
+  .wg-compare-table td:nth-child(3) {
+    background: #fdf9f0;
+    font-weight: 700;
+    color: #c8102e;
+  }
+  .wg-compare-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* FAQ */
+  .wg-member-plan__faq {
+    margin-bottom: 3rem;
+  }
+  .wg-member-plan__faq-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1a1a2e;
+    text-align: center;
+    margin: 0 0 1.5rem;
+  }
+  .wg-faq-item {
+    border: 1px solid #e0e0dc;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+  }
+  .wg-faq-item__q {
+    padding: 1rem 1.25rem;
+    background: #f5f5f0;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #1a1a2e;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .wg-faq-item__q-icon {
+    color: #d4af37;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .wg-faq-item__a {
+    padding: 1rem 1.25rem;
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.7;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .wg-faq-item__a-icon {
+    color: #2ecc71;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+
+  /* CTA セクション */
+  .wg-member-plan__cta-section {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #fff;
+  }
+  .wg-member-plan__cta-title {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 900;
+    color: #d4af37;
+    margin: 0 0 0.75rem;
+  }
+  .wg-member-plan__cta-desc {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.85);
+    margin: 0 0 2rem;
+  }
+  .wg-member-plan__cta-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #d4af37 0%, #f0c040 100%);
+    color: #1a1a2e;
+    font-size: 1.1rem;
+    font-weight: 800;
+    padding: 1rem 3rem;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 16px rgba(212,175,55,0.4);
+    letter-spacing: 0.03em;
+  }
+  .wg-member-plan__cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(212,175,55,0.5);
+  }
+  .wg-member-plan__cta-note {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+    margin: 1rem 0 0;
+  }
+
+  /* 会員済みバナー */
+  .wg-member-plan__already-member {
+    background: #e8f5e9;
+    border: 2px solid #a5d6a7;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .wg-member-plan__already-member-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2e7d32;
+    margin: 0 0 0.5rem;
+  }
+  .wg-member-plan__already-member-desc {
+    font-size: 0.9rem;
+    color: #555;
+    margin: 0 0 1rem;
+  }
+  .wg-member-plan__already-member-btn {
+    display: inline-block;
+    background: #2e7d32;
+    color: #fff;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+</style>
+
+{%- liquid
+  assign is_member = false
+  if customer and customer.tags contains 'GoldMember'
+    assign is_member = true
+  endif
+-%}
+
+<div class="wg-site">
+<section class="wg-member-plan" id="GoldMemberPlan">
+
+  <!-- ヒーローバナー -->
+  <div class="wg-member-plan__hero">
+    <!-- ゴールドクラウン SVGアイコン -->
+    <svg class="wg-member-plan__hero-emblem" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M8 44 L12 20 L24 32 L32 12 L40 32 L52 20 L56 44 Z" fill="#d4af37"/>
+      <rect x="8" y="46" width="48" height="6" rx="3" fill="#d4af37"/>
+      <circle cx="12" cy="20" r="4" fill="#f0c040"/>
+      <circle cx="32" cy="12" r="4" fill="#f0c040"/>
+      <circle cx="52" cy="20" r="4" fill="#f0c040"/>
+    </svg>
+    <h1 class="wg-member-plan__hero-title">ゴールド会員プラン</h1>
+    <p class="wg-member-plan__hero-subtitle">月額500円で、全商品が会員価格（卸値）に。北海道の海の幸をもっとお得に。</p>
+  </div>
+
+  <div class="wg-container">
+
+    <!-- 会員済みの場合のバナー -->
+    {%- if is_member -%}
+      <div class="wg-member-plan__already-member">
+        <p class="wg-member-plan__already-member-title">ゴールド会員として登録済みです</p>
+        <p class="wg-member-plan__already-member-desc">全商品が会員価格（卸値）でご購入いただけます。引き続きお得にお買い物をお楽しみください。</p>
+        <a href="/collections/all" class="wg-member-plan__already-member-btn">商品を見る</a>
+      </div>
+    {%- endif -%}
+
+    <!-- プランカード比較 -->
+    <div class="wg-member-plan__cards">
+      <!-- 無料会員 -->
+      <div class="wg-plan-card wg-plan-card--free">
+        <div class="wg-plan-card__header">
+          <p class="wg-plan-card__name">無料会員</p>
+          <div class="wg-plan-card__price">
+            <span class="wg-plan-card__price-num">¥0</span>
+            <span class="wg-plan-card__price-unit">/ 月</span>
+          </div>
+        </div>
+        <div class="wg-plan-card__body">
+          <ul class="wg-plan-card__features">
+            <li><span class="check">✓</span> 会員登録・ログイン</li>
+            <li><span class="check">✓</span> 購入履歴の確認</li>
+            <li><span class="check">✓</span> 通常価格での購入</li>
+            <li><span class="cross">✗</span> <span style="color:#999">会員価格（卸値）での購入</span></li>
+            <li><span class="cross">✗</span> <span style="color:#999">全商品の割引適用</span></li>
+          </ul>
+          {%- if customer -%}
+            {%- if is_member -%}
+              <span class="wg-plan-card__cta wg-plan-card__cta--current">現在のプラン</span>
+            {%- else -%}
+              <span class="wg-plan-card__cta wg-plan-card__cta--current">現在のプラン</span>
+            {%- endif -%}
+          {%- else -%}
+            <a href="/account/register" class="wg-plan-card__cta">無料で会員登録</a>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <!-- ゴールド会員 -->
+      <div class="wg-plan-card wg-plan-card--gold">
+        <div class="wg-plan-card__header">
+          <p class="wg-plan-card__name">
+            <!-- クラウンSVG（小） -->
+            <svg class="wg-plan-card__name-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M2 14 L4 6 L8 10 L10 3 L12 10 L16 6 L18 14 Z" fill="#d4af37"/>
+              <rect x="2" y="15" width="16" height="2" rx="1" fill="#d4af37"/>
+            </svg>
+            ゴールド会員
+          </p>
+          <div class="wg-plan-card__price">
+            <span class="wg-plan-card__price-num">¥500</span>
+            <span class="wg-plan-card__price-unit">/ 月（税込）</span>
+          </div>
+        </div>
+        <div class="wg-plan-card__body">
+          <ul class="wg-plan-card__features">
+            <li><span class="check">✓</span> 会員登録・ログイン</li>
+            <li><span class="check">✓</span> 購入履歴の確認</li>
+            <li><span class="check">✓</span> 通常価格での購入</li>
+            <li><span class="check">✓</span> <strong>会員価格（卸値）での購入</strong></li>
+            <li><span class="check">✓</span> <strong>全商品の割引適用</strong></li>
+          </ul>
+          {%- if is_member -%}
+            <span class="wg-plan-card__cta wg-plan-card__cta--current">現在のプラン</span>
+          {%- elsif customer -%}
+            {%- comment %} ログイン済み非会員 → CTAセクションへスクロール {%- endcomment %}
+            <a href="#subscription-form" class="wg-plan-card__cta">今すぐ申し込む</a>
+          {%- else -%}
+            {%- comment %} 未ログイン → アカウント登録へ {%- endcomment %}
+            <a href="/account/register?return_url=/pages/gold-member" class="wg-plan-card__cta">会員登録して申し込む</a>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+
+    <!-- 特典詳細 -->
+    <div class="wg-member-plan__benefits">
+      <h2 class="wg-member-plan__benefits-title">ゴールド会員の<span>3つの特典</span></h2>
+      <div class="wg-member-plan__benefits-grid">
+
+        <!-- 特典1: 会員価格 -->
+        <div class="wg-benefit-item">
+          <div class="wg-benefit-item__icon-wrap">
+            <!-- タグ／値引きアイコン -->
+            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M4 4h10l14 14-10 10L4 14V4zm6 4a2 2 0 100 4 2 2 0 000-4z"/>
+            </svg>
+          </div>
+          <p class="wg-benefit-item__title">全商品が会員価格</p>
+          <p class="wg-benefit-item__desc">通常価格より大幅にお得な卸値価格で全商品をご購入いただけます。月額500円以上の節約が可能です。</p>
+        </div>
+
+        <!-- 特典2: 北海道直送 -->
+        <div class="wg-benefit-item">
+          <div class="wg-benefit-item__icon-wrap">
+            <!-- 配送ボックスアイコン -->
+            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M2 10l14-6 14 6v12l-14 6L2 22V10zm14-3L6 11l10 4 10-4-10-4zM4 13v7l11 5V18L4 13zm14 12l11-5v-7l-11 5v7z"/>
+            </svg>
+          </div>
+          <p class="wg-benefit-item__title">北海道直送の新鮮食材</p>
+          <p class="wg-benefit-item__desc">タラバガニ・ズワイガニ・紅鮭など、北海道から直送する新鮮な海産物をお得な価格でお届けします。</p>
+        </div>
+
+        <!-- 特典3: いつでも解約 -->
+        <div class="wg-benefit-item">
+          <div class="wg-benefit-item__icon-wrap">
+            <!-- シールド／安心アイコン -->
+            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M16 2L4 7v9c0 7 5.4 13.5 12 15 6.6-1.5 12-8 12-15V7L16 2zm-2 18l-4-4 1.4-1.4L14 17.2l6.6-6.6L22 12l-8 8z"/>
+            </svg>
+          </div>
+          <p class="wg-benefit-item__title">いつでも解約可能</p>
+          <p class="wg-benefit-item__desc">月額サブスクリプションのため、いつでも解約できます。縛りなしで安心してご利用いただけます。</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 価格比較テーブル -->
+    <div class="wg-member-plan__compare">
+      <h2 class="wg-member-plan__compare-title">通常価格 vs 会員価格 比較例</h2>
+      <table class="wg-compare-table">
+        <thead>
+          <tr>
+            <th>商品名</th>
+            <th>通常価格</th>
+            <th>会員価格</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ズワイガニ 姿（800g）</td>
+            <td>¥8,000</td>
+            <td>¥5,000（¥3,000 お得）</td>
+          </tr>
+          <tr>
+            <td>定塩紅鮭フィーレ 7切（800g）</td>
+            <td>¥3,500</td>
+            <td>¥500（¥3,000 お得）</td>
+          </tr>
+          <tr>
+            <td>タラバガニ シュリンク</td>
+            <td>¥9,000</td>
+            <td>¥6,000（¥3,000 お得）</td>
+          </tr>
+          <tr>
+            <td>ズワイガニ セクション【2kg】</td>
+            <td>¥17,000</td>
+            <td>¥14,000（¥3,000 お得）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FAQ -->
+    <div class="wg-member-plan__faq">
+      <h2 class="wg-member-plan__faq-title">よくあるご質問</h2>
+
+      <div class="wg-faq-item">
+        <div class="wg-faq-item__q">
+          <span class="wg-faq-item__q-icon">Q</span>
+          <span>ゴールド会員の料金はいくらですか？</span>
+        </div>
+        <div class="wg-faq-item__a">
+          <span class="wg-faq-item__a-icon">A</span>
+          <span>月額500円（税込）です。毎月自動更新のサブスクリプション形式となります。</span>
+        </div>
+      </div>
+
+      <div class="wg-faq-item">
+        <div class="wg-faq-item__q">
+          <span class="wg-faq-item__q-icon">Q</span>
+          <span>いつでも解約できますか？</span>
+        </div>
+        <div class="wg-faq-item__a">
+          <span class="wg-faq-item__a-icon">A</span>
+          <span>はい、いつでも解約できます。解約後は次回更新日以降、会員価格の適用が終了します。解約はマイページから手続きいただけます。</span>
+        </div>
+      </div>
+
+      <div class="wg-faq-item">
+        <div class="wg-faq-item__q">
+          <span class="wg-faq-item__q-icon">Q</span>
+          <span>会員価格はすべての商品に適用されますか？</span>
+        </div>
+        <div class="wg-faq-item__a">
+          <span class="wg-faq-item__a-icon">A</span>
+          <span>はい、当店で販売しているすべての商品に会員価格（卸値）が適用されます。</span>
+        </div>
+      </div>
+
+      <div class="wg-faq-item">
+        <div class="wg-faq-item__q">
+          <span class="wg-faq-item__q-icon">Q</span>
+          <span>申し込みに必要なものはありますか？</span>
+        </div>
+        <div class="wg-faq-item__a">
+          <span class="wg-faq-item__a-icon">A</span>
+          <span>当店のアカウント（無料会員登録）と、クレジットカードが必要です。まだ会員登録がお済みでない方は、先に無料会員登録をお済ませください。</span>
+        </div>
+      </div>
+
+      <div class="wg-faq-item">
+        <div class="wg-faq-item__q">
+          <span class="wg-faq-item__q-icon">Q</span>
+          <span>申し込み後、すぐに会員価格で購入できますか？</span>
+        </div>
+        <div class="wg-faq-item__a">
+          <span class="wg-faq-item__a-icon">A</span>
+          <span>はい、お申し込み・お支払い確認後、すぐに会員価格が適用されます。</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTAセクション -->
+    {%- unless is_member -%}
+      <div class="wg-member-plan__cta-section" id="subscription-form">
+        <h2 class="wg-member-plan__cta-title">今すぐゴールド会員になる</h2>
+        <p class="wg-member-plan__cta-desc">月額500円で、北海道の海の幸を会員価格でお楽しみください。</p>
+        {%- if customer -%}
+          {%- comment %} ログイン済み非会員 → サブスク商品ページへ {%- endcomment %}
+          <a href="/products/gold-member-subscription" class="wg-member-plan__cta-btn">
+            ゴールド会員に申し込む（月額500円）
+          </a>
+          <p class="wg-member-plan__cta-note">※ クレジットカード決済のみ対応。いつでも解約可能です。</p>
+        {%- else -%}
+          <a href="/account/register?return_url=/pages/gold-member" class="wg-member-plan__cta-btn">
+            まず無料会員登録をする
+          </a>
+          <p class="wg-member-plan__cta-note">すでにアカウントをお持ちの方は <a href="/account/login?return_url=/pages/gold-member" style="color:#d4af37">こちらからログイン</a></p>
+        {%- endif -%}
+      </div>
+    {%- endunless -%}
+
+  </div>
+</section>
+</div>
+
+{% schema %}
+{
+  "name": "ゴールド会員プラン",
+  "tag": "section",
+  "class": "section-gold-member"
+}
+{% endschema %}

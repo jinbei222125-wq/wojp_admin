@@ -99,10 +99,12 @@
               </div>
               {%- if current_variant.compare_at_price > current_variant.price -%}
                 <div class="wg-price-block__member-teaser">
-                  <span class="wg-price-block__member-teaser-icon">👑</span>
+                  <span class="wg-price-block__member-teaser-icon">
+                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 14 L4 6 L8 10 L10 3 L12 10 L16 6 L18 14 Z" fill="#d4af37"/><rect x="2" y="15" width="16" height="2" rx="1" fill="#d4af37"/></svg>
+                  </span>
                   <span class="wg-price-block__member-teaser-text">会員価格</span>
                   <span class="wg-price-block__member-teaser-price">{{ member_price | money }}</span>
-                  <a href="/account/register" class="wg-price-block__member-teaser-link">会員登録はこちら</a>
+                  <a href="/pages/gold-member" class="wg-price-block__member-teaser-link">会員プランを見る</a>
                 </div>
               {%- endif -%}
             </div>

@@ -1,0 +1,751 @@
+{% comment %}
+  WinGrow ご利用ガイドページ
+  - ご注文の流れ
+  - 配送・支払い情報（佐川急便 / 送料2,500円 / 10,000円以上無料 / 沖縄離島+2,000円）
+  - 銀行振込先 / 代引き手数料
+  - よくある質問（28項目・カテゴリー別）
+  ※ 2026-03 【追加ヒアリングシート】に基づき内容精査済み
+{% endcomment %}
+
+<style>
+  /* ご利用ガイド 追加スタイル */
+  .wg-guide__payment-detail {
+    margin: 3rem 0;
+  }
+  .wg-guide__payment-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 768px) {
+    .wg-guide__payment-detail-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .wg-guide__payment-box {
+    background: #fff;
+    border: 1px solid #e0e0dc;
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+  .wg-guide__payment-box-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #c8102e;
+  }
+  .wg-guide__bank-table,
+  .wg-guide__cod-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .wg-guide__bank-table th,
+  .wg-guide__bank-table td,
+  .wg-guide__cod-table th,
+  .wg-guide__cod-table td {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e0e0dc;
+    text-align: left;
+  }
+  .wg-guide__bank-table th,
+  .wg-guide__cod-table th {
+    background: #f8f6f0;
+    font-weight: 600;
+    white-space: nowrap;
+    width: 35%;
+  }
+  .wg-guide__cod-table thead th {
+    background: #2c3e50;
+    color: #fff;
+    text-align: center;
+  }
+  .wg-guide__cod-table td {
+    text-align: center;
+  }
+  .wg-guide__bank-note {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0.75rem 0 0;
+  }
+
+  /* FAQカテゴリー */
+  .wg-faq-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .wg-faq-category__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    background: #1a4a3a;
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    margin: 0 0 0.75rem;
+  }
+  .wg-faq-list--admin {
+    margin-top: 1rem;
+  }
+</style>
+
+<div class="wg-site">
+  <section class="wg-guide">
+    <div class="wg-container">
+
+      <nav class="wg-breadcrumb" aria-label="パンくずリスト">
+        <ol class="wg-breadcrumb__list">
+          <li class="wg-breadcrumb__item">
+            <a href="{{ routes.root_url }}" class="wg-breadcrumb__link">トップページ</a>
+          </li>
+          <li class="wg-breadcrumb__item wg-breadcrumb__item--current">ご利用ガイド</li>
+        </ol>
+      </nav>
+
+      <div class="wg-section-header">
+        <p class="wg-section-subtitle">Shopping Guide</p>
+        <h1 class="wg-section-title">ご利用ガイド</h1>
+      </div>
+
+      {%- comment %} ご注文の流れ {%- endcomment %}
+      <div class="wg-guide__flow">
+        <h2 class="wg-guide__section-title">ご注文の流れ</h2>
+        <div class="wg-guide__steps">
+          <div class="wg-guide__step">
+            <div class="wg-guide__step-num">01</div>
+            <div class="wg-guide__step-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </div>
+            <h3 class="wg-guide__step-title">商品を選ぶ</h3>
+            <p class="wg-guide__step-text">商品ページから気に入った商品をお選びください。</p>
+          </div>
+          <div class="wg-guide__step-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+          <div class="wg-guide__step">
+            <div class="wg-guide__step-num">02</div>
+            <div class="wg-guide__step-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              </svg>
+            </div>
+            <h3 class="wg-guide__step-title">カートに入れる</h3>
+            <p class="wg-guide__step-text">数量を選んでカートに追加します。</p>
+          </div>
+          <div class="wg-guide__step-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+          <div class="wg-guide__step">
+            <div class="wg-guide__step-num">03</div>
+            <div class="wg-guide__step-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+              </svg>
+            </div>
+            <h3 class="wg-guide__step-title">お客様情報入力</h3>
+            <p class="wg-guide__step-text">お届け先・お支払い情報を入力します。</p>
+          </div>
+          <div class="wg-guide__step-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+          <div class="wg-guide__step">
+            <div class="wg-guide__step-num">04</div>
+            <div class="wg-guide__step-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+                <rect x="1" y="3" width="15" height="13"/>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+            </div>
+            <h3 class="wg-guide__step-title">発送・お届け</h3>
+            <p class="wg-guide__step-text">ご注文から5〜6日後にお届けいたします。</p>
+          </div>
+        </div>
+      </div>
+
+      {%- comment %} 配送・支払い情報カード {%- endcomment %}
+      <div class="wg-guide__info-grid">
+
+        <div class="wg-guide__info-card">
+          <div class="wg-guide__info-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22">
+              <rect x="1" y="3" width="15" height="13"/>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+          </div>
+          <h3 class="wg-guide__info-title">配送について</h3>
+          <ul class="wg-guide__info-list">
+            <li>配送業者：佐川急便（クール冷凍便）</li>
+            <li>お届け目安：ご注文から5〜6日後</li>
+            <li>送料：全国一律 2,500円（税込）</li>
+            <li>10,000円以上のご購入で送料無料</li>
+            <li>沖縄・離島：別途 2,000円加算</li>
+          </ul>
+        </div>
+
+        <div class="wg-guide__info-card">
+          <div class="wg-guide__info-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+          </div>
+          <h3 class="wg-guide__info-title">お支払い方法</h3>
+          <ul class="wg-guide__info-list">
+            <li>クレジットカード（VISA / Master / AMEX / JCB）</li>
+            <li>Apple Pay / Google Pay</li>
+            <li>Amazon Pay</li>
+            <li>楽天ペイ / PayPay / PayPal</li>
+            <li>代金引換 / 銀行振込</li>
+            <li>コンビニ払い / 後払い決済</li>
+          </ul>
+        </div>
+
+        <div class="wg-guide__info-card">
+          <div class="wg-guide__info-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+          </div>
+          <h3 class="wg-guide__info-title">返品・交換</h3>
+          <ul class="wg-guide__info-list">
+            <li>商品到着後8日以内にご連絡ください</li>
+            <li>食品の性質上、基本的に返品はお受けできません</li>
+            <li>不良品・誤配送の場合は良品交換または返金対応</li>
+            <li>返品送料：不良品・誤配送の場合は弊社負担</li>
+          </ul>
+        </div>
+
+        <div class="wg-guide__info-card">
+          <div class="wg-guide__info-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.78h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.4a16 16 0 0 0 6.29 6.29l.9-.9a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <h3 class="wg-guide__info-title">お問い合わせ</h3>
+          <ul class="wg-guide__info-list">
+            <li>電話：090-0000-0000</li>
+            <li>受付時間：毎日 12:00〜21:00</li>
+            <li>メール：info@wingrow.co.jp</li>
+            <li><a href="/pages/contact" class="wg-form-link">お問い合わせフォームはこちら →</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      {%- comment %} 銀行振込先 / 代引き手数料 {%- endcomment %}
+      <div class="wg-guide__payment-detail">
+        <div class="wg-guide__payment-detail-grid">
+
+          <div class="wg-guide__payment-box">
+            <h3 class="wg-guide__payment-box-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+              銀行振込先
+            </h3>
+            <table class="wg-guide__bank-table">
+              <tr><th>銀行名</th><td>北洋銀行</td></tr>
+              <tr><th>支店名</th><td>本店営業部</td></tr>
+              <tr><th>口座種別</th><td>普通</td></tr>
+              <tr><th>口座番号</th><td>1234567</td></tr>
+              <tr><th>口座名義</th><td>カ）ウィングロー</td></tr>
+            </table>
+            <p class="wg-guide__bank-note">※ご入金確認後に発送いたします。振込手数料はお客様負担となります。</p>
+          </div>
+
+          <div class="wg-guide__payment-box">
+            <h3 class="wg-guide__payment-box-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              代金引換 手数料（税込）
+            </h3>
+            <table class="wg-guide__cod-table">
+              <thead>
+                <tr><th>ご注文金額</th><th>手数料</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>1万円以下</td><td>330円</td></tr>
+                <tr><td>3万円以下</td><td>440円</td></tr>
+                <tr><td>10万円以下</td><td>660円</td></tr>
+                <tr><td>30万円以下</td><td>1,100円</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+      {%- comment %} よくある質問（28項目・カテゴリー別・ヒアリングシートより） {%- endcomment %}
+      <div class="wg-guide__faq">
+        <h2 class="wg-guide__section-title">よくある質問</h2>
+
+        <div class="wg-faq-categories">
+
+          {%- comment %} ご注文について {%- endcomment %}
+          <div class="wg-faq-category">
+            <h3 class="wg-faq-category__title">ご注文について</h3>
+            <div class="wg-faq-list">
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  会員登録は必要ですか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  会員登録なしでもご注文可能ですが、会員登録で次回以降の手続きが簡単になります。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  ゲスト購入（会員登録なし）できますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  はい、ゲストとしての購入も可能です。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  注文後の変更・キャンセルはできますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  発送準備前であれば対応可能です。お早めにお問い合わせください。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  注文状況・配送追跡はどこで確認できますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  発送完了メールに追跡番号を記載しております。メールをご確認ください。
+                </div>
+              </details>
+
+            </div>
+          </div>
+
+          {%- comment %} お支払いについて {%- endcomment %}
+          <div class="wg-faq-category">
+            <h3 class="wg-faq-category__title">お支払いについて</h3>
+            <div class="wg-faq-list">
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  支払い方法には何がありますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  クレジットカード（VISA / Master / AMEX / JCB）、Apple Pay、Google Pay、Amazon Pay、楽天ペイ、PayPay、PayPal、代金引換、銀行振込、コンビニ払い、後払い決済がご利用いただけます。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  クレジットカード以外でも支払えますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  はい、各種決済方法に対応しています。Amazon Pay、楽天ペイ、PayPay、PayPal、代金引換、銀行振込、コンビニ払い、後払い決済もご利用いただけます。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  決済は安全ですか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  SSL暗号化通信を採用しており、安全にお買い物いただけます。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  領収書・納品書は発行できますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  マイページまたはご注文確認メールからダウンロード可能です。
+                </div>
+              </details>
+
+            </div>
+          </div>
+
+          {%- comment %} 配送について {%- endcomment %}
+          <div class="wg-faq-category">
+            <h3 class="wg-faq-category__title">配送について</h3>
+            <div class="wg-faq-list">
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  配送エリアを教えてください（国内・海外）。
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  日本国内全域に対応しています（一部発送不可地域がございます）。海外への発送は現在対応しておりません。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  配送料はいくらですか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  全国一律2,500円（税込）です。沖縄・離島は別途2,000円が加算されます。10,000円以上のご購入で送料無料となります。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  送料無料の条件はありますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  10,000円（税込）以上のご購入で送料無料となります。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  注文から届くまでに何日かかりますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  通常、ご注文から5〜6日後にお届けいたします。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  配送時間帯の指定はできますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  はい、ご注文時に配送時間帯の指定が可能です。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  不在時の再配達はどうすれば良いですか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  配送業者（佐川急便）の不在票をご確認のうえ、再配達をご依頼ください。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  商品が届かない・遅延している場合の対処は？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  お問い合わせフォーム、またはお電話（090-0000-0000）よりご連絡ください。受付時間：毎日 12:00〜21:00
+                </div>
+              </details>
+
+            </div>
+          </div>
+
+          {%- comment %} 返品・交換について {%- endcomment %}
+          <div class="wg-faq-category">
+            <h3 class="wg-faq-category__title">返品・交換について</h3>
+            <div class="wg-faq-list">
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  返品・交換は可能ですか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  食品につき、基本的に返品はお受けできませんが、不良品・誤配送の場合は対応いたします。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  返品・交換の条件や手順は？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  商品到着後8日以内にご連絡ください。商品の状態をご確認のうえ、弊社より対応方法をご案内いたします。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  返品送料はどちらが負担しますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  不良品・誤配送の場合は弊社負担です。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  不良品・誤配送の場合の対応方法は？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  速やかに良品と交換または返金対応いたします。まずはお電話（090-0000-0000）またはお問い合わせフォームよりご連絡ください。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  クーリングオフは適用されますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  通信販売はクーリングオフ対象外です。予めご了承ください。
+                </div>
+              </details>
+
+            </div>
+          </div>
+
+          {%- comment %} 商品について {%- endcomment %}
+          <div class="wg-faq-category">
+            <h3 class="wg-faq-category__title">商品について</h3>
+            <div class="wg-faq-list">
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  商品はどこで獲れた海産物ですか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  各商品ページに産地を記載しております。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  海産物はすべて国産ですか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  基本的に国産ですが、一部輸入品は産地を明記しております。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  冷凍と冷蔵、どちらで届きますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  商品により異なりますが、基本は冷凍便でのお届けです。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  冷凍商品は再冷凍しても大丈夫ですか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  品質劣化の恐れがあるため、再冷凍はお控えください。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  賞味期限・消費期限はどれくらいですか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  商品ごとに異なりますので、各商品ページでご確認ください。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  保存方法（冷凍・解凍方法）を教えてください。
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  冷凍保存のうえ、冷蔵庫で自然解凍をおすすめします。解凍の目安は冷蔵庫で約18時間です。
+                </div>
+              </details>
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  アレルゲン表示はありますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  各商品ページにアレルゲン情報を記載しております。
+                </div>
+              </details>
+
+            </div>
+          </div>
+
+          {%- comment %} ギフト・その他 {%- endcomment %}
+          <div class="wg-faq-category">
+            <h3 class="wg-faq-category__title">ギフト・その他</h3>
+            <div class="wg-faq-list">
+
+              <details class="wg-faq-item">
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  ギフト包装・のし対応はできますか？
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  ギフト対応・のし対応はご注文時に指定可能です。
+                </div>
+              </details>
+
+            </div>
+          </div>
+
+        </div>
+
+        {%- comment %} 管理画面から追加できる追加FAQ（theme editor） {%- endcomment %}
+        {%- if section.blocks.size > 0 -%}
+          <div class="wg-faq-list wg-faq-list--admin">
+            {%- for block in section.blocks -%}
+              <details class="wg-faq-item" {{ block.shopify_attributes }}>
+                <summary class="wg-faq-item__question">
+                  <span class="wg-faq-item__q-icon">Q</span>
+                  {{ block.settings.question }}
+                  <svg class="wg-faq-item__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </summary>
+                <div class="wg-faq-item__answer">
+                  <span class="wg-faq-item__a-icon">A</span>
+                  {{ block.settings.answer }}
+                </div>
+              </details>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
+      </div>
+
+      {%- comment %} ページ本文（Shopify管理画面からの追記用） {%- endcomment %}
+      {%- if page.content != blank -%}
+        <div class="wg-page__body rte">{{ page.content }}</div>
+      {%- endif -%}
+
+    </div>
+  </section>
+</div>
+
+{% schema %}
+{
+  "name": "WG ご利用ガイド",
+  "blocks": [
+    {
+      "type": "faq",
+      "name": "よくある質問（追加）",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "質問"
+        },
+        {
+          "type": "textarea",
+          "id": "answer",
+          "label": "回答"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "WG ご利用ガイド"
+    }
+  ]
+}
+{% endschema %}

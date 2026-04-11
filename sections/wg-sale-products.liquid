@@ -28,7 +28,7 @@
       <div class="wg-product-grid">
         {%- if sale_collection != blank -%}
           {%- for product in sale_collection.products limit: products_to_show -%}
-            {% render 'wg-product-card', product: product, show_off_badge: true %}
+            {% render 'wg-product-card', product: product, show_off_badge: false %}
           {%- endfor -%}
         {%- else -%}
           {%- comment %} コレクション未設定時はプレースホルダー {%- endcomment %}
@@ -78,6 +78,20 @@
     </div>
   </section>
 </div>
+
+<script>
+(function() {
+  function hideOffBadges() {
+    var badges = document.querySelectorAll('.wg-off-badge');
+    badges.forEach(function(b) { b.style.display = 'none'; });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hideOffBadges);
+  } else {
+    hideOffBadges();
+  }
+})();
+</script>
 
 {% schema %}
 {

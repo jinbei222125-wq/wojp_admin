@@ -24,11 +24,7 @@
     assign show_rank_badge = true
   endif
 
-  if show_off_badge == true and current_variant.compare_at_price > current_variant.price
-    assign show_off = true
-    assign discount_amount = current_variant.compare_at_price | minus: current_variant.price
-    assign discount_percent = discount_amount | times: 100 | divided_by: current_variant.compare_at_price | round
-  endif
+  # OFFバッジは非表示（show_off = false 固定）
 
   assign is_member = false
   if customer and customer.tags contains 'GoldMember'
@@ -50,14 +46,6 @@
         <span class="wg-rank-badge">
           <span class="wg-rank-badge__num">{{ rank }}</span>
           <span class="wg-rank-badge__label">位</span>
-        </span>
-      {% endif %}
-
-      {% if show_off %}
-        <span class="wg-off-badge">
-          <span class="wg-off-badge__percent">{{ discount_percent }}</span>
-          <span class="wg-off-badge__unit">%</span>
-          <span class="wg-off-badge__text">OFF</span>
         </span>
       {% endif %}
 
@@ -120,10 +108,13 @@
           </div>
           {%- if has_member_price -%}
             <div class="wg-product-card__price-teaser">
-              <span class="wg-product-card__price-teaser-icon">👑</span>
+              <span class="wg-product-card__price-teaser-icon">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 14 L4 6 L8 10 L10 3 L12 10 L16 6 L18 14 Z" fill="#d4af37"/><rect x="2" y="15" width="16" height="2" rx="1" fill="#d4af37"/></svg>
+              </span>
               <span class="wg-product-card__price-teaser-text">会員価格</span>
               <span class="wg-product-card__price-teaser-num">{{ member_price | money }}</span>
             </div>
+            <a href="/pages/gold-member" class="wg-product-card__price-teaser-link">会員プランを見る</a>
           {%- endif -%}
         </div>
       {%- endif -%}

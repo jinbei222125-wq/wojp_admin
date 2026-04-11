@@ -35,11 +35,11 @@ assign heading_font = settings.type_heading_font
 <a class="skip-to-content-link button visually-hidden" href="#MainContent">
     メインコンテンツへスキップ
 </a>
-{% section 'header' %}
+{% section 'wg-header' %}
 <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
 {{ content_for_layout }}
 </main>
-{% section 'footer' %}
+{% section 'wg-footer' %}
 <script src="{{ 'wingrow.js' | asset_url }}" defer="defer"></script>
 <script>
 window.shopUrl = '{{ shop.url }}';
@@ -48,7 +48,8 @@ cart_add_url: '{{ routes.cart_add_url }}',
 cart_change_url: '{{ routes.cart_change_url }}',
 cart_update_url: '{{ routes.cart_update_url }}',
 cart_url: '{{ routes.cart_url }}',
-predictive_search_url: '{{ routes.predictive_search_url }}'
+predictive_search_url: '{{ routes.predictive_search_url }}',
+checkout_url: '/checkout'
 };
 window.cartStrings = {
 error: `{{ 'sections.cart.cart_error' | t }}`,

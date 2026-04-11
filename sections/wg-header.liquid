@@ -17,18 +17,14 @@
     --wg-wave-url: url('{{ wave_url }}');
     --wg-wave-icon-url: url('{{ wave_icon_url }}');
   }
-  /* 既存テーマの header / footer / スキップリンクを非表示 */
-  footer,
-  header {
-    display: none !important;
-  }
-  .wg-site footer,
-  .wg-site header {
-    display: block !important;
-  }
+  /* スキップリンクを非表示 */
   a[href="#MainContent"],
   .skip-to-content-link,
   .visually-hidden--skip {
+    display: none !important;
+  }
+  /* OFFバッジ非表示 */
+  .wg-off-badge {
     display: none !important;
   }
 </style>

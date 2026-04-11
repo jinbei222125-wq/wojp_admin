@@ -23,7 +23,12 @@
       {%- unless is_member -%}
         <div class="wg-cart-member-banner">
           <div class="wg-cart-member-banner__inner">
-            <div class="wg-cart-member-banner__icon">👑</div>
+            <div class="wg-cart-member-banner__icon">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M3 22 L6 8 L13 16 L16 4 L19 16 L26 8 L29 22 Z" fill="#d4af37"/>
+                <rect x="3" y="24" width="26" height="4" rx="2" fill="#d4af37"/>
+              </svg>
+            </div>
             <div class="wg-cart-member-banner__body">
               <p class="wg-cart-member-banner__title">ゴールド会員になるとお得な会員価格で購入できます！</p>
               <p class="wg-cart-member-banner__desc">会員登録（無料）で、全商品が会員価格（卸値）に。今すぐ登録してお得にお買い物しましょう。</p>
@@ -88,7 +93,8 @@
                       {%- if item.variant.compare_at_price > item.variant.price -%}
                         <span class="wg-cart-item__price-main">{{ item.variant.compare_at_price | money }}</span>
                         <span class="wg-cart-item__price-member-teaser">
-                          👑 会員価格 {{ item.variant.price | money }}
+                            <svg width="12" height="12" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="vertical-align:middle;margin-right:2px"><path d="M2 14 L4 6 L8 10 L10 3 L12 10 L16 6 L18 14 Z" fill="#d4af37"/><rect x="2" y="15" width="16" height="2" rx="1" fill="#d4af37"/></svg>
+                          会員価格 {{ item.variant.price | money }}
                         </span>
                       {%- else -%}
                         <span class="wg-cart-item__price-main">{{ item.final_price | money }}</span>
@@ -155,7 +161,7 @@
               {%- endif -%}
             </div>
             <p class="wg-cart-summary__note">送料・税は次のステップで計算されます</p>
-            <a href="{{ routes.checkout }}" class="wg-btn-checkout">
+            <a href="/checkout" class="wg-btn-checkout">
               レジに進む
             </a>
             <a href="{{ routes.root_url }}" class="wg-btn-continue">

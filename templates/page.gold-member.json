@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "main": {
+      "type": "wg-page-gold-member",
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}
