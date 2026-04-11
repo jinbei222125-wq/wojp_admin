@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "buildCommand": "pnpm run build && cp -r dist/public public",
+  "buildCommand": "rm -f api/index.js && pnpm run build && cp -r dist/public public",
   "installCommand": "pnpm install",
   "outputDirectory": "public",
   "rewrites": [
