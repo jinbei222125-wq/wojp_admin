@@ -1,54 +1,28 @@
-import type { IncomingMessage, ServerResponse } from "http";
+/**
+ * Vercel Serverless Function entry point.
+ *
+ * vercel.json rewrites /api/:path* → /api/server?path=:path*
+ * This handler reconstructs the original URL and passes it to Express.
+ */
+import { createApp } from "../../server/_core/app.vercel";
 
-const errors: string[] = [];
-const loaded: string[] = [];
+const app = createApp();
 
-// どのimportが失敗するか特定するため段階的にテスト
-async function initApp() {
-  try {
-    await import("express");
-    loaded.push("express");
-  } catch (e) { errors.push(`express: ${e}`); }
+export default function handler(req: any, res: any) {
+  // Reconstruct the original URL from the path query parameter.
+  // Vercel passes the matched path segment as ?path=admin/auth.login (without leading slash).
+  const pathParam = req.query?.path;
+  if (pathParam) {
+    const pathStr = Array.isArray(pathParam) ? pathParam.join("/") : pathParam;
+    // Remove the 'path' param from the query string and rebuild req.url
+    const { path: _removed, ...restQuery } = req.query;
+    const queryStr = new URLSearchParams(
+      Object.entries(restQuery).flatMap(([k, v]) =>
+        Array.isArray(v) ? v.map(val => [k, val]) : [[k, String(v ?? "")]]
+      )
+    ).toString();
+    req.url = `/api/${pathStr}${queryStr ? `?${queryStr}` : ""}`;
+  }
 
-  try {
-    await import("@libsql/client/web");
-    loaded.push("@libsql/client/web");
-  } catch (e) { errors.push(`@libsql/client/web: ${e}`); }
-
-  try {
-    await import("drizzle-orm/libsql");
-    loaded.push("drizzle-orm/libsql");
-  } catch (e) { errors.push(`drizzle-orm/libsql: ${e}`); }
-
-  try {
-    await import("cloudinary");
-    loaded.push("cloudinary");
-  } catch (e) { errors.push(`cloudinary: ${e}`); }
-
-  try {
-    await import("bcryptjs");
-    loaded.push("bcryptjs");
-  } catch (e) { errors.push(`bcryptjs: ${e}`); }
-
-  try {
-    await import("multer");
-    loaded.push("multer");
-  } catch (e) { errors.push(`multer: ${e}`); }
-
-  try {
-    await import("superjson");
-    loaded.push("superjson");
-  } catch (e) { errors.push(`superjson: ${e}`); }
-}
-
-const initPromise = initApp();
-
-export default async function handler(
-  _req: IncomingMessage,
-  res: ServerResponse
-) {
-  await initPromise;
-  res.statusCode = 200;
-  res.setHeader("Content-Type", "application/json");
-  res.end(JSON.stringify({ loaded, errors }, null, 2));
+  return app(req, res);
 }
